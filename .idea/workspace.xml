@@ -2,8 +2,32 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ec0ac4b2-1f15-4061-bb8e-94e603b09372" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/server.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/DraftSimulator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/DraftSimulatorWeb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/Tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/asset-manifest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/css/2.30dfd29d.chunk.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/css/2.30dfd29d.chunk.css.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.95d363a7.chunk.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.95d363a7.chunk.css.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.6070cecd.chunk.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.6070cecd.chunk.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.1e332c60.chunk.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.1e332c60.chunk.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/runtime~main.5d7886d3.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/runtime~main.5d7886d3.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/manifest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/media/logo.5d5d9eef.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/media/map-hue.076dc20e.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/media/map-saturation-overlay.b01e6120.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/precache-manifest.40a1af72901933fcc2eda8ed9bf29d58.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/service-worker.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/templates/index.html" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,7 +41,7 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/backend/server.py">
+        <entry file="file://$PROJECT_DIR$/server.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="255">
               <caret line="17" selection-start-line="17" selection-end-line="17" />
@@ -26,6 +50,11 @@
               </folding>
             </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/frontend/package.json">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
@@ -98,6 +127,11 @@
             <path>
               <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
               <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
+              <item name="backend" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
               <item name="frontend" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -148,7 +182,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/server.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -174,22 +208,21 @@
       <option name="presentableId" value="Default" />
       <updated>1553025145065</updated>
       <workItem from="1553025155250" duration="1184000" />
-      <workItem from="1553029157712" duration="2628000" />
+      <workItem from="1553029157712" duration="4443000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3812000" />
+    <option name="totallyTimeSpent" value="5627000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="820" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2532189" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32967034" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32967034" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -232,21 +265,6 @@
     <entry file="file://$PROJECT_DIR$/frontend/public/index.html">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/frontend/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-869" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/backend/server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" selection-start-line="17" selection-end-line="17" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/frontend/scripts/start.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="137">
@@ -278,6 +296,25 @@
           <caret line="23" column="25" selection-start-line="23" selection-start-column="25" selection-end-line="23" selection-end-column="25" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/package-lock.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/yarn.lock">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/package.json">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
