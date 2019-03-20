@@ -2,32 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ec0ac4b2-1f15-4061-bb8e-94e603b09372" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/server.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/DraftSimulator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/DraftSimulatorWeb.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/Tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/asset-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/2.30dfd29d.chunk.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/2.30dfd29d.chunk.css.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.95d363a7.chunk.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.95d363a7.chunk.css.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.6070cecd.chunk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.6070cecd.chunk.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.1e332c60.chunk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.1e332c60.chunk.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/runtime~main.5d7886d3.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/runtime~main.5d7886d3.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/media/logo.5d5d9eef.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/media/map-hue.076dc20e.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/media/map-saturation-overlay.b01e6120.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/precache-manifest.40a1af72901933fcc2eda8ed9bf29d58.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/service-worker.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/templates/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/config/paths.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/config/paths.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -60,8 +36,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="930">
-              <caret line="62" column="18" selection-start-line="62" selection-start-column="18" selection-end-line="62" selection-end-column="18" />
+            <state relative-caret-position="270">
+              <caret line="18" column="29" lean-forward="true" selection-start-line="18" selection-start-column="29" selection-end-line="18" selection-end-column="29" />
             </state>
           </provider>
         </entry>
@@ -93,6 +69,7 @@
       <find>config</find>
       <find>appPublic</find>
       <find>public</find>
+      <find>backend</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -101,9 +78,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/frontend/config/paths.js" />
         <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/frontend/config/paths.js" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -123,11 +100,6 @@
             <path>
               <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
               <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
-              <item name="backend" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
@@ -208,17 +180,17 @@
       <option name="presentableId" value="Default" />
       <updated>1553025145065</updated>
       <workItem from="1553025155250" duration="1184000" />
-      <workItem from="1553029157712" duration="4443000" />
+      <workItem from="1553029157712" duration="4797000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5627000" />
+    <option name="totallyTimeSpent" value="5981000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="820" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2532189" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2532189" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -232,7 +204,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32967034" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32967034" />
       <window_info anchor="bottom" id="Python Console" order="12" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -316,10 +288,19 @@
     <entry file="file://$PROJECT_DIR$/frontend/package.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/DraftSimulatorWeb.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="930">
-          <caret line="62" column="18" selection-start-line="62" selection-start-column="18" selection-end-line="62" selection-end-column="18" />
+        <state relative-caret-position="270">
+          <caret line="18" column="29" lean-forward="true" selection-start-line="18" selection-start-column="29" selection-end-line="18" selection-end-column="29" />
         </state>
       </provider>
     </entry>
