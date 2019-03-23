@@ -2,31 +2,27 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ec0ac4b2-1f15-4061-bb8e-94e603b09372" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/GetPlayers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/PositionCheck.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/asset-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/2.fbeefa47.chunk.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/2.fbeefa47.chunk.css.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.26d42eb7.chunk.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.26d42eb7.chunk.css.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.5cbdc6f1.chunk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.5cbdc6f1.chunk.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.d4e5b875.chunk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.d4e5b875.chunk.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/runtime~main.5d7886d3.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/js/runtime~main.5d7886d3.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/media/logo.ee7cd8ed.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/media/map-hue.076dc20e.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/media/map-saturation-overlay.b01e6120.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/precache-manifest.1bdbfba39d8aa79820a6fc5625eae3bd.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/static/react/service-worker.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/templates/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/config/paths.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/config/paths.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/DraftSimulatorWeb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/Tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/Tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/asset-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/static/react/asset-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.16b3d32c.chunk.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/css/main.16b3d32c.chunk.css.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.48a9fa1c.chunk.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/2.48a9fa1c.chunk.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.ccc4dc24.chunk.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/js/main.ccc4dc24.chunk.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/media/logo.5d5d9eef.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/precache-manifest.55c0f43c47698e3646ad87bad332a157.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/static/react/service-worker.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/static/react/service-worker.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/JqxListBox.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/PlayerListBox.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,16 +31,20 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/Draft_Simulator_Web$Unittests_for_Tests_GetPlayersTests_test_http_response_200.coverage" NAME="Unittests for Tests.GetPlayersTests.test_http_response_200 Coverage Results" MODIFIED="1553308327865" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/src/test" />
+    <SUITE FILE_PATH="coverage/Draft_Simulator_Web$Tests.coverage" NAME="Tests Coverage Results" MODIFIED="1553311299469" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/src/test" />
     <SUITE FILE_PATH="coverage/Draft_Simulator_Web$server.coverage" NAME="server Coverage Results" MODIFIED="1553283309063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
-    <SUITE FILE_PATH="coverage/Draft_Simulator_Web$server__1_.coverage" NAME="server (1) Coverage Results" MODIFIED="1553286350839" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/Draft_Simulator_Web$DraftSimulatorWeb.coverage" NAME="DraftSimulatorWeb Coverage Results" MODIFIED="1553308353231" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/src/main" />
+    <SUITE FILE_PATH="coverage/Draft_Simulator_Web$Unittests_for_Tests_GetPlayersTests.coverage" NAME="Unittests for Tests.GetPlayersTests Coverage Results" MODIFIED="1553308575685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend/src/test" />
+    <SUITE FILE_PATH="coverage/Draft_Simulator_Web$server__1_.coverage" NAME="server (1) Coverage Results" MODIFIED="1553320956875" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/frontend/src/App.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="58" column="17" selection-start-line="58" selection-start-column="17" selection-end-line="58" selection-end-column="17" />
+            <state relative-caret-position="282">
+              <caret line="51" column="13" selection-start-line="51" selection-start-column="13" selection-end-line="51" selection-end-column="13" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -52,11 +52,24 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/frontend/src/PlayerListBox.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-690">
+              <caret line="345" column="6" selection-start-line="345" selection-start-column="6" selection-end-line="345" selection-end-column="6" />
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+                <element signature="e#131#190#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/frontend/src/App.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" selection-start-line="18" selection-end-line="18" />
+            <state relative-caret-position="735">
+              <caret line="49" column="1" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -94,11 +107,19 @@
       <find>templates</find>
       <find>templates/</find>
       <find>app-header</find>
+      <find>top_300_positions</find>
+      <find>get_text</find>
+      <find>get</find>
+      <find>console</find>
+      <find>console.l</find>
+      <find>destroy</find>
     </findStrings>
     <replaceStrings>
       <replace>playerListbox</replace>
       <replace>UserListbox</replace>
       <replace>UserListBox</replace>
+      <replace>top300Positions</replace>
+      <replace>getText</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -116,14 +137,20 @@
         <option value="$PROJECT_DIR$/frontend/src/UserListBox.js" />
         <option value="$PROJECT_DIR$/frontend/config/paths.js" />
         <option value="$PROJECT_DIR$/frontend/config/webpack.config.js" />
-        <option value="$PROJECT_DIR$/frontend/src/App.js" />
+        <option value="$PROJECT_DIR$/backend/src/main/DraftSimulatorWeb.py" />
         <option value="$PROJECT_DIR$/frontend/src/App.css" />
+        <option value="$PROJECT_DIR$/backend/src/main/GetPlayers.py" />
+        <option value="$PROJECT_DIR$/backend/src/main/PositionCheck.py" />
+        <option value="$PROJECT_DIR$/backend/src/test/Tests.py" />
+        <option value="$PROJECT_DIR$/backend/server.py" />
+        <option value="$PROJECT_DIR$/frontend/src/Function.js" />
+        <option value="$PROJECT_DIR$/frontend/src/App.js" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="y" value="23" />
-    <option name="width" value="1440" />
+    <option name="width" value="1029" />
     <option name="height" value="821" />
   </component>
   <component name="ProjectView">
@@ -139,16 +166,6 @@
               <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
               <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
-              <item name="backend" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Draft-Simulator-Web" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Draft-Simulator-Web" type="462c0819:PsiDirectoryNode" />
-              <item name="frontend" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -158,6 +175,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs.jest.jest_package" value="$PROJECT_DIR$/frontend/node_modules/jest" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -186,6 +204,63 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.server (1)">
+    <configuration name="renders without crashing" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/frontend/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$/frontend" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/frontend/src/App.test.js" />
+      <test-names>
+        <test-name value="renders without crashing" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="DraftSimulatorWeb" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Draft-Simulator-Web" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/src/main" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/src/main/GetPlayers.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Tests" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Draft-Simulator-Web" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/src/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/src/test/Tests.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="server (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Draft-Simulator-Web" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -208,32 +283,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="server" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Unittests for Tests.GetPlayersTests" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
       <module name="Draft-Simulator-Web" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/src/test" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;Tests.GetPlayersTests&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.server (1)" />
-        <item itemvalue="Python.server" />
+        <item itemvalue="Jest.renders without crashing" />
+        <item itemvalue="Python.Tests" />
+        <item itemvalue="Python tests.Unittests for Tests.GetPlayersTests" />
+        <item itemvalue="Python.DraftSimulatorWeb" />
       </list>
     </recent_temporary>
   </component>
@@ -251,23 +322,46 @@
       <workItem from="1553029157712" duration="6823000" />
       <workItem from="1553113737661" duration="4028000" />
       <workItem from="1553119905292" duration="1797000" />
-      <workItem from="1553272758585" duration="6048000" />
+      <workItem from="1553272758585" duration="21838000" />
     </task>
     <servers />
   </component>
+  <component name="TestHistory">
+    <history-entry file="Unittests_for_Tests_GetPlayersTests - 2019.03.22 at 21h 32m 02s.xml">
+      <configuration name="Unittests for Tests.GetPlayersTests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_Tests_GetPlayersTests_test_http_response_200 - 2019.03.22 at 21h 32m 20s.xml">
+      <configuration name="Unittests for Tests.GetPlayersTests.test_http_response_200" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_Tests_GetPlayersTests - 2019.03.22 at 21h 33m 04s.xml">
+      <configuration name="Unittests for Tests.GetPlayersTests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_Tests_GetPlayersTests - 2019.03.22 at 21h 33m 41s.xml">
+      <configuration name="Unittests for Tests.GetPlayersTests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_Tests_GetPlayersTests - 2019.03.22 at 21h 35m 09s.xml">
+      <configuration name="Unittests for Tests.GetPlayersTests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_Tests_GetPlayersTests - 2019.03.22 at 21h 36m 16s.xml">
+      <configuration name="Unittests for Tests.GetPlayersTests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="renders_without_crashing - 2019.03.22 at 22h 35m 47s.xml">
+      <configuration name="renders without crashing" configurationId="JavaScriptTestRunnerJest" />
+    </history-entry>
+  </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="19880000" />
+    <option name="totallyTimeSpent" value="35670000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="821" extended-state="0" />
+    <frame x="0" y="23" width="1029" height="821" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.22246066" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.31509626" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32807016" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32784638" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.34019205" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39917696" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -332,25 +426,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Procfile" />
     <entry file="file://$PROJECT_DIR$/frontend/.gitignore" />
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="120">
-            <caret line="8" column="61" selection-start-line="8" selection-start-column="61" selection-end-line="8" selection-end-column="61" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frontend/src/App.test.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/frontend/src/index.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -383,13 +458,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/backend/server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="20" selection-start-line="20" selection-end-line="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/frontend/scripts/build.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="43">
@@ -400,11 +468,89 @@
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="105">
+            <caret line="7" column="19" lean-forward="true" selection-start-line="7" selection-start-column="19" selection-end-line="7" selection-end-column="19" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/src/App.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="49" column="1" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/backend/src/test/Tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="600">
+          <caret line="40" selection-start-line="40" selection-end-line="40" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/backend/src/main/PositionCheck.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/backend/src/main/GetPlayers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="51" lean-forward="true" selection-start-line="51" selection-end-line="51" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/backend/src/main/DraftSimulator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="221" column="52" selection-start-line="221" selection-start-column="52" selection-end-line="221" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/backend/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="15" lean-forward="true" selection-start-line="7" selection-start-column="15" selection-end-line="7" selection-end-column="15" />
+          <folding>
+            <element signature="e#0#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/node_modules/jest-watch-typeahead/filename.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/src/App.test.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/src/Function.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/frontend/src/PlayerListBox.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="22" selection-start-line="3" selection-start-column="22" selection-end-line="3" selection-end-column="22" />
+        <state relative-caret-position="-690">
+          <caret line="345" column="6" selection-start-line="345" selection-start-column="6" selection-end-line="345" selection-end-column="6" />
           <folding>
+            <element signature="n#!!doc" expanded="true" />
             <element signature="e#131#190#0" expanded="true" />
           </folding>
         </state>
@@ -412,18 +558,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/frontend/src/App.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="58" column="17" selection-start-line="58" selection-start-column="17" selection-end-line="58" selection-end-column="17" />
+        <state relative-caret-position="282">
+          <caret line="51" column="13" selection-start-line="51" selection-start-column="13" selection-end-line="51" selection-end-column="13" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frontend/src/App.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" selection-start-line="18" selection-end-line="18" />
         </state>
       </provider>
     </entry>

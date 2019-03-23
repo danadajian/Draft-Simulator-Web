@@ -11,19 +11,33 @@
 .Player-list-box {
   display: inline-block;
   position: relative;
-  margin: 2%;
+  margin: 1%;
   float: left;
-  height: 250px;
+  height: 200px;
   background-color: lightblue;
 }
 
 .User-list-box {
   display: inline-block;
   position: relative;
-  margin: 2%;
+  margin: 1%;
   float: left;
-  height: 250px;
+  height: 200px;
   background-color: lightblue;
+}
+
+.Add-button {;
+  position: relative;
+  margin: 1%;
+  float: left;
+  background-color: blue;
+}
+
+.Remove-button {;
+  position: relative;
+  margin: 1%;
+  float: left;
+  background-color: blue;
 }
 
 @keyframes App-logo-spin {

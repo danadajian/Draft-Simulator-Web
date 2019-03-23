@@ -1,7 +1,9 @@
 import unittest
+from backend.src.main.GetPlayers import *
+from backend.src.main.PositionCheck import *
 
 
-class GetPlayersTests(unittest.TestCase):
+class DraftSimulatorTests(unittest.TestCase):
 
     def test_http_response_200(self):
         self.assertEqual(str(request), '<Response [200]>')
@@ -14,22 +16,16 @@ class GetPlayersTests(unittest.TestCase):
         for pos in top300List:
             if not pos != 'D/ST':
                 self.assertTrue(pos.isalpha())
-    # def test_split(self):
-    #     s = 'hello world'
-    #     self.assertEqual(s.split(), ['hello', 'world'])
-    #     # check that s.split fails when the separator is not a string
-    #     with self.assertRaises(TypeError):
-    #         s.split(2)
 
     def test_position_count(self):
         test_list = ['Saquon Barkley', 'Odell Beckham Jr', 'Julio Jones', 'Travis Kelce', 'Zach Ertz', 'George Kittle',
                      'Packers D/ST', 'Ravens D/ST', 'Jaguars D/ST', 'Seahawks D/ST', 'Justin Tucker', 'Robbie Gould',
                      'Harrison Butker', 'Matt Prater', 'Matt Bryant']
-        pos_list = ['QB', 'RB', 'WR', 'TE', 'DST', 'K']
+        position_list = ['QB', 'RB', 'WR', 'TE', 'DST', 'K']
         expected_counts = []
         actual_counts = []
-        for pos in pos_list:
-            n = pos_list.index(pos)
+        for pos in position_list:
+            n = position_list.index(pos)
             expected_count = n
             actual_count = position_count(test_list, pos)
             expected_counts.append(expected_count)
@@ -42,3 +38,7 @@ class GetPlayersTests(unittest.TestCase):
         self.assertTrue(valid_choice('Adam Thielen', test_team))
         self.assertFalse(valid_choice('Jaguars D/ST', test_team))
         self.assertFalse(valid_choice(None, test_team))
+
+
+if __name__ == '__main__':
+    unittest.main()

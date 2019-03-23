@@ -1,4 +1,4 @@
-from src.main.DraftSimulatorWeb import *
+from src.main.GetPlayers import get_players
 import os
 import flask
 

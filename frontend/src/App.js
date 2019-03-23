@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import PlayerListBox from './PlayerListBox';
 import $ from 'jquery';
@@ -8,17 +7,17 @@ class App extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {players: [], isLoading: true};
+        this.state = {players: [], userPlayers: [], isLoading: true};
     }
 
     componentDidMount() {
         this.setState({isLoading: true});
 
         $.get(window.location.href + 'players', (data) => {
-            const player_list = data.substring(2, data.length - 2).split(/', '|", '|', "/);
-            this.setState({players: player_list, isLoading: false});
+            const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
+            this.setState({players: playerList, isLoading: false});
         });
-
+    }
         // this.refs.playerListbox.selectIndex(2);
         // this.refs.playerListbox.selectIndex(5);
         // this.refs.playerListbox.selectIndex(7);
@@ -26,30 +25,38 @@ class App extends React.Component {
         // this.refs.playerListbox.on('change', () => {
         //     this.displaySelectedItems();
         // });
-    }
 
-    displaySelectedItems() {
-        let items = this.refs.playerListbox.getSelectedItems();
-        let selection = 'Selected Items: ';
-        for (let i = 0; i < items.length; i++) {
-            selection += items[i].label + (i < items.length - 1 ? ', ' : '');
+    addPlayers = () => {
+        let selectedItems = this.refs.playerListbox.getSelectedItems();
+        let userItems = this.refs.userListbox.getItems();
+        let userNames = [];
+        for (let i = 0; i < userItems.length; i++) {
+            userNames.push(userItems[i].label)
         }
-        document.getElementById('selectionLog').innerHTML = selection;
 
-        // let items2 = this.refs.userListbox.getSelectedItems();
-        // let selection2 = 'Selected Items: ';
-        // for (let i = 0; i < items2.length; i++) {
-        //     selection2 += items2[i].label + (i < items2.length - 1 ? ', ' : '');
-        // }
-        // document.getElementById('selectionLog2').innerHTML = selection2;
-    }
+        for (let i = 0; i < selectedItems.length; i++) {
+            if (!userItems.includes(selectedItems[i].label)) {
+                this.refs.userListbox.addItem(selectedItems[i].label);
+            }
+        }
+
+        this.refs.playerListbox.clearSelection();
+        this.refs.userListbox.clearSelection();
+    };
+
+    removePlayers = () => {
+        let selectedUserItems = this.refs.userListbox.getSelectedItems();
+        if (selectedUserItems[0].label) {
+            for (let i = 0; i < selectedUserItems.length; i++) {
+                this.refs.userListbox.removeItem(selectedUserItems[i].label);
+            }
+        }
+    };
 
     // <img src={logo} className="App-logo" alt="logo"/>
 
     render() {
-        const {players, isLoading} = this.state;
-
-        console.log(players);
+        const {players, userPlayers, isLoading} = this.state;
 
         if (isLoading) {
             return <p>Loading players from ESPN . . .</p>;
@@ -58,17 +65,18 @@ class App extends React.Component {
         return (
             <div>
                 <PlayerListBox ref='playerListbox'
-                               width={250} height={250}
+                               width={250} height={300}
                                source={players} multiple={true}
                                className={"Player-list-box"}
                 />
-                <div style={{marginTop: 30, fontSize: 13, fontFamily: 'Verdana'}} id='selectionLog'/>
+                <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
+                <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove</button>
                 <PlayerListBox ref='userListbox'
-                             width={250} height={250}
-                             multiple={true}
+                             width={250} height={300}
+                             source={userPlayers} multiple={true}
+                             allowDrag={true} allowDrop={true}
                              className={"User-list-box"}
                 />
-                <div style={{marginTop: 30, fontSize: 13, fontFamily: 'Verdana'}} id='selectionLog2'/>
             </div>
         )
     }
