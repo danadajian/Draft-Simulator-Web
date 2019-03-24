@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "5370d2e476c5d078fa4f",
-    "url": "/static/react/css/main.0bc3ee3b.chunk.css"
+    "revision": "6fdfa6946ef9239ba85b",
+    "url": "/static/react/css/main.8bf8a677.chunk.css"
   },
   {
-    "revision": "5370d2e476c5d078fa4f",
-    "url": "/static/react/js/main.23f27cc4.chunk.js"
+    "revision": "6fdfa6946ef9239ba85b",
+    "url": "/static/react/js/main.723aa808.chunk.js"
   },
   {
     "revision": "53eac5d40d2daff628d2",
@@ -28,7 +28,7 @@ self.__precacheManifest = [
     "url": "/static/react/media/map-saturation-overlay.b01e6120.png"
   },
   {
-    "revision": "fbc45c58759727dcef6d281becfd71d8",
+    "revision": "1b509aea97ef117e779ee0c5c3f2b45e",
     "url": "/static/react/../../templates/index.html"
   }
 ];

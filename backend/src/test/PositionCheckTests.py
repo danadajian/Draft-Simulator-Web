@@ -1,22 +1,8 @@
 import unittest
-from backend.src.main.GetPlayers import *
 from backend.src.main.PositionCheck import *
 
 
-class DraftSimulatorTests(unittest.TestCase):
-
-    def test_http_response_200(self):
-        self.assertEqual(str(request), '<Response [200]>')
-
-    def test_player_names_valid(self):
-        for player in top300List:
-            self.assertTrue(player.isalpha() or any(x in player for x in [' ', '.', "'", 'D/ST']))
-
-    def test_pos_names_valid(self):
-        for pos in top300List:
-            if not pos != 'D/ST':
-                self.assertTrue(pos.isalpha())
-
+class PositionCheckTests(unittest.TestCase):
     def test_position_count(self):
         test_list = ['Saquon Barkley', 'Odell Beckham Jr', 'Julio Jones', 'Travis Kelce', 'Zach Ertz', 'George Kittle',
                      'Packers D/ST', 'Ravens D/ST', 'Jaguars D/ST', 'Seahawks D/ST', 'Justin Tucker', 'Robbie Gould',

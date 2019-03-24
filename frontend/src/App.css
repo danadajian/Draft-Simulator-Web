@@ -30,21 +30,28 @@
   position: relative;
   margin: 1%;
   float: left;
-  background-color: blue;
+  background-color: green;
 }
 
 .Remove-button {;
   position: relative;
   margin: 1%;
   float: left;
-  background-color: blue;
+  background-color: darkred;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.Clear-button {;
+  position: relative;
+  margin: 1%;
+  float: left;
+  background-color: yellow;
 }
+
+/*@keyframes App-logo-spin {*/
+  /*from {*/
+    /*transform: rotate(0deg);*/
+  /*}*/
+  /*to {*/
+    /*transform: rotate(360deg);*/
+  /*}*/
+/*}*/
