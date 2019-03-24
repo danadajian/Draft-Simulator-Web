@@ -83,7 +83,6 @@ class App extends React.Component {
                 <PlayerListBox ref='playerListbox'
                                width={250} height={300}
                                source={players} multiple={true}
-                               multipleextended={true}
                                className={"Player-list-box"}
                 />
                 <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
@@ -91,7 +90,7 @@ class App extends React.Component {
                 <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
                 <PlayerListBox ref='userListbox'
                              width={250} height={300}
-                             source={userPlayers} multiple={true} multipleextended={true}
+                             source={userPlayers} multiple={true}
                              allowDrag={true} allowDrop={true}
                              className={"User-list-box"}
                 />

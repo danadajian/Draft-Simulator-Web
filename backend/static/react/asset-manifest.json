@@ -1,7 +1,7 @@
 {
   "main.css": "/static/react/css/main.8bf8a677.chunk.css",
-  "main.js": "/static/react/js/main.723aa808.chunk.js",
-  "main.js.map": "/static/react/js/main.723aa808.chunk.js.map",
+  "main.js": "/static/react/js/main.1079cd52.chunk.js",
+  "main.js.map": "/static/react/js/main.1079cd52.chunk.js.map",
   "runtime~main.js": "/static/react/js/runtime~main.5d7886d3.js",
   "runtime~main.js.map": "/static/react/js/runtime~main.5d7886d3.js.map",
   "css/2.30dfd29d.chunk.css": "/static/react/css/2.30dfd29d.chunk.css",
@@ -11,6 +11,6 @@
   "css/2.30dfd29d.chunk.css.map": "/static/react/css/2.30dfd29d.chunk.css.map",
   "css/main.8bf8a677.chunk.css.map": "/static/react/css/main.8bf8a677.chunk.css.map",
   "media/jqx.base.css": "/static/react/media/map-saturation-overlay.b01e6120.png",
-  "precache-manifest.f05a061f863bf0b564cac39ec35d2ce2.js": "/static/react/precache-manifest.f05a061f863bf0b564cac39ec35d2ce2.js",
+  "precache-manifest.c77b282eaaf7523100b943a01feeb996.js": "/static/react/precache-manifest.c77b282eaaf7523100b943a01feeb996.js",
   "service-worker.js": "/static/react/service-worker.js"
 }
