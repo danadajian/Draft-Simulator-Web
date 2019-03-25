@@ -2,8 +2,4 @@
 
 .idea
 
-# dependencies
-frontend/node_modules
-
 ci/credentials.yml
-
