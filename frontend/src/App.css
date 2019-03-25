@@ -18,7 +18,7 @@
 }
 
 .User-list-box {
-  display: inline-block;
+  display: flex;
   position: relative;
   margin: 1%;
   float: left;
