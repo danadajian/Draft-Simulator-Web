@@ -2,7 +2,6 @@ from src.main.GetPlayers import get_players
 from src.main.SimulateDraft import *
 import os
 import flask
-import requests
 
 app = flask.Flask("__name__")
 
