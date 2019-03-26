@@ -7,10 +7,10 @@ def position_count(player_list, pos):
     return len(result)
 
 
-def valid_choice(player, user_team):
+def valid_choice(player, team):
     if player:
         pos_limits = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
         player_pos = top300dict.get(player)
-        if position_count(user_team, player_pos) + 1 <= pos_limits.get(player_pos):
+        if position_count(team, player_pos) + 1 <= pos_limits.get(player_pos):
             return True
     return False

@@ -63,6 +63,8 @@ def pick_players(user_list, team_dict, draft_order, round_count):
 
 def simulate_draft(user_player_list, team_count, pick_order, round_count, simulations):
     drafted_teams = []
+    if user_player_list == ['']:
+        return drafted_teams
     for _ in range(simulations):
         user_list = [player for player in user_player_list]
         user_team = []
