@@ -26,6 +26,15 @@
   background-color: lightblue;
 }
 
+.Draft-list-box {
+  display: flex;
+  position: relative;
+  margin: 1%;
+  float: left;
+  height: 200px;
+  background-color: lightblue;
+}
+
 .Add-button {;
   position: relative;
   margin: 1%;
@@ -45,6 +54,13 @@
   margin: 1%;
   float: left;
   background-color: yellow;
+}
+
+.Draft-button {;
+  position: relative;
+  margin: 1%;
+  float: left;
+  background-color: orangered;
 }
 
 /*@keyframes App-logo-spin {*/

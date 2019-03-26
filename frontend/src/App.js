@@ -13,7 +13,8 @@ class App extends React.Component {
     componentDidMount() {
         this.setState({isLoading: true});
 
-        $.get(window.location.href + 'players', (data) => {
+        $.get((window.location.href.endsWith('draft-results'))
+            ? window.location.href.slice(0, -13) + 'players': window.location.href + 'players', (data) => {
             const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
             this.setState({players: playerList, isLoading: false});
         });
@@ -34,7 +35,7 @@ class App extends React.Component {
             this.refs.userListbox.addItem(playersToAdd[i]);
         }
 
-        let totalPlayers = currentPlayers + playersToAdd;
+        let totalPlayers = (currentPlayers.length > 0) ? currentPlayers + ',' + playersToAdd: currentPlayers + playersToAdd;
         this.setState({userPlayers: totalPlayers});
 
         this.refs.playerListbox.clearSelection();
@@ -71,6 +72,26 @@ class App extends React.Component {
         this.refs.userListbox.clearSelection();
     };
 
+    simulateDraft = () => {
+        let currentPlayers = this.state.userPlayers;
+        $.post(window.location.href + 'draft-results', currentPlayers);
+
+        $.get(window.location.href + 'draft-results', (data) => {
+            this.refs.draftListbox.clear();
+            if (data === '[]') {
+                this.refs.draftListbox.addItem('No players were drafted. :(');
+            } else {
+                const drafted_players = data.substring(3, data.length - 3).split(/', '|", '|', "/);
+                for (let i = 0; i < drafted_players.length; i++) {
+                    this.refs.draftListbox.addItem(drafted_players[i]);
+                }
+            }
+        });
+
+        this.refs.playerListbox.clearSelection();
+        this.refs.userListbox.clearSelection();
+    };
+
     render() {
         const {players, userPlayers, isLoading} = this.state;
 
@@ -93,6 +114,12 @@ class App extends React.Component {
                              source={userPlayers} multiple={true}
                              allowDrag={true} allowDrop={true}
                              className={"User-list-box"}
+                />
+                <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
+                <PlayerListBox ref='draftListbox'
+                             width={250} height={300}
+                             source={['Draft Results appear here!']}
+                             className={"Draft-list-box"}
                 />
             </div>
         )
