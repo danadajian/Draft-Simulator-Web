@@ -46,7 +46,7 @@
   position: relative;
   margin: 1%;
   float: left;
-  background-color: darkred;
+  background-color: red;
 }
 
 .Clear-button {;
@@ -60,7 +60,7 @@
   position: relative;
   margin: 1%;
   float: left;
-  background-color: orangered;
+  background-color: orange;
 }
 
 /*@keyframes App-logo-spin {*/

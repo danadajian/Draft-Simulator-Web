@@ -74,9 +74,19 @@ class App extends React.Component {
 
     simulateDraft = () => {
         let currentPlayers = this.state.userPlayers;
+        this.refs.draftListbox.clear();
+
+        if (currentPlayers.length === 0) {
+            this.refs.draftListbox.addItem('Please select at least one player to draft.');
+            return;
+        }
+
         $.post(window.location.href + 'draft-results', currentPlayers);
 
-        $.get(window.location.href + 'draft-results', (data) => {
+        // for now we wait 2 seconds for the backend to run, we could set up an async for this maybe
+        this.refs.draftListbox.addItem('Drafting...');
+        setTimeout(() => {
+            $.get(window.location.href + 'draft-results', (data) => {
             this.refs.draftListbox.clear();
             if (data === '[]') {
                 this.refs.draftListbox.addItem('No players were drafted. :(');
@@ -84,9 +94,10 @@ class App extends React.Component {
                 const drafted_players = data.substring(3, data.length - 3).split(/', '|", '|', "/);
                 for (let i = 0; i < drafted_players.length; i++) {
                     this.refs.draftListbox.addItem(drafted_players[i]);
+                    }
                 }
-            }
-        });
+            });
+        }, 2000);
 
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
@@ -117,7 +128,7 @@ class App extends React.Component {
                 />
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
                 <PlayerListBox ref='draftListbox'
-                             width={250} height={300}
+                             width={300} height={300}
                              source={['Draft Results appear here!']}
                              className={"Draft-list-box"}
                 />
