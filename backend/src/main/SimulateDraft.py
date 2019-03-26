@@ -1,4 +1,4 @@
-from main.PositionCheck import *
+from backend.src.main.PositionCheck import *
 import random
 
 

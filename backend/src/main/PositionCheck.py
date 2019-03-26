@@ -1,4 +1,4 @@
-from main.GetPlayers import top300dict
+from backend.src.main.GetPlayers import top300dict
 
 
 # functions for ensuring teams draft appropriate positions
