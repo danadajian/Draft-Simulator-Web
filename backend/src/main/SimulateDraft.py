@@ -1,4 +1,4 @@
-from PositionCheck import *
+from main.PositionCheck import *
 import random
 
 
