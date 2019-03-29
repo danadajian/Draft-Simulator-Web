@@ -112,25 +112,19 @@ class App extends React.Component {
 
         return (
             <div>
-                <PlayerListBox ref='playerListbox'
-                               width={250} height={300}
-                               source={players} multiple={true}
-                               className={"Player-list-box"}
+                <PlayerListBox ref='playerListbox' width={250} height={300}
+                               source={players} multiple={true} className={"Player-list-box"}
                 />
                 <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
                 <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove</button>
                 <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
-                <PlayerListBox ref='userListbox'
-                             width={250} height={300}
+                <PlayerListBox ref='userListbox' width={250} height={300}
                              source={userPlayers} multiple={true}
-                             allowDrag={true} allowDrop={true}
-                             className={"User-list-box"}
+                             allowDrag={true} allowDrop={true} className={"User-list-box"}
                 />
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
-                <PlayerListBox ref='draftListbox'
-                             width={300} height={300}
-                             source={['Draft Results appear here!']}
-                             className={"Draft-list-box"}
+                <PlayerListBox ref='draftListbox' width={300} height={300}
+                             source={['Draft Results appear here!']} className={"Draft-list-box"}
                 />
             </div>
         )
