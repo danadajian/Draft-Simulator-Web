@@ -73,31 +73,51 @@ class App extends React.Component {
     };
 
     simulateDraft = () => {
-        let currentPlayers = this.state.userPlayers;
         this.refs.draftListbox.clear();
 
-        if (currentPlayers.length === 0) {
+        let reorderedPlayers = [];
+        let userItems = this.refs.userListbox.getItems();
+
+        if (!userItems || userItems.length === 0) {
             this.refs.draftListbox.addItem('Please select at least one player to draft.');
             return;
         }
+        for (let i = 0; i < userItems.length; i++) {
+            reorderedPlayers.push(userItems[i].label);
+        }
 
-        $.post(window.location.href + 'draft-results', currentPlayers);
+        const postToEndpoint = async () => {
+            return await $.post(window.location.href + 'draft-results', this.state.userPlayers);
+        };
 
-        // for now we wait 2 seconds for the backend to run, we could set up an async for this maybe
-        this.refs.draftListbox.addItem('Drafting...');
-        setTimeout(() => {
-            $.get(window.location.href + 'draft-results', (data) => {
-            this.refs.draftListbox.clear();
-            if (data === '[]') {
-                this.refs.draftListbox.addItem('No players were drafted. :(');
-            } else {
-                const drafted_players = data.substring(3, data.length - 3).split(/', '|", '|', "/);
-                for (let i = 0; i < drafted_players.length; i++) {
-                    this.refs.draftListbox.addItem(drafted_players[i]);
+        const postPlayers = async () => {
+            const postFinished = await postToEndpoint();
+        };
+
+        const getFromEndpoint = async () => {
+            return await $.get(window.location.href + 'draft-results', (data) => {
+                this.refs.draftListbox.clear();
+                if (data === '[]') {
+                    this.refs.draftListbox.addItem('No players were drafted. :(');
+                } else {
+                    const drafted_players = data.substring(3, data.length - 3).split(/', '|", '|', "/);
+                    for (let i = 0; i < drafted_players.length; i++) {
+                        this.refs.draftListbox.addItem(drafted_players[i]);
                     }
                 }
             });
-        }, 2000);
+        };
+
+        const getResults = async () => {
+            const draftFinished = await getFromEndpoint();
+        };
+
+        this.refs.draftListbox.clear();
+        this.setState({userPlayers: reorderedPlayers.toString()}, function () {
+            this.refs.draftListbox.addItem('Drafting...');
+            postPlayers();
+            getResults();
+        });
 
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();

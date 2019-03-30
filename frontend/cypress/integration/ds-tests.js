@@ -38,7 +38,6 @@ describe('Draft Simulator Tests', function () {
         cy.contains('Draft').click();
         cy.contains('Drafting...').should('not.exist');
         cy.contains('Please select at least one player to draft.').should('exist');
-        cy.wait(3000);
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('not.exist');
     });
 
@@ -46,7 +45,6 @@ describe('Draft Simulator Tests', function () {
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.contains('Add').click();
         cy.contains('Draft').click();
-        cy.wait(3000);
         cy.get('[class^=Draft-list-box]').find('[id^=listitem]').should('have.length', 11);
         // need to change this check later ^
     })
