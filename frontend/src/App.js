@@ -115,8 +115,14 @@ class App extends React.Component {
         this.refs.draftListbox.clear();
         this.setState({userPlayers: reorderedPlayers.toString()}, function () {
             this.refs.draftListbox.addItem('Drafting...');
-            postPlayers();
-            getResults();
+            const playersArePosted = async () => {
+                return await postPlayers();
+            };
+            const draftPlayers = async () => {
+                const ready = await playersArePosted();
+                getResults();
+            };
+            draftPlayers();
         });
 
         this.refs.playerListbox.clearSelection();
