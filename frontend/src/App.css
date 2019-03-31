@@ -36,20 +36,24 @@
 }
 
 .Add-button {;
-  position: relative;
+  display: flex;
+  flex-direction: column;
   margin: 1%;
   float: left;
   background-color: green;
 }
 
 .Remove-button {;
-  position: relative;
+  display: flex;
+  flex-direction: column;
   margin: 1%;
   float: left;
   background-color: red;
 }
 
 .Clear-button {;
+  display: flex;
+  flex-direction: column;
   position: relative;
   margin: 1%;
   float: left;
@@ -57,7 +61,7 @@
 }
 
 .Draft-button {;
-  position: relative;
+  display: flex;
   margin: 1%;
   float: left;
   background-color: orange;

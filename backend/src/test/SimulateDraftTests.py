@@ -65,7 +65,7 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 10
         rounds = 1
         sims = 10
-        self.assertTrue(not any('Saquon Barkley' in team for team in simulate_draft(players, teams, pick, rounds, sims)))
+        self.assertTrue(not all('Saquon Barkley' in team for team in simulate_draft(players, teams, pick, rounds, sims)))
 
     def test_full_draft_position_counts_valid_one_sim(self):
         players = []
@@ -87,6 +87,20 @@ class SimulateDraftTests(unittest.TestCase):
         pos_counts = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
         self.assertTrue(all(position_count(team, pos) == pos_counts.get(pos) for pos in pos_counts.keys())
                         for team in drafted_teams)
+
+    def test_calculate_frequencies(self):
+        drafted_teams = [['Saquon', 'Odell'], ['Saquon'], ['Odell'], ['Eli', 'Saquon']]
+        self.assertEqual({'Saquon': '75.0%', 'Odell': '50.0%', 'Eli': '25.0%'}, calculate_frequencies(drafted_teams))
+
+    def test_aggregate_data(self):
+        freq_dict = {'Odell Beckham Jr': '50.0%', 'Eli Manning': '25.0%', 'Saquon Barkley': '75.0%'}
+        user_player_list = ['Eli Manning', 'Saquon Barkley']
+        self.assertEqual('[{"Player": "Saquon Barkley", "Position": "RB", "DraftFreq": "75.0%"}, '
+                         '{"Player": "Odell Beckham Jr", "Position": "WR", "DraftFreq": "50.0%"}, '
+                         '{"Player": "Eli Manning", "Position": "QB", "DraftFreq": "25.0%"}]|'
+                         '[{"Player": "Saquon Barkley", "Position": "RB", "DraftFreq": "75.0%"}, '
+                         '{"Player": "Eli Manning", "Position": "QB", "DraftFreq": "25.0%"}]',
+                         aggregate_data(freq_dict, user_player_list))
 
 
 if __name__ == '__main__':

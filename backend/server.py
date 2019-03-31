@@ -27,7 +27,9 @@ def run_draft():
         for item in replace_list:
             clean = clean.replace(item, '')
         user_list = clean.split(',')
-        draft_results = str(simulate_draft(user_list, 10, 1, 16, 1))
+        teams_drafted = simulate_draft(user_list, 10, 1, 16, 10)
+        player_draft_freq = calculate_frequencies(teams_drafted)
+        draft_results = aggregate_data(player_draft_freq, user_list)
         print(draft_results)
         return draft_results
     else:
