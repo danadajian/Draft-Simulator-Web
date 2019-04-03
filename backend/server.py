@@ -23,11 +23,16 @@ def run_draft():
         draft_results = None
         data = flask.request.get_data()
         clean = str(data)[2:-1]
+        data_list = clean.split('|')
+        players_string = data_list[0]
         replace_list = ['(QB)', '(RB)', '(WR)', '(TE)', '(K)', '(DST)', '    ']
         for item in replace_list:
-            clean = clean.replace(item, '')
-        user_list = clean.split(',')
-        teams_drafted = simulate_draft(user_list, 10, 1, 16, 10)
+            players_string = players_string.replace(item, '')
+        user_list = players_string.split(',')
+        team_count = int(data_list[1])
+        pick_order = int(data_list[2])
+        round_count = int(data_list[3])
+        teams_drafted = simulate_draft(user_list, team_count, pick_order, round_count, 500)
         player_draft_freq = calculate_frequencies(teams_drafted)
         draft_results = aggregate_data(player_draft_freq, user_list)
         print(draft_results)

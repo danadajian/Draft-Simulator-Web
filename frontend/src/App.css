@@ -81,23 +81,48 @@ body {
   background-color: lightblue;
 }
 
+.Slider-labels {
+  display: flex;
+  flex-direction: column;
+  float: left;
+  margin-left: 50px;
+  margin-top: -130px;
+  text-align: center;
+  color: navajowhite;
+}
+
 .Slider-div {
   display: flex;
   flex-direction: column;
   float: left;
+  margin-left: 25px;
+  margin-top: -130px;
 }
 
-/*.App-logo {*/
-  /*animation: App-logo-spin infinite 20s linear;*/
-  /*height: 40vmin;*/
-  /*pointer-events: none;*/
-/*}*/
+.Slider {
+  margin-bottom: 25px;
+}
 
-/*@keyframes App-logo-spin {*/
-  /*from {*/
-    /*transform: rotate(0deg);*/
-  /*}*/
-  /*to {*/
-    /*transform: rotate(360deg);*/
-  /*}*/
-/*}*/
+.Loading-text {
+  font-size: x-large;
+  font-weight: bold;
+  font-style: oblique;
+  text-align: center;
+  color: navajowhite;
+  margin-bottom: 30%;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 5s linear;
+  height: 30vmin;
+  pointer-events: none;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

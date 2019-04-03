@@ -17,6 +17,7 @@ Docker Commands:
 
 To-Dos:
 * Bind sliders to backend
+* Create "Drafting..." spinny circle
 * Create nav bar
 * Make import/export functionality
 * Insert documentation and/or instructions somewhere

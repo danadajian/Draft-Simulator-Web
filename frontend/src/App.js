@@ -1,16 +1,18 @@
 import React from 'react';
 import './App.css';
-import JqxListBox from './react_jqxlistbox';
-import JqxGrid from './react_jqxgrid'
-import JqxTabs from './react_jqxtabs'
-import JqxSlider from './react_jqxslider'
+import JqxListBox from './jqxwidgets/react_jqxlistbox';
+import JqxGrid from './jqxwidgets/react_jqxgrid'
+import JqxTabs from './jqxwidgets/react_jqxtabs'
+import JqxSlider from './jqxwidgets/react_jqxslider'
 import $ from 'jquery';
+import football from './football.ico'
 
 class App extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [], allFreqs: '', userFreqs: '', undrafted: ''};
+        this.state = {isLoading: true, players: [], userPlayers: [],
+            isDrafting: false, allFreqs: '', userFreqs: '', undrafted: ''};
     }
 
     componentDidMount() {
@@ -36,10 +38,10 @@ class App extends React.Component {
 
         for (let i = 0; i < playersToAdd.length; i++) {
             this.refs.userListbox.addItem(playersToAdd[i]);
+            currentPlayers.push(playersToAdd[i]);
         }
 
-        let totalPlayers = (currentPlayers.length > 0) ? currentPlayers + ',' + playersToAdd : currentPlayers + playersToAdd;
-        this.setState({userPlayers: totalPlayers});
+        this.setState({userPlayers: currentPlayers});
 
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
@@ -76,62 +78,83 @@ class App extends React.Component {
     };
 
     simulateDraft = () => {
+        this.setState({allFreqs: '', userFreqs: '', undrafted: ''});
+        let teamCount = this.refs.teamCountSlider.getValue();
+        let pickOrder = this.refs.pickOrderSlider.getValue();
+        let roundCount = this.refs.roundCountSlider.getValue();
         let reorderedPlayers = [];
         let userItems = this.refs.userListbox.getItems();
-
         if (!userItems || userItems.length === 0) {
             alert('Please select at least one player to draft.');
             return;
         }
-        for (let i = 0; i < userItems.length; i++) {
-            reorderedPlayers.push(userItems[i].label);
-        }
+        this.setState({isDrafting: true}, function () {
+            for (let i = 0; i < userItems.length; i++) {
+                reorderedPlayers.push(userItems[i].label);
+            }
 
-        const postToEndpoint = async () => {
-            return await $.post(window.location.href + 'draft-results', this.state.userPlayers);
-        };
+            const postToEndpoint = async () => {
+                return await $.post(window.location.href + 'draft-results',
+                    this.state.userPlayers + '|' + teamCount + '|' + pickOrder + '|' + roundCount);
+            };
 
-        const postPlayers = async () => {
-            const postFinished = await postToEndpoint();
-        };
+            const postPlayers = async () => {
+                await postToEndpoint();
+            };
 
-        const getFromEndpoint = async () => {
-            return await $.get(window.location.href + 'draft-results', (data) => {
-                if (data === '[]') {
-                    alert('No players were drafted. :(');
-                } else {
-                    const output = data.split('|');
-                    this.setState({allFreqs: output[0].toString(), userFreqs: output[1].toString(),
-                        undrafted: output[2].toString()});
-                }
+            const getFromEndpoint = async () => {
+                return await $.get(window.location.href + 'draft-results', (data) => {
+                    if (data === '[]') {
+                        alert('No players were drafted. :(');
+                    } else {
+                        this.setState({isDrafting: false}, function () {
+                            const output = data.split('|');
+                            this.setState({allFreqs: output[0].toString(), userFreqs: output[1].toString(),
+                                undrafted: output[2].toString()});
+                        });
+                    }
+                });
+            };
+
+            const getResults = async () => {
+                await getFromEndpoint();
+            };
+
+            this.setState({userPlayers: reorderedPlayers.toString()}, function () {
+                const playersArePosted = async () => {
+                    return await postPlayers();
+                };
+                const draftPlayers = async () => {
+                    await playersArePosted();
+                    getResults();
+                };
+                draftPlayers();
             });
-        };
-
-        const getResults = async () => {
-            const draftFinished = await getFromEndpoint();
-        };
-
-        this.setState({userPlayers: reorderedPlayers.toString()}, function () {
-            // Drafting...
-            const playersArePosted = async () => {
-                return await postPlayers();
-            };
-            const draftPlayers = async () => {
-                const ready = await playersArePosted();
-                getResults();
-            };
-            draftPlayers();
         });
-
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
     };
 
     render() {
-        const {isLoading, players, userPlayers, allFreqs, userFreqs, undrafted} = this.state;
+        console.log('Rendered');
+        const {isLoading, players, userPlayers, isDrafting, allFreqs, userFreqs, undrafted} = this.state;
+        const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
-            return <p>Loading players from ESPN . . .</p>;
+            return <p className={"Loading-text"}>Loading players from ESPN . . .</p>;
+        } else if (isDrafting) {
+            return (
+                <div>
+                    <div><p className={"Loading-text"}>Drafting . . .</p></div>
+                    <div><img src={football} className="App-logo" alt="football"/></div>
+                </div>
+            );
+        }
+
+        if (this.refs.teamCountSlider) {
+            this.refs.teamCountSlider.on('change', (event) => {
+                console.log(event);
+            });
         }
 
         const structure = [
@@ -170,7 +193,7 @@ class App extends React.Component {
                             width={250} height={300}
                             source={players} multiple={true} filterable={true} className={"Player-list-box"}/>
                 </div>
-                <div className="Player-button">
+                <div className={"Player-button"}>
                     <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
                     <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
                     </button>
@@ -178,14 +201,14 @@ class App extends React.Component {
                 </div>
                 <div className={"User-list-box-div"}>
                     <JqxListBox ref='userListbox' width={250} height={300}
-                                source={userPlayers} multiple={true}
+                                source={userPlayersList} multiple={true}
                                 allowDrag={true} allowDrop={true} className={"User-list-box"}/>
                 </div>
                 <div className={"Draft-button-div"}>
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
                 </div>
                 <div className={"Draft-results-div"}>
-                <JqxTabs ref='draftGrid' width={540} height={450} className={"Draft-results"}>
+                <JqxTabs width={540} height={450} className={"Draft-results"}>
                     <ul>
                         <li style={{ marginLeft: 30 }}>All Players</li>
                         <li>Drafted Players</li>
@@ -208,25 +231,25 @@ class App extends React.Component {
                     </div>
                     </JqxTabs>
                 </div>
+                <div className={"Slider-labels"}>
+                    <p>Number of teams per draft:</p>
+                    <p>Your pick in the draft:</p>
+                    <p>Number of rounds per draft:</p>
+                </div>
                 <div className={"Slider-div"}>
                     <JqxSlider ref='teamCountSlider'
-                    height={60} width={400}
-                    value={10} min={6} max={14}
-                    ticksFrequency={1} showTickLabels={true} tooltip={true} mode={'fixed'} className={"Sliders"}/>
+                    height={55} width={400}
+                    value={10} min={6} max={14} showTickLabels={true}
+                    ticksFrequency={2} tooltip={true} mode={'fixed'} className={"Slider"}/>
                     <JqxSlider ref='pickOrderSlider'
-                    height={60} width={400}
-                    value={5} min={1} max={10}
-                    ticksFrequency={1} showTickLabels={true} tooltip={true} mode={'fixed'} className={"Sliders"}/>
+                    height={55} width={400}
+                    value={5} min={1} max={10} showTickLabels={true}
+                    ticksFrequency={1} tooltip={true} mode={'fixed'} className={"Slider"}/>
                     <JqxSlider ref='roundCountSlider'
-                    height={60} width={400}
-                    value={16} min={1} max={16}
-                    ticksFrequency={4} showMinorTicks={true}
-                    minorTicksFrequency={2} showTickLabels={true} tooltip={true} mode={'fixed'} className={"Sliders"}/>
-                    <JqxSlider ref='simSlider'
-                    height={60} width={400}
-                    value={100} min={0} max={500}
-                    ticksFrequency={100} minorTicksFrequency={1}
-                    showTickLabels={true} tooltip={true} mode={'fixed'} className={"Sliders"}/>
+                    height={55} width={400}
+                    value={16} min={1} max={16} showTickLabels={true}
+                    ticksFrequency={15} showMinorTicks={true}
+                    minorTicksFrequency={1} tooltip={true} mode={'fixed'} className={"Slider"}/>
                 </div>
             </div>
         )
@@ -234,5 +257,3 @@ class App extends React.Component {
 }
 
 export default App;
-
-// <img src={logo} className="App-logo" alt="logo"/>
