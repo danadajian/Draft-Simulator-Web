@@ -7,7 +7,7 @@ Python Dependencies:
 Heroku CLI deploy command:
 * `git subtree push --prefix backend heroku master`
 * If it doesn't cooperate...
-    * `git push heroku `` `git subtree split --prefix backend master` ``:master --force`
+    * ``git push heroku `git subtree split --prefix backend master` :master --force``
 
 Docker Commands:
 * in concourse-setup:
