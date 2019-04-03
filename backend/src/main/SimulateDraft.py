@@ -103,11 +103,17 @@ def aggregate_data(freq_dict, user_player_list):
     user_freq_list = [{'Player': player, 'Position': top300dict.get(player), 'DraftFreq': str(freq) + '%'}
                       for player, freq in sorted_user_freq.items()]
 
+    undrafted_list = [player for player in user_player_list if player not in freq_dict.keys()]
+    undrafted_freq_list = [{'Player': player, 'Position': top300dict.get(player), 'DraftFreq': '0%'}
+                           for player in undrafted_list]
+
     # the jqxgrid data bind requires double quotes...
     total_str = str(freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "')\
         .replace("',", '",').replace(", '", ', "')
     user_str = str(user_freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
         .replace("',", '",').replace(", '", ', "')
+    undrafted_str = str(undrafted_freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":')\
+        .replace(": '", ': "').replace("',", '",').replace(", '", ', "')
 
-    draft_frequencies = total_str + '|' + user_str
+    draft_frequencies = total_str + '|' + user_str + '|' + undrafted_str
     return draft_frequencies

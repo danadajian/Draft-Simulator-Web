@@ -1,71 +1,97 @@
-.App {
-  text-align: center;
+html, body {
+    height: 100%;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+  display: table-cell;
+  vertical-align: middle;
+  max-width: 1290px;
+  margin: auto;
+  background-color: darkslategray;
+}
+
+.App-header {
+  text-align: center;
+  color: navajowhite;
+}
+
+.Player-list-box-div {
+  display: flex;
+  float: left;
 }
 
 .Player-list-box {
-  display: flex;
-  position: relative;
-  margin: 1%;
-  float: left;
-  height: 200px;
   background-color: lightblue;
 }
 
-.User-list-box {
+.Player-button {;
   display: flex;
-  position: relative;
-  margin: 1%;
+  flex-direction: column;
+  margin-left: 1%;
   float: left;
-  height: 200px;
-  background-color: lightblue;
-}
-
-.Draft-list-box {
-  display: flex;
-  position: relative;
-  margin: 1%;
-  float: left;
-  height: 200px;
-  background-color: lightblue;
 }
 
 .Add-button {;
-  display: flex;
-  flex-direction: column;
-  margin: 1%;
-  float: left;
+  width: 80px;
   background-color: green;
 }
 
 .Remove-button {;
-  display: flex;
-  flex-direction: column;
-  margin: 1%;
-  float: left;
+  width: 80px;
   background-color: red;
 }
 
 .Clear-button {;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  margin: 1%;
-  float: left;
+  width: 80px;
   background-color: yellow;
 }
 
-.Draft-button {;
+.User-list-box-div {
   display: flex;
-  margin: 1%;
+  margin-left: 1%;
   float: left;
+}
+
+.User-list-box {
+  background-color: lightblue;
+}
+
+.Draft-button-div {;
+  margin-left: 1%;
+  float: left;
+}
+
+.Draft-button {;
+  width: 80px;
   background-color: orange;
 }
+
+.Draft-results-div {;
+  display: flex;
+  margin-left: 1%;
+  float: left;
+}
+
+.Draft-results {;
+  background-color: lightblue;
+}
+
+.Slider-div {
+  display: flex;
+  flex-direction: column;
+  float: left;
+}
+
+/*.App-logo {*/
+  /*animation: App-logo-spin infinite 20s linear;*/
+  /*height: 40vmin;*/
+  /*pointer-events: none;*/
+/*}*/
 
 /*@keyframes App-logo-spin {*/
   /*from {*/

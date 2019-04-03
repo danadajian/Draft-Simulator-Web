@@ -10,8 +10,8 @@ import 'jqwidgets-framework/jqwidgets/jqxcore.js';
 import 'jqwidgets-framework/jqwidgets/jqxdata.js';
 import 'jqwidgets-framework/jqwidgets/jqxbuttons.js';
 import 'jqwidgets-framework/jqwidgets/jqxscrollbar.js';
-import 'jqwidgets-framework/jqwidgets/jqxlistbox.js';
 import 'jqwidgets-framework/jqwidgets/jqxdragdrop.js';
+import '../src/jqxlistbox.js';
 
 import React from 'react';
 

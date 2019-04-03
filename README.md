@@ -1,4 +1,4 @@
-# Fantasy-Draft-Simulator
+# Draft Simulator
 
 Python Dependencies:
 * requests
@@ -6,7 +6,8 @@ Python Dependencies:
 
 Heroku CLI deploy command:
 * `git subtree push --prefix backend heroku master`
-* `git push heroku `git subtree split --prefix backend master`:master --force`
+* If it doesn't cooperate...
+    * `git push heroku `` `git subtree split --prefix backend master` ``:master --force`
 
 Docker Commands:
 * in concourse-setup:
@@ -14,7 +15,12 @@ Docker Commands:
     * docker-compose down
     * fly set-pipeline -p ds-pipeline -c pipeline.yml -l credentials.yml -t ci
 
-Notes:
-* check out cypress
-* heroku login with credentials in yml
-* get it going on pc remotely with ip
+To-Dos:
+* Bind sliders to backend
+* Create nav bar
+* Make import/export functionality
+* Insert documentation and/or instructions somewhere
+
+Nice-to-haves:
+* Find a nice CSS template
+* Get deployments setup on pc remotely with ip
