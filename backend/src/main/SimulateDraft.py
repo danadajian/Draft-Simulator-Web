@@ -95,25 +95,21 @@ def aggregate_data(freq_dict, user_player_list):
                  for player, freq in sorted_freq.items()]
 
     user_freq_dict = {}
-    for player, freq in freq_dict.items():
-        if player in user_player_list:
-            user_freq_dict.update({player: freq})
+    for player in user_player_list:
+        if player in freq_dict.keys():
+            user_freq_dict.update({player: freq_dict.get(player)})
+        else:
+            user_freq_dict.update({player: 0})
     sorted_user_players = sorted(user_freq_dict, key=user_freq_dict.__getitem__, reverse=True)
     sorted_user_freq = dict(zip(sorted_user_players, [user_freq_dict.get(item) for item in sorted_user_players]))
     user_freq_list = [{'Player': player, 'Position': top300dict.get(player), 'DraftFreq': str(freq) + '%'}
                       for player, freq in sorted_user_freq.items()]
 
-    undrafted_list = [player for player in user_player_list if player not in freq_dict.keys()]
-    undrafted_freq_list = [{'Player': player, 'Position': top300dict.get(player), 'DraftFreq': '0%'}
-                           for player in undrafted_list]
-
     # the jqxgrid data bind requires double quotes...
-    total_str = str(freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "')\
-        .replace("',", '",').replace(", '", ', "')
     user_str = str(user_freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
         .replace("',", '",').replace(", '", ', "')
-    undrafted_str = str(undrafted_freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":')\
-        .replace(": '", ': "').replace("',", '",').replace(", '", ', "')
+    total_str = str(freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "')\
+        .replace("',", '",').replace(", '", ', "')
 
-    draft_frequencies = total_str + '|' + user_str + '|' + undrafted_str
+    draft_frequencies = user_str + '|' + total_str
     return draft_frequencies

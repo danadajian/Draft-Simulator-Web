@@ -7,12 +7,14 @@ import JqxSlider from './jqxwidgets/react_jqxslider'
 import $ from 'jquery';
 import football from './football.ico'
 
+let teamCount = 10;
+let pickOrder = 5;
+let roundCount = 16;
 class App extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [],
-            isDrafting: false, allFreqs: '', userFreqs: '', undrafted: ''};
+        this.state = {isLoading: true, players: [], userPlayers: [], isDrafting: false, allFreqs: '', userFreqs: ''};
     }
 
     componentDidMount() {
@@ -78,10 +80,10 @@ class App extends React.Component {
     };
 
     simulateDraft = () => {
-        this.setState({allFreqs: '', userFreqs: '', undrafted: ''});
-        let teamCount = this.refs.teamCountSlider.getValue();
-        let pickOrder = this.refs.pickOrderSlider.getValue();
-        let roundCount = this.refs.roundCountSlider.getValue();
+        this.setState({allFreqs: '', userFreqs: ''});
+        teamCount = this.refs.teamCountSlider.getValue();
+        pickOrder = this.refs.pickOrderSlider.getValue();
+        roundCount = this.refs.roundCountSlider.getValue();
         let reorderedPlayers = [];
         let userItems = this.refs.userListbox.getItems();
         if (!userItems || userItems.length === 0) {
@@ -109,8 +111,7 @@ class App extends React.Component {
                     } else {
                         this.setState({isDrafting: false}, function () {
                             const output = data.split('|');
-                            this.setState({allFreqs: output[0].toString(), userFreqs: output[1].toString(),
-                                undrafted: output[2].toString()});
+                            this.setState({userFreqs: output[0].toString(), allFreqs: output[1].toString()});
                         });
                     }
                 });
@@ -136,8 +137,7 @@ class App extends React.Component {
     };
 
     render() {
-        console.log('Rendered');
-        const {isLoading, players, userPlayers, isDrafting, allFreqs, userFreqs, undrafted} = this.state;
+        const {isLoading, players, userPlayers, isDrafting, allFreqs, userFreqs} = this.state;
         const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
@@ -151,26 +151,17 @@ class App extends React.Component {
             );
         }
 
-        if (this.refs.teamCountSlider) {
-            this.refs.teamCountSlider.on('change', (event) => {
-                console.log(event);
-            });
-        }
-
         const structure = [
                     { name: 'Player', type: 'string' },
                     { name: 'Position', type: 'string' },
                     { name: 'DraftFreq', type: 'string' }
                 ];
 
-        let source1 = {datatype: 'json', datafields: structure, localdata: allFreqs};
+        let source1 = {datatype: 'json', datafields: structure, localdata: userFreqs};
         let dataAdapter1 = new window.$.jqx.dataAdapter(source1);
 
-        let source2 = {datatype: 'json', datafields: structure, localdata: userFreqs};
+        let source2 = {datatype: 'json', datafields: structure, localdata: allFreqs};
         let dataAdapter2 = new window.$.jqx.dataAdapter(source2);
-
-        let source3 = {datatype: 'json', datafields: structure, localdata: undrafted};
-        let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
 
         let tabSpecs =
             [
@@ -179,10 +170,19 @@ class App extends React.Component {
                 { text: 'Draft Frequency', datafield: 'DraftFreq', width: 180 }
             ];
 
-        if (allFreqs + userFreqs + undrafted !== '') {
+        if (userFreqs + allFreqs !== '') {
             window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dataAdapter1});
             window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dataAdapter2});
-            window.$("[id^='jqxGridjqx']:eq(2)").jqxGrid({source: dataAdapter3});
+        }
+
+        let sliderLength = 10;
+        if (this.refs.teamCountSlider) {
+            sliderLength = this.refs.teamCountSlider.getValue();
+            window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
+            this.refs.teamCountSlider.on('change', () => {
+                sliderLength = this.refs.teamCountSlider.getValue();
+                window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
+            });
         }
 
         return (
@@ -210,9 +210,8 @@ class App extends React.Component {
                 <div className={"Draft-results-div"}>
                 <JqxTabs width={540} height={450} className={"Draft-results"}>
                     <ul>
-                        <li style={{ marginLeft: 30 }}>All Players</li>
-                        <li>Drafted Players</li>
-                        <li>Undrafted Players</li>
+                        <li style={{ marginLeft: 30 }}>Draft Frequency</li>
+                        <li>All Players</li>
                     </ul>
                     <div style={{ overflow: 'hidden' }}>
                         <JqxGrid style={{ border: 'none' }}
@@ -222,11 +221,6 @@ class App extends React.Component {
                     <div style={{ overflow: 'hidden' }}>
                         <JqxGrid style={{ border: 'none' }}
                             width={'100%'} height={'100%'} source={dataAdapter2} columns={tabSpecs}
-                        />
-                    </div>
-                    <div style={{ overflow: 'hidden' }}>
-                        <JqxGrid style={{ border: 'none' }}
-                            width={'100%'} height={'100%'} source={dataAdapter3} columns={tabSpecs}
                         />
                     </div>
                     </JqxTabs>
@@ -239,15 +233,15 @@ class App extends React.Component {
                 <div className={"Slider-div"}>
                     <JqxSlider ref='teamCountSlider'
                     height={55} width={400}
-                    value={10} min={6} max={14} showTickLabels={true}
+                    value={teamCount} min={6} max={14} showTickLabels={true}
                     ticksFrequency={2} tooltip={true} mode={'fixed'} className={"Slider"}/>
                     <JqxSlider ref='pickOrderSlider'
                     height={55} width={400}
-                    value={5} min={1} max={10} showTickLabels={true}
+                    value={pickOrder} min={1} max={sliderLength} showTickLabels={true}
                     ticksFrequency={1} tooltip={true} mode={'fixed'} className={"Slider"}/>
                     <JqxSlider ref='roundCountSlider'
                     height={55} width={400}
-                    value={16} min={1} max={16} showTickLabels={true}
+                    value={roundCount} min={1} max={16} showTickLabels={true}
                     ticksFrequency={15} showMinorTicks={true}
                     minorTicksFrequency={1} tooltip={true} mode={'fixed'} className={"Slider"}/>
                 </div>

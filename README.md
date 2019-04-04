@@ -7,21 +7,34 @@ Python Dependencies:
 Heroku CLI deploy command:
 * `git subtree push --prefix backend heroku master`
 * If it doesn't cooperate...
-    * ``git push heroku `git subtree split --prefix backend master` :master --force``
+    * ``git push heroku `git subtree split --prefix backend master`:master --force``
 
 Docker Commands:
 * in concourse-setup:
-    * docker-compose up -d
-    * docker-compose down
-    * fly set-pipeline -p ds-pipeline -c pipeline.yml -l credentials.yml -t ci
+    * `docker-compose up -d`
+    * `docker-compose down`
+    * `fly set-pipeline -p ds-pipeline -c pipeline.yml -l credentials.yml -t ci`
 
 To-Dos:
-* Bind sliders to backend
-* Create "Drafting..." spinny circle
+* ~~Communicate back and forth between backend and frontend~~
+* ~~Figure out CSS layout~~
+* ~~Bind sliders to backend and make them dynamic~~
+* ~~Create drafting animation~~
 * Create nav bar
+* Implement flex in CSS for smaller screen sizes
 * Make import/export functionality
+* Experiment with returning full lineup with highest frequency rather than per player
 * Insert documentation and/or instructions somewhere
 
 Nice-to-haves:
 * Find a nice CSS template
 * Get deployments setup on pc remotely with ip
+
+Skills Learned and/or Developed:
+* Python development with Flask
+* Javascript
+* Frontend development (React)
+* backend/frontend communication via HTTP requests
+* Web design (CSS layout)
+* Frontend testing (Cypress)
+* Pipeline deployments (Concourse)
