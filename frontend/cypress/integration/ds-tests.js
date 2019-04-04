@@ -1,7 +1,7 @@
 describe('Draft Simulator Tests', function () {
     it('Loads successfully', function () {
       cy.visit('http://localhost:5000/');
-      cy.contains('Draft Results appear here!').should('exist');
+      cy.contains('Draft Simulator').should('exist');
     });
 
     it('can add and remove a player', function () {
@@ -15,10 +15,16 @@ describe('Draft Simulator Tests', function () {
     });
 
     it('can add and remove multiple players', function () {
-        cy.get('[class^=Player-list-box]').type('{home}').next().click();
-        cy.get('[class^=Player-list-box]').type('{end}').next().click();
-        cy.get('[class^=Player-list-box]').type('{home}');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Saq');
+        cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.contains('Add').click();
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('{backspace}')
+            .type('{backspace}').type('{backspace}');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Ode');
+        cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
+        cy.contains('Add').click();
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('{backspace}')
+            .type('{backspace}').type('{backspace}');
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('exist');
         cy.get('[class^=User-list-box]').find('[id^=listitem1jqx]').should('exist');
 
@@ -36,16 +42,16 @@ describe('Draft Simulator Tests', function () {
 
     it('cannot draft players with empty list', function () {
         cy.contains('Draft').click();
-        cy.contains('Drafting...').should('not.exist');
-        cy.contains('Please select at least one player to draft.').should('exist');
-        cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('not.exist');
+        cy.contains('No data to display').should('exist');
+        cy.get('[id^=jqxGridjqx]').find('[jqx-grid-cell jqx-grid-empty-cell]').should('exist');
     });
 
     it('can draft players with nonempty list', function () {
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.contains('Add').click();
         cy.contains('Draft').click();
-        cy.get('[class^=Draft-list-box]').find('[id^=listitem]').should('have.length', 11);
+        cy.get('[id^=jqxGridjqx]').find('[jqx-grid-cell jqx-grid-empty-cell]').should('not.exist');
+        // cy.get('[id^=jqxGridjqx]').find('[id^=listitem]').should('have.length', 11);
         // need to change this check later ^
     })
 });
