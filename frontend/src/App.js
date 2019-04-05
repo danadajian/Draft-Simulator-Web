@@ -14,7 +14,8 @@ class App extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [], isDrafting: false, allFreqs: '', userFreqs: ''};
+        this.state = {isLoading: true, players: [], userPlayers: [],
+            isDrafting: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
     }
 
     componentDidMount() {
@@ -80,9 +81,10 @@ class App extends React.Component {
     };
 
     simulateDraft = () => {
-        this.setState({allFreqs: '', userFreqs: ''});
+        this.setState({allFreqs: '', userFreqs: '', expectedTeam: ''});
+        let random = window.$("input[type='checkbox']").is(":checked");
         teamCount = this.refs.teamCountSlider.getValue();
-        pickOrder = this.refs.pickOrderSlider.getValue();
+        pickOrder = (random) ? 0: this.refs.pickOrderSlider.getValue();
         roundCount = this.refs.roundCountSlider.getValue();
         let reorderedPlayers = [];
         let userItems = this.refs.userListbox.getItems();
@@ -111,7 +113,8 @@ class App extends React.Component {
                     } else {
                         this.setState({isDrafting: false}, function () {
                             const output = data.split('|');
-                            this.setState({userFreqs: output[0].toString(), allFreqs: output[1].toString()});
+                            this.setState({userFreqs: output[0].toString(), allFreqs: output[1].toString(),
+                            expectedTeam: output[2].toString()});
                         });
                     }
                 });
@@ -137,7 +140,7 @@ class App extends React.Component {
     };
 
     render() {
-        const {isLoading, players, userPlayers, isDrafting, allFreqs, userFreqs} = this.state;
+        const {isLoading, players, userPlayers, isDrafting, allFreqs, userFreqs, expectedTeam} = this.state;
         const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
@@ -152,8 +155,8 @@ class App extends React.Component {
         }
 
         const structure = [
-                    { name: 'Player', type: 'string' },
                     { name: 'Position', type: 'string' },
+                    { name: 'Player', type: 'string' },
                     { name: 'DraftFreq', type: 'string' }
                 ];
 
@@ -163,16 +166,20 @@ class App extends React.Component {
         let source2 = {datatype: 'json', datafields: structure, localdata: allFreqs};
         let dataAdapter2 = new window.$.jqx.dataAdapter(source2);
 
+        let source3 = {datatype: 'json', datafields: structure, localdata: expectedTeam};
+        let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
+
         let tabSpecs =
             [
-                { text: 'Player', datafield: 'Player', width: 210 },
-                { text: 'Position', datafield: 'Position', width: 150 },
-                { text: 'Draft Frequency', datafield: 'DraftFreq', width: 180 }
+                { text: 'Position', datafield: 'Position', width: 100 },
+                { text: 'Player', datafield: 'Player', width: 175 },
+                { text: 'Draft Frequency', datafield: 'DraftFreq', width: 125 }
             ];
 
-        if (userFreqs + allFreqs !== '') {
+        if (userFreqs + allFreqs + expectedTeam !== '') {
             window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dataAdapter1});
             window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dataAdapter2});
+            window.$("[id^='jqxGridjqx']:eq(2)").jqxGrid({source: dataAdapter3});
         }
 
         let sliderLength = 10;
@@ -208,26 +215,36 @@ class App extends React.Component {
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
                 </div>
                 <div className={"Draft-results-div"}>
-                <JqxTabs width={540} height={450} className={"Draft-results"}>
+                <JqxTabs width={400} height={450} className={"Draft-results"}>
                     <ul>
-                        <li style={{ marginLeft: 30 }}>Draft Frequency</li>
+                        <li style={{ marginLeft: 15 }}>Draft Frequency</li>
                         <li>All Players</li>
+                        <li>Expected Team</li>
                     </ul>
                     <div style={{ overflow: 'hidden' }}>
                         <JqxGrid style={{ border: 'none' }}
-                            width={'100%'} height={'100%'} source={dataAdapter1} columns={tabSpecs}
-                        />
+                            width={'100%'} height={'100%'} source={dataAdapter1} columns={tabSpecs}/>
                     </div>
                     <div style={{ overflow: 'hidden' }}>
                         <JqxGrid style={{ border: 'none' }}
-                            width={'100%'} height={'100%'} source={dataAdapter2} columns={tabSpecs}
-                        />
+                            width={'100%'} height={'100%'} source={dataAdapter2} columns={tabSpecs}/>
+                    </div>
+                    <div style={{ overflow: 'hidden' }}>
+                        <JqxGrid style={{ border: 'none' }}
+                            width={'100%'} height={'100%'} source={dataAdapter3} columns={tabSpecs}/>
                     </div>
                     </JqxTabs>
                 </div>
                 <div className={"Slider-labels"}>
                     <p>Number of teams per draft:</p>
-                    <p>Your pick in the draft:</p>
+                    <p>Your pick in the draft:
+                        <form>
+                          <label>
+                            Randomize:
+                            <input type="checkbox" value="checked" />
+                          </label>
+                        </form>
+                    </p>
                     <p>Number of rounds per draft:</p>
                 </div>
                 <div className={"Slider-div"}>

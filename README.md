@@ -20,10 +20,14 @@ To-Dos:
 * ~~Figure out CSS layout~~
 * ~~Bind sliders to backend and make them dynamic~~
 * ~~Create drafting animation~~
+* ~~Experiment with returning full lineup with highest frequency rather than per player~~
+* ~~Make position first column and add draft frequency to expected team~~
+* Add random checkbox
+* Fix bug with adding players after drafting, lists don't reset
+* Add colors to results grid(s)
 * Create nav bar
 * Implement flex in CSS for smaller screen sizes
 * Make import/export functionality
-* Experiment with returning full lineup with highest frequency rather than per player
 * Insert documentation and/or instructions somewhere
 
 Nice-to-haves:

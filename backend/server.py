@@ -32,10 +32,11 @@ def run_draft():
         team_count = int(data_list[1])
         pick_order = int(data_list[2])
         round_count = int(data_list[3])
-        teams_drafted = simulate_draft(user_list, team_count, pick_order, round_count, 500)
+        teams_drafted = simulate_draft(user_list, team_count, pick_order, round_count, 10)
         player_draft_freq = calculate_frequencies(teams_drafted)
-        draft_results = aggregate_data(player_draft_freq, user_list)
-        print(draft_results)
+        expected_team = get_expected_team(teams_drafted, round_count)
+        ordered_team = order_team(expected_team, player_draft_freq)
+        draft_results = aggregate_data(player_draft_freq, user_list) + '|' + ordered_team
         return draft_results
     else:
         try:

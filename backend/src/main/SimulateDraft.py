@@ -1,5 +1,6 @@
 from .PositionCheck import *
 import random
+from collections import Counter
 
 
 def create_teams(team_count, user_team):
@@ -88,10 +89,25 @@ def calculate_frequencies(drafted_teams):
     return draft_frequency
 
 
+def get_expected_team(drafted_teams, round_count):
+    picks_by_round = [[team[i] for team in drafted_teams] for i in range(round_count)]
+    expected_team = []
+    while len(expected_team) < round_count:
+        for group in picks_by_round:
+            round_picks = sorted(Counter(group).keys(), key=Counter(group).__getitem__, reverse=True)
+            for player in round_picks:
+                if valid_choice(player, expected_team) and player not in expected_team:
+                    expected_team.append(player)
+                    break
+                elif round_picks.index(player) == len(round_picks) - 1:
+                    return expected_team
+    return expected_team
+
+
 def aggregate_data(freq_dict, user_player_list):
     sorted_players = sorted(freq_dict, key=freq_dict.__getitem__, reverse=True)
     sorted_freq = dict(zip(sorted_players, [freq_dict.get(item) for item in sorted_players]))
-    freq_list = [{'Player': player, 'Position': top300dict.get(player), 'DraftFreq': str(freq) + '%'}
+    freq_list = [{'Position': top300dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
                  for player, freq in sorted_freq.items()]
 
     user_freq_dict = {}
@@ -102,13 +118,13 @@ def aggregate_data(freq_dict, user_player_list):
             user_freq_dict.update({player: 0})
     sorted_user_players = sorted(user_freq_dict, key=user_freq_dict.__getitem__, reverse=True)
     sorted_user_freq = dict(zip(sorted_user_players, [user_freq_dict.get(item) for item in sorted_user_players]))
-    user_freq_list = [{'Player': player, 'Position': top300dict.get(player), 'DraftFreq': str(freq) + '%'}
+    user_freq_list = [{'Position': top300dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
                       for player, freq in sorted_user_freq.items()]
 
     # the jqxgrid data bind requires double quotes...
     user_str = str(user_freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
         .replace("',", '",').replace(", '", ', "')
-    total_str = str(freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "')\
+    total_str = str(freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
         .replace("',", '",').replace(", '", ', "')
 
     draft_frequencies = user_str + '|' + total_str
