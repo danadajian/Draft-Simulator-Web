@@ -10,8 +10,6 @@ html {
 body {
   display: table-cell;
   vertical-align: middle;
-  max-width: 1290px;
-  margin: auto;
   background-color: darkslategray;
 }
 
@@ -23,6 +21,7 @@ body {
 .Player-list-box-div {
   display: flex;
   float: left;
+  margin: 1%;
 }
 
 .Player-list-box {
@@ -32,7 +31,7 @@ body {
 .Player-button {;
   display: flex;
   flex-direction: column;
-  margin-left: 1%;
+  margin: 1%;
   float: left;
 }
 
@@ -53,8 +52,8 @@ body {
 
 .User-list-box-div {
   display: flex;
-  margin-left: 1%;
   float: left;
+  margin: 1%;
 }
 
 .User-list-box {
@@ -62,8 +61,8 @@ body {
 }
 
 .Draft-button-div {;
-  margin-left: 1%;
   float: left;
+  margin: 1%;
 }
 
 .Draft-button {;
@@ -73,34 +72,17 @@ body {
 
 .Draft-results-div {;
   display: flex;
-  margin-left: 1%;
   float: left;
-}
-
-.Draft-results {;
-  background-color: lightblue;
-}
-
-.Slider-labels {
-  display: flex;
-  flex-direction: column;
-  float: left;
-  margin-left: 50px;
-  margin-top: -130px;
-  text-align: center;
-  color: navajowhite;
+  margin: 1%;
 }
 
 .Slider-div {
   display: flex;
   flex-direction: column;
   float: left;
-  margin-left: 25px;
-  margin-top: -130px;
-}
-
-.Slider {
-  margin-bottom: 25px;
+  margin-left: 2%;
+  text-align: center;
+  color: navajowhite;
 }
 
 .Loading-text {

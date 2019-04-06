@@ -51,9 +51,9 @@ describe('Pre-draft tests', function () {
 
     it('honors sliders', function () {
         cy.get('[id^=jqxSliderjqx]:eq(0)').trigger('change').invoke('val', 12);
-        cy.get('[id^=jqxSliderjqx]:eq(0)').get('input:eq(5)').should('have.value', '12');
+        cy.get('[id^=jqxSliderjqx]:eq(0)').get('input:eq(4)').should('have.value', '12');
         cy.get('[id^=jqxSliderjqx]:eq(1)').trigger('change').invoke('val', 3);
-        cy.get('[id^=jqxSliderjqx]:eq(1)').get('input:eq(6)').should('have.value', '3');
+        cy.get('[id^=jqxSliderjqx]:eq(1)').get('input:eq(5)').should('have.value', '3');
         cy.get('[id^=jqxSliderjqx]:eq(2)').trigger('change').invoke('val', 1);
         cy.get('[id^=jqxSliderjqx]:eq(2)').get('input:eq(7)').should('have.value', '1');
     });
@@ -61,6 +61,6 @@ describe('Pre-draft tests', function () {
     it('caps draft pick at number of teams', function () {
         cy.get('[id^=jqxSliderjqx]:eq(0)').trigger('change').invoke('val', 8);
         cy.get('[id^=jqxSliderjqx]:eq(1)').trigger('change').invoke('val', 9);
-        cy.get('[id^=jqxSliderjqx]:eq(1)').get('input:eq(5)').should('have.value', '8');
+        cy.get('[id^=jqxSliderjqx]:eq(1)').get('input:eq(4)').should('have.value', '8');
     });
 });

@@ -9,13 +9,14 @@ import football from './football.ico'
 
 let teamCount = 10;
 let pickOrder = 5;
+let sliderPick = 5;
 let roundCount = 16;
 class App extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {isLoading: true, players: [], userPlayers: [],
-            isDrafting: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
+            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
     }
 
     componentDidMount() {
@@ -82,9 +83,12 @@ class App extends React.Component {
 
     simulateDraft = () => {
         this.setState({allFreqs: '', userFreqs: '', expectedTeam: ''});
-        let random = window.$("input[type='checkbox']").is(":checked");
+        let userPick = this.refs.pickOrderSlider.getValue();
+        this.setState({isRandom: window.$("input[type='checkbox']").is(":checked")}, function () {
+            pickOrder = (this.state.isRandom) ? 0: userPick;
+            sliderPick = userPick;
+        });
         teamCount = this.refs.teamCountSlider.getValue();
-        pickOrder = (random) ? 0: this.refs.pickOrderSlider.getValue();
         roundCount = this.refs.roundCountSlider.getValue();
         let reorderedPlayers = [];
         let userItems = this.refs.userListbox.getItems();
@@ -140,7 +144,7 @@ class App extends React.Component {
     };
 
     render() {
-        const {isLoading, players, userPlayers, isDrafting, allFreqs, userFreqs, expectedTeam} = this.state;
+        const {isLoading, players, userPlayers, isDrafting, isRandom, allFreqs, userFreqs, expectedTeam} = this.state;
         const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
@@ -182,6 +186,10 @@ class App extends React.Component {
             window.$("[id^='jqxGridjqx']:eq(2)").jqxGrid({source: dataAdapter3});
         }
 
+        if (isRandom) {
+            window.$("input[type='checkbox']").prop('checked', true);
+        }
+
         let sliderLength = 10;
         if (this.refs.teamCountSlider) {
             sliderLength = this.refs.teamCountSlider.getValue();
@@ -215,7 +223,7 @@ class App extends React.Component {
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
                 </div>
                 <div className={"Draft-results-div"}>
-                <JqxTabs width={400} height={450} className={"Draft-results"}>
+                <JqxTabs width={400} height={450}>
                     <ul>
                         <li style={{ marginLeft: 15 }}>Draft Frequency</li>
                         <li>All Players</li>
@@ -235,32 +243,33 @@ class App extends React.Component {
                     </div>
                     </JqxTabs>
                 </div>
-                <div className={"Slider-labels"}>
-                    <p>Number of teams per draft:</p>
-                    <p>Your pick in the draft:
-                        <form>
-                          <label>
-                            Randomize:
-                            <input type="checkbox" value="checked" />
-                          </label>
-                        </form>
-                    </p>
-                    <p>Number of rounds per draft:</p>
-                </div>
                 <div className={"Slider-div"}>
+                    <p>Number of teams per draft:</p>
                     <JqxSlider ref='teamCountSlider'
                     height={55} width={400}
                     value={teamCount} min={6} max={14} showTickLabels={true}
-                    ticksFrequency={2} tooltip={true} mode={'fixed'} className={"Slider"}/>
+                    ticksFrequency={2} tooltip={true} mode={'fixed'}/>
+                </div>
+                <div className={"Slider-div"}>
+                    <p>Your pick in the draft:</p>
                     <JqxSlider ref='pickOrderSlider'
-                    height={55} width={400}
-                    value={pickOrder} min={1} max={sliderLength} showTickLabels={true}
-                    ticksFrequency={1} tooltip={true} mode={'fixed'} className={"Slider"}/>
+                        height={55} width={400}
+                        value={sliderPick} min={1} max={sliderLength} showTickLabels={true}
+                        ticksFrequency={1} tooltip={true} mode={'fixed'}/>
+                    <form>
+                      <label>
+                        Randomize:
+                        <input type="checkbox" value="checked" />
+                      </label>
+                    </form>
+                </div>
+                <div className={"Slider-div"}>
+                    <p>Number of rounds per draft:</p>
                     <JqxSlider ref='roundCountSlider'
                     height={55} width={400}
                     value={roundCount} min={1} max={16} showTickLabels={true}
                     ticksFrequency={15} showMinorTicks={true}
-                    minorTicksFrequency={1} tooltip={true} mode={'fixed'} className={"Slider"}/>
+                    minorTicksFrequency={1} tooltip={true} mode={'fixed'}/>
                 </div>
             </div>
         )

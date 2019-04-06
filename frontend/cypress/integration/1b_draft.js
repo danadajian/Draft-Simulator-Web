@@ -8,7 +8,7 @@ describe('Draft tests', function () {
         .get('button').get('[class=Draft-button]').click()
         .then(() => {
           expect(stub.getCall(0)).to.be.calledWith('Please select at least one player to draft.')
-        })
+        });
         cy.get('[class$=jqx-item]').should('not.exist');
     });
 
