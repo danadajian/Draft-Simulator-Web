@@ -45,6 +45,11 @@ def run_draft():
             return 'Draft results to appear here!'
 
 
+@app.route('/.well-known/acme-challenge/IPgyAGDy7RB7WUL5gNUMzvBrplVO65PpsHxOgVMfebo')
+def letsencrypt_check():
+    return 'IPgyAGDy7RB7WUL5gNUMzvBrplVO65PpsHxOgVMfebo.6VBNRQS73DtOFCppLv2Bsp3X4jCYMouKhvLOIN1kNw4'
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
