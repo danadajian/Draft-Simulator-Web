@@ -28,13 +28,11 @@ describe('Pre-draft tests', function () {
         cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Saq');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();
-        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('{backspace}')
-            .type('{backspace}').type('{backspace}');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)');
         cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Bea');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();
-        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('{backspace}')
-            .type('{backspace}').type('{backspace}');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)');
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('exist');
         cy.get('[class^=User-list-box]').find('[id^=listitem1jqx]').should('exist');
 

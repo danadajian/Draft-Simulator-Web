@@ -1,6 +1,10 @@
 describe('Post-draft tests', function () {
     it('preserves draft settings', function () {
         cy.visit('http://localhost:5000/');
+        cy.get('[class$=jqx-item]').should('not.exist');
+        cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('not.exist');
+        cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
+        cy.get('[class=Add-button]').click();
         cy.get('[id^=jqxSliderjqx]:eq(0)').trigger('change').invoke('val', 8);
         cy.get('[id^=jqxSliderjqx]:eq(1)').trigger('change').invoke('val', 6);
         cy.get('[id^=jqxSliderjqx]:eq(2)').trigger('change').invoke('val', 4);
@@ -26,19 +30,26 @@ describe('Post-draft tests', function () {
         cy.get(':checkbox').should('not.be.checked');
     });
 
-    it('can add/remove a player after drafting', function () {
+    it('can add/remove new players after drafting', function () {
+        cy.visit('http://localhost:5000/');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
-        cy.contains('Add').click();
+        cy.get('[class=Add-button]').click();
         cy.server();
         cy.route({method: 'POST', url: /draft-results/}).as('postPlayers');
         cy.route({method: 'GET', url: /draft-results/}).as('getResults');
         cy.get('[class=Draft-button]').click();
         cy.wait('@postPlayers').wait('@getResults');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Saq');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('exist');
+        cy.get('[class^=User-list-box]').find('[id^=listitem1jqx]').should('exist');
+
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').click();
         cy.get('[class=Remove-button]').click();
+        cy.get('[class^=User-list-box]').find('[id^=listitem1jqx]').click();
+        cy.get('[class=Remove-button]').click();
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('not.exist');
+        cy.get('[class^=User-list-box]').find('[id^=listitem1jqx]').should('not.exist');
     });
 });

@@ -16,7 +16,7 @@ describe('Draft tests', function () {
         cy.get('[class$=jqx-item]').should('not.exist');
         cy.get('[class^=User-list-box]').find('[id^=listitem0jqx]').should('not.exist');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
-        cy.contains('Add').click();
+        cy.get('[class=Add-button]').click();
         cy.get('[id^=jqxSliderjqx]:eq(1)').trigger('change').invoke('val', 1);
         cy.server();
         cy.route({method: 'POST', url: /draft-results/}).as('postPlayers');
@@ -36,8 +36,7 @@ describe('Draft tests', function () {
         cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Saq');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();
-        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('{backspace}')
-            .type('{backspace}').type('{backspace}');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)');
         cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Bears');
         cy.get('[class^=Player-list-box]').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();

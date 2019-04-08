@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "f15399b5546f270bfa89",
+    "revision": "3a268301b9957bf4e793",
     "url": "/static/react/css/main.cff3839f.chunk.css"
   },
   {
-    "revision": "f15399b5546f270bfa89",
-    "url": "/static/react/js/main.d02c842b.chunk.js"
+    "revision": "3a268301b9957bf4e793",
+    "url": "/static/react/js/main.8171c51f.chunk.js"
   },
   {
     "revision": "53eac5d40d2daff628d2",
@@ -32,7 +32,7 @@ self.__precacheManifest = [
     "url": "/static/react/media/football.c5005feb.ico"
   },
   {
-    "revision": "75df8a7829624fc2d0c52b8c80deed68",
+    "revision": "fc681e3076dc850285cec63c088562d2",
     "url": "/static/react/../../templates/index.html"
   }
 ];

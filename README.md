@@ -1,8 +1,13 @@
 # Draft Simulator
 
-Python Dependencies:
-* requests
-* bs4
+https://www.draftsimulator.app/
+
+Languages/services used:
+* Backend: Python
+* Frontend: Javascript, React
+* Frontend testing: Cypress
+* Web hosting: Heroku
+* Deployment pipeline: Concourse, Docker
 
 Heroku CLI deploy command:
 * `git subtree push --prefix backend heroku master`
@@ -16,13 +21,14 @@ Docker Commands:
     * `fly set-pipeline -p ds-pipeline -c pipeline.yml -l credentials.yml -t ci`
 
 Skills Learned and/or Developed:
-* Python development with Flask
-* Javascript
-* Frontend development (React)
-* backend/frontend communication via HTTP requests
+* Python backend development
+* Javascript frontend development
+* backend/frontend communication
+* Web hosting
 * Web design (CSS layout)
 * Frontend testing (Cypress)
 * Pipeline deployments (Concourse)
+* SSL certificate authentication
 
 Trello Board:
 * https://trello.com/b/A9vXVNaE/draft-simulator

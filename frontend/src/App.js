@@ -11,6 +11,7 @@ let teamCount = 10;
 let pickOrder = 5;
 let sliderPick = 5;
 let roundCount = 16;
+let startingList = [];
 class App extends React.Component {
 
     constructor(props) {
@@ -26,59 +27,84 @@ class App extends React.Component {
             ? window.location.href.slice(0, -13) + 'players' : window.location.href + 'players', (data) => {
             const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
             this.setState({isLoading: false, players: playerList});
+            for (let i = 0; i < playerList.length; i++) {
+                startingList.push(playerList[i]);
+            }
         });
     }
 
     addPlayers = () => {
-        let currentPlayers = this.state.userPlayers;
+        let playerList = this.state.players;
+        let userPlayers = this.state.userPlayers;
+        userPlayers = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
         let selectedItems = this.refs.playerListbox.getSelectedItems();
-        let playersToAdd = [];
 
         for (let i = 0; i < selectedItems.length; i++) {
-            if (!currentPlayers.includes(selectedItems[i].label)) {
-                playersToAdd.push(selectedItems[i].label);
-            }
+            this.refs.playerListbox.unselectItem(selectedItems[i].label);
+            this.refs.userListbox.addItem(selectedItems[i].label);
+            userPlayers.push(selectedItems[i].label);
+            this.refs.playerListbox.removeItem(selectedItems[i].label);
+            let playerIndex = playerList.indexOf(selectedItems[i].label);
+            playerList.splice(playerIndex, 1);
         }
 
-        for (let i = 0; i < playersToAdd.length; i++) {
-            this.refs.userListbox.addItem(playersToAdd[i]);
-            currentPlayers.push(playersToAdd[i]);
-        }
-
-        this.setState({userPlayers: currentPlayers});
-
+        this.setState({players: playerList});
+        this.setState({userPlayers: userPlayers});
+        this.refs.playerListbox.clearFilter();
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
     };
 
     removePlayers = () => {
-        let currentPlayers = this.state.userPlayers;
+        let playerList = this.state.players;
         let selectedUserItems = this.refs.userListbox.getSelectedItems();
-        let removedPlayers = [];
+        let sortedItems = selectedUserItems.sort(function (a,b) {
+            return startingList.indexOf(a.label) - startingList.indexOf(b.label)
+        });
 
-        if (selectedUserItems.length > 0) {
-            for (let i = 0; i < selectedUserItems.length; i++) {
-                this.refs.userListbox.removeItem(selectedUserItems[i].label);
-                removedPlayers.push(selectedUserItems[i].label);
-            }
+        for (let i = 0; i < sortedItems.length; i++) {
+            this.refs.userListbox.removeItem(sortedItems[i].label);
+            let playerIndex = startingList.indexOf(sortedItems[i].label);
+            this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
+            playerList.splice(playerIndex, 0, sortedItems[i].label);
         }
 
         let remainingPlayers = [];
-        for (let i = 0; i < currentPlayers.length; i++) {
-            if (!removedPlayers.includes(currentPlayers[i])) {
-                remainingPlayers.push(currentPlayers[i]);
+        let userItems = this.refs.userListbox.getItems();
+        if (userItems) {
+            for (let i = 0; i < userItems.length; i++) {
+                remainingPlayers.push(userItems[i].label);
             }
         }
 
+        this.setState({players: playerList});
         this.setState({userPlayers: remainingPlayers});
-
+        this.refs.playerListbox.clearFilter();
+        this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
     };
 
     clearPlayers = () => {
-        this.refs.userListbox.clear();
-        this.setState({userPlayers: []});
-        this.refs.userListbox.clearSelection();
+        let playerList = this.state.players;
+        let userItems = this.refs.userListbox.getItems();
+        if (userItems) {
+            let sortedItems = userItems.sort(function (a, b) {
+                return startingList.indexOf(a.label) - startingList.indexOf(b.label)
+            });
+
+            this.refs.userListbox.clear();
+            for (let i = 0; i < sortedItems.length; i++) {
+                let playerIndex = startingList.indexOf(sortedItems[i].label);
+                this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
+                playerList.splice(playerIndex, 0, sortedItems[i].label);
+            }
+
+            this.setState({players: playerList});
+            this.setState({userPlayers: []});
+            this.refs.playerListbox.clearFilter();
+            this.refs.playerListbox.clearSelection();
+            this.refs.userListbox.clearSelection();
+        }
     };
 
     simulateDraft = () => {
@@ -144,7 +170,8 @@ class App extends React.Component {
     };
 
     render() {
-        const {isLoading, players, userPlayers, isDrafting, isRandom, allFreqs, userFreqs, expectedTeam} = this.state;
+        const {isLoading, players, userPlayers,
+            isDrafting, isRandom, allFreqs, userFreqs, expectedTeam} = this.state;
         const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
@@ -206,7 +233,8 @@ class App extends React.Component {
                 <div className={"Player-list-box-div"}>
                 <JqxListBox ref='playerListbox'
                             width={250} height={300}
-                            source={players} multiple={true} filterable={true} className={"Player-list-box"}/>
+                            source={players} multiple={true} filterable={true} searchMode={"containsignorecase"}
+                            className={"Player-list-box"}/>
                 </div>
                 <div className={"Player-button"}>
                     <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
