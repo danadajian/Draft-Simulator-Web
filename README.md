@@ -18,7 +18,13 @@ Docker Commands:
 * in concourse-setup:
     * `docker-compose up -d`
     * `docker-compose down`
+* in ci:
     * `fly set-pipeline -p ds-pipeline -c pipeline.yml -l credentials.yml -t ci`
+    * `fly pause-pipeline -p ds-pipeline -t ci`
+    * `fly unpause-pipeline -p ds-pipeline -t ci`
+
+To refresh SSL certificate post deployment:
+* `heroku certs:auto:refresh`
 
 Skills Learned and/or Developed:
 * Python backend development
