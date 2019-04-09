@@ -4,12 +4,14 @@ import JqxListBox from './jqxwidgets/react_jqxlistbox';
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxSlider from './jqxwidgets/react_jqxslider'
+import JqxNavBar from './jqxwidgets/react_jqxnavbar'
 import $ from 'jquery';
 import football from './football.ico'
 
 let teamCount = 10;
 let pickOrder = 5;
 let sliderPick = 5;
+let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
 class App extends React.Component {
@@ -31,6 +33,24 @@ class App extends React.Component {
                 startingList.push(playerList[i]);
             }
         });
+    }
+
+    componentDidUpdate() {
+        if (this.refs.navBar) {
+            this.refs.navBar.on('change', () => {
+                let index = this.refs.navBar.getSelectedIndex();
+                console.log(index);
+            })
+        }
+
+        if (this.refs.teamCountSlider) {
+            sliderLength = this.refs.teamCountSlider.getValue();
+            window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
+            this.refs.teamCountSlider.on('change', () => {
+                sliderLength = this.refs.teamCountSlider.getValue();
+                window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
+            });
+        }
     }
 
     addPlayers = () => {
@@ -217,18 +237,18 @@ class App extends React.Component {
             window.$("input[type='checkbox']").prop('checked', true);
         }
 
-        let sliderLength = 10;
-        if (this.refs.teamCountSlider) {
-            sliderLength = this.refs.teamCountSlider.getValue();
-            window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
-            this.refs.teamCountSlider.on('change', () => {
-                sliderLength = this.refs.teamCountSlider.getValue();
-                window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
-            });
-        }
-
         return (
             <div className={"App"}>
+                <div>
+                <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={50}
+                       height={60} minimizeButtonPosition={"right"} width={"100%"}>
+                    <ul>
+                        <li>Home</li>
+                        <li>Instructions</li>
+                        <li>About</li>
+                    </ul>
+                </JqxNavBar>
+                </div>
                 <h1 className={"App-header"}>Draft Simulator</h1>
                 <div className={"Player-list-box-div"}>
                 <JqxListBox ref='playerListbox'
