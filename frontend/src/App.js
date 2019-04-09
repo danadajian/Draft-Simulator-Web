@@ -1,10 +1,11 @@
 import React from 'react';
 import './App.css';
-import JqxListBox from './jqxwidgets/react_jqxlistbox';
+import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxSlider from './jqxwidgets/react_jqxslider'
 import JqxNavBar from './jqxwidgets/react_jqxnavbar'
+import JqxPopover from './jqxwidgets/react_jqxpopover'
 import $ from 'jquery';
 import football from './football.ico'
 
@@ -14,6 +15,8 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
+let offset1 = {};
+let buttonOffset = {};
 class App extends React.Component {
 
     constructor(props) {
@@ -43,6 +46,20 @@ class App extends React.Component {
             })
         }
 
+        if (this.refs.popover1) {
+            offset1 = window.$("[id^='jqxListBoxjqx']:eq(0)").offset();
+            buttonOffset = window.$("#firstHelp").offset();
+            window.$("[id^='jqxPopoverjqx']:eq(0)").jqxPopover({offset: {left: offset1.left - buttonOffset.left + 100,
+                    top: offset1.top - buttonOffset.top}});
+            window.onresize = async () => {
+                await window.$('#firstHelp').on('click', () => {
+                    offset1 = window.$("[id^='jqxListBoxjqx']:eq(0)").offset();
+                    buttonOffset = window.$("#firstHelp").offset();
+                    window.$("[id^='jqxPopoverjqx']:eq(0)").jqxPopover({offset: {left: offset1.left - buttonOffset.left + 100,
+                        top: offset1.top - buttonOffset.top}})}
+            )};
+        }
+
         if (this.refs.teamCountSlider) {
             sliderLength = this.refs.teamCountSlider.getValue();
             window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
@@ -52,6 +69,11 @@ class App extends React.Component {
             });
         }
     }
+
+    hitEsc = () => {
+        const esc = window.$.Event("keydown", {keyCode: 27});
+        window.$("body").trigger(esc);
+    };
 
     addPlayers = () => {
         let playerList = this.state.players;
@@ -240,14 +262,50 @@ class App extends React.Component {
         return (
             <div className={"App"}>
                 <div>
-                <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={50}
-                       height={60} minimizeButtonPosition={"right"} width={"100%"}>
+                <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={40}
+                       height={70} minimizeButtonPosition={"right"} width={"100%"}>
                     <ul>
                         <li>Home</li>
                         <li>Instructions</li>
                         <li>About</li>
                     </ul>
                 </JqxNavBar>
+                <div>
+                    <JqxPopover ref='popover1' isModal={true} showCloseButton={true}
+                        position={'top'} title={'Available Players'} selector={'#firstHelp'}>
+                        <p>Search for and select players from this list</p>
+                        <button id="secondHelp" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Next</button>
+                    </JqxPopover>
+                    <JqxPopover
+                        offset={{ left: 100, top: 40 }}
+                        position={'top'} title={'Your Players'} selector={'#secondHelp'}>
+                        <p>Drag and drop your players in order of draft preference</p>
+                        <button
+                            id="thirdHelp" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Next</button>
+                    </JqxPopover>
+                    <JqxPopover
+                        offset={{ left: 0, top: 0 }}
+                        position={'top'} title={'Draft Results'} selector={'#thirdHelp'}>
+                        <p>See how often you were able to draft each player here!</p>
+                        <button
+                            id="fourthHelp" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Next</button>
+                    </JqxPopover>
+                    <JqxPopover
+                        offset={{ left: 0, top: 0 }}
+                        position={'bottom'} selector={'#fourthHelp'}>
+                        <button onClick={this.hitEsc}
+                        style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Got it!</button>
+                    </JqxPopover>
+                    <div style={{ padding: '5px' }}>
+                        <button id="firstHelp" ref='helpButton' style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Help
+                        </button>
+                    </div>
+                </div>
                 </div>
                 <h1 className={"App-header"}>Draft Simulator</h1>
                 <div className={"Player-list-box-div"}>
