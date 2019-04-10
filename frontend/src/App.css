@@ -18,6 +18,11 @@ body {
   color: navajowhite;
 }
 
+.Info-buttons {
+  display: flex;
+  flex-direction: column;
+}
+
 .Player-list-box-div {
   display: flex;
   float: left;

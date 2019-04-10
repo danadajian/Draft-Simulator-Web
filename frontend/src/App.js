@@ -15,14 +15,12 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
-let offset1 = {};
-let buttonOffset = {};
 class App extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {isLoading: true, players: [], userPlayers: [],
-            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
+            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: '', resized: 0};
     }
 
     componentDidMount() {
@@ -44,20 +42,6 @@ class App extends React.Component {
                 let index = this.refs.navBar.getSelectedIndex();
                 console.log(index);
             })
-        }
-
-        if (this.refs.popover1) {
-            offset1 = window.$("[id^='jqxListBoxjqx']:eq(0)").offset();
-            buttonOffset = window.$("#firstHelp").offset();
-            window.$("[id^='jqxPopoverjqx']:eq(0)").jqxPopover({offset: {left: offset1.left - buttonOffset.left + 100,
-                    top: offset1.top - buttonOffset.top}});
-            window.onresize = async () => {
-                await window.$('#firstHelp').on('click', () => {
-                    offset1 = window.$("[id^='jqxListBoxjqx']:eq(0)").offset();
-                    buttonOffset = window.$("#firstHelp").offset();
-                    window.$("[id^='jqxPopoverjqx']:eq(0)").jqxPopover({offset: {left: offset1.left - buttonOffset.left + 100,
-                        top: offset1.top - buttonOffset.top}})}
-            )};
         }
 
         if (this.refs.teamCountSlider) {
@@ -270,39 +254,43 @@ class App extends React.Component {
                         <li>About</li>
                     </ul>
                 </JqxNavBar>
-                <div>
-                    <JqxPopover ref='popover1' isModal={true} showCloseButton={true}
-                        position={'top'} title={'Available Players'} selector={'#firstHelp'}>
-                        <p>Search for and select players from this list</p>
-                        <button id="secondHelp" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                            Next</button>
-                    </JqxPopover>
-                    <JqxPopover
-                        offset={{ left: 100, top: 40 }}
-                        position={'top'} title={'Your Players'} selector={'#secondHelp'}>
-                        <p>Drag and drop your players in order of draft preference</p>
-                        <button
-                            id="thirdHelp" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                            Next</button>
-                    </JqxPopover>
-                    <JqxPopover
-                        offset={{ left: 0, top: 0 }}
-                        position={'top'} title={'Draft Results'} selector={'#thirdHelp'}>
-                        <p>See how often you were able to draft each player here!</p>
-                        <button
-                            id="fourthHelp" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                            Next</button>
-                    </JqxPopover>
-                    <JqxPopover
-                        offset={{ left: 0, top: 0 }}
-                        position={'bottom'} selector={'#fourthHelp'}>
+                <div className={"Info-buttons"}>
+                    <JqxPopover isModal={true} showCloseButton={true}
+                        position={'bottom'} title={'About Draft Simulator'} selector={'#about'}>
+                        <p>Draft Simulator is a fantasy football draft preparation tool.</p>
+                        <p>More often than not, others in your league will only draft among the "top available players"
+                            in each round, which are determined by ESPN's preseason rankings.</p>
+                        <p>However, Draft Simulator allows you to create and refine your own personal rankings that you
+                            can bring to your draft to get the team you've always dreamed of.</p>
                         <button onClick={this.hitEsc}
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Got it!</button>
                     </JqxPopover>
                     <div style={{ padding: '5px' }}>
-                        <button id="firstHelp" ref='helpButton' style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                            Help
+                        <button id="about" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            What is it?
+                        </button>
+                    </div>
+                    <JqxPopover isModal={true} showCloseButton={true}
+                        position={'left'} title={'Instructions'} selector={'#instructions'}>
+                        <ol>
+                            <li>Search for and select players from the player list. These should be players you'd feel
+                                strongly about drafting.</li>
+                            <li>Click "Add" to move them to your preferred list.</li>
+                            <li>Drag and drop your players in order of overall preference.</li>
+                            <li>Adjust the sliders to your desired specifications, then click "Draft".</li>
+                            <li>See how often you were able to draft each player under the "Draft Frequency" tab.</li>
+                            <li>The "All Players" tab shows the draft frequency of all players taken, not just your
+                                preferred players.</li>
+                            <li>The "Expected Team" tab shows your most likely fantasy team given the simulations.</li>
+                        </ol>
+                        <button onClick={this.hitEsc}
+                        style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Let's draft!</button>
+                    </JqxPopover>
+                    <div style={{ padding: '5px' }}>
+                        <button id="instructions" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            What do I do?
                         </button>
                     </div>
                 </div>
