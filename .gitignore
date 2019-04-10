@@ -6,5 +6,5 @@ backend/src/main/__pycache__
 
 ci/credentials.yml
 
-backend/node_modules
+backend/node_modules/
 frontend/node_modules/
