@@ -1,0 +1,74 @@
+---
+resources:
+
+  - name: repo
+    type: git
+    source:
+      uri: ((git-repo))
+      private_key: ((github-private-key))
+  - name: node
+    type: docker-image
+    source:
+      repository: node
+      tag: 8
+
+jobs:
+
+  - name: build
+    public: true
+    plan:
+      - get: repo
+        trigger: true
+      - get: node
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: node
+        config:
+          platform: linux
+          inputs:
+            - name: repo
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                #!/bin/bash
+
+                set -ex
+
+                cd repo/frontend
+                npm run build
+
+  - name: deploy-stage
+    serial: true
+    plan:
+      - get: repo
+        trigger: true
+        passed: [build]
+      - task: deploy-heroku
+        params:
+          HEROKU_EMAIL: ((heroku-email))
+          HEROKU_AUTH: ((heroku-auth))
+        config:
+          platform: linux
+
+          image_resource:
+            type: docker-image
+            source: { repository: concourse/bosh-cli }
+
+          inputs:
+            - name: repo
+
+          run:
+            path: sh
+            dir: repo
+            args:
+              - -exc
+              - |
+                cat > /root/.netrc <<EOF
+                machine git.heroku.com
+                  login $HEROKU_EMAIL
+                  password $HEROKU_AUTH
+                EOF
+                git subtree push --prefix backend https://git.heroku.com/draft-simulator.git master
