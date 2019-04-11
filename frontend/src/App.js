@@ -26,22 +26,35 @@ class App extends React.Component {
     componentDidMount() {
         this.setState({isLoading: true});
 
-        $.get((window.location.href.endsWith('draft-results'))
-            ? window.location.href.slice(0, -13) + 'players' : window.location.href + 'players', (data) => {
-            const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
-            this.setState({isLoading: false, players: playerList});
-            for (let i = 0; i < playerList.length; i++) {
-                startingList.push(playerList[i]);
-            }
-        });
+        if (window.location.pathname === '/espn') {
+            $.get(window.location.origin + '/espn-players', (data) => {
+                const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
+                this.setState({isLoading: false, players: playerList});
+                for (let i = 0; i < playerList.length; i++) {
+                    startingList.push(playerList[i]);
+                }
+            });
+        } else if (window.location.pathname === '/yahoo') {
+            startingList = ['Currently not available.'];
+            this.setState({isLoading: false, players: startingList});
+        }
     }
 
     componentDidUpdate() {
         if (this.refs.navBar) {
             this.refs.navBar.on('change', () => {
                 let index = this.refs.navBar.getSelectedIndex();
-                console.log(index);
+                if (index === 0) {
+                    window.location.pathname = '/';
+                } else if (index === 3) {
+                    window.location.pathname = '/dfs-optimizer';
+                }
             })
+        }
+
+        if (document.getElementById("swapButton")) {
+            document.getElementById("swapButton").innerHTML =
+                (window.location.pathname === '/espn') ? 'Switch to Yahoo' : 'Switch to ESPN';
         }
 
         if (this.refs.teamCountSlider) {
@@ -57,6 +70,15 @@ class App extends React.Component {
     hitEsc = () => {
         const esc = window.$.Event("keydown", {keyCode: 27});
         window.$("body").trigger(esc);
+        this.refs.navBar.close();
+    };
+
+    swapRankings = () => {
+        if (window.location.href.endsWith('yahoo')) {
+            window.location.href = window.location.href.replace('yahoo', 'espn');
+        } else if (window.location.href.endsWith('espn')) {
+            window.location.href = window.location.href.replace('espn', 'yahoo');
+        }
     };
 
     addPlayers = () => {
@@ -66,12 +88,14 @@ class App extends React.Component {
         let selectedItems = this.refs.playerListbox.getSelectedItems();
 
         for (let i = 0; i < selectedItems.length; i++) {
-            this.refs.playerListbox.unselectItem(selectedItems[i].label);
-            this.refs.userListbox.addItem(selectedItems[i].label);
-            userPlayers.push(selectedItems[i].label);
-            this.refs.playerListbox.removeItem(selectedItems[i].label);
-            let playerIndex = playerList.indexOf(selectedItems[i].label);
-            playerList.splice(playerIndex, 1);
+            if (!userPlayers.includes(selectedItems[i].label)) {
+                this.refs.playerListbox.unselectItem(selectedItems[i].label);
+                this.refs.userListbox.addItem(selectedItems[i].label);
+                userPlayers.push(selectedItems[i].label);
+                this.refs.playerListbox.removeItem(selectedItems[i].label);
+                let playerIndex = playerList.indexOf(selectedItems[i].label);
+                playerList.splice(playerIndex, 1);
+            }
         }
 
         this.setState({players: playerList});
@@ -89,10 +113,12 @@ class App extends React.Component {
         });
 
         for (let i = 0; i < sortedItems.length; i++) {
-            this.refs.userListbox.removeItem(sortedItems[i].label);
-            let playerIndex = startingList.indexOf(sortedItems[i].label);
-            this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
-            playerList.splice(playerIndex, 0, sortedItems[i].label);
+            if (!playerList.includes(sortedItems[i].label)) {
+                this.refs.userListbox.removeItem(sortedItems[i].label);
+                let playerIndex = startingList.indexOf(sortedItems[i].label);
+                this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
+                playerList.splice(playerIndex, 0, sortedItems[i].label);
+            }
         }
 
         let remainingPlayers = [];
@@ -120,9 +146,11 @@ class App extends React.Component {
 
             this.refs.userListbox.clear();
             for (let i = 0; i < sortedItems.length; i++) {
-                let playerIndex = startingList.indexOf(sortedItems[i].label);
-                this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
-                playerList.splice(playerIndex, 0, sortedItems[i].label);
+                if (!playerList.includes(sortedItems[i].label)) {
+                    let playerIndex = startingList.indexOf(sortedItems[i].label);
+                    this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
+                    playerList.splice(playerIndex, 0, sortedItems[i].label);
+                }
             }
 
             this.setState({players: playerList});
@@ -154,7 +182,7 @@ class App extends React.Component {
             }
 
             const postToEndpoint = async () => {
-                return await $.post(window.location.href + 'draft-results',
+                return await $.post(window.location.origin + '/draft-results',
                     this.state.userPlayers + '|' + teamCount + '|' + pickOrder + '|' + roundCount);
             };
 
@@ -163,7 +191,7 @@ class App extends React.Component {
             };
 
             const getFromEndpoint = async () => {
-                return await $.get(window.location.href + 'draft-results', (data) => {
+                return await $.get(window.location.origin + '/draft-results', (data) => {
                     if (data === '[]') {
                         alert('No players were drafted. :(');
                     } else {
@@ -195,13 +223,26 @@ class App extends React.Component {
         this.refs.userListbox.clearSelection();
     };
 
+    enter = () => {
+        window.location.href += 'espn';
+    };
+
     render() {
+        if (window.location.pathname === '/') {
+            return (
+                <div>
+                    <div><p className={'Loading-text'}>Welcome to Draft Simulator!</p></div>
+                    <div className={'Home'}><button onClick={this.enter} className={'Home-button'}>Enter</button></div>
+                </div>
+            )
+        }
+
         const {isLoading, players, userPlayers,
             isDrafting, isRandom, allFreqs, userFreqs, expectedTeam} = this.state;
         const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
-            return <p className={"Loading-text"}>Loading players from ESPN . . .</p>;
+            return <p className={"Loading-text"}>Loading . . .</p>;
         } else if (isDrafting) {
             return (
                 <div>
@@ -247,16 +288,17 @@ class App extends React.Component {
             <div className={"App"}>
                 <div>
                 <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={40}
-                       height={70} minimizeButtonPosition={"right"} width={"100%"}>
+                       height={70} selectedItem={null} minimizeButtonPosition={"right"} width={"100%"}>
                     <ul>
                         <li>Home</li>
-                        <li>Instructions</li>
                         <li>About</li>
+                        <li>Instructions</li>
+                        <li>DFS Optimizer</li>
                     </ul>
                 </JqxNavBar>
                 <div className={"Info-buttons"}>
-                    <JqxPopover isModal={true} showCloseButton={true}
-                        position={'bottom'} title={'About Draft Simulator'} selector={'#about'}>
+                    <JqxPopover isModal={true} showCloseButton={true} width={310}
+                        position={'bottom'} title={'About Draft Simulator'} selector={"[class^='jqx-navbar-block']:eq(1)"}>
                         <p>Draft Simulator is a fantasy football draft preparation tool.</p>
                         <p>More often than not, others in your league will only draft among the "top available players"
                             in each round, which are determined by ESPN's preseason rankings.</p>
@@ -266,13 +308,8 @@ class App extends React.Component {
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Got it!</button>
                     </JqxPopover>
-                    <div style={{ padding: '5px' }}>
-                        <button id="about" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                            What is it?
-                        </button>
-                    </div>
-                    <JqxPopover isModal={true} showCloseButton={true}
-                        position={'left'} title={'Instructions'} selector={'#instructions'}>
+                    <JqxPopover isModal={true} showCloseButton={true} width={310}
+                        position={'bottom'} title={'Instructions'} selector={"[class^='jqx-navbar-block']:eq(2)"}>
                         <ol>
                             <li>Search for and select players from the player list. These should be players you'd feel
                                 strongly about drafting.</li>
@@ -288,11 +325,7 @@ class App extends React.Component {
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Let's draft!</button>
                     </JqxPopover>
-                    <div style={{ padding: '5px' }}>
-                        <button id="instructions" style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                            What do I do?
-                        </button>
-                    </div>
+
                 </div>
                 </div>
                 <h1 className={"App-header"}>Draft Simulator</h1>
@@ -307,6 +340,7 @@ class App extends React.Component {
                     <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
                     </button>
                     <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
+                    <button id='swapButton' onClick={this.swapRankings} className={"Swap-button"}>Swap Button</button>
                 </div>
                 <div className={"User-list-box-div"}>
                     <JqxListBox ref='userListbox' width={250} height={300}
