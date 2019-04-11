@@ -7,13 +7,28 @@ app = flask.Flask("__name__")
 
 
 @app.route("/")
-def index():
+def home():
     return flask.render_template("index.html")
 
 
-@app.route("/players")
-def players():
+@app.route("/espn")
+def espn():
+    return flask.render_template("index.html")
+
+
+@app.route("/yahoo")
+def yahoo():
+    return flask.render_template("index.html")
+
+
+@app.route("/espn-players")
+def espn_players():
     return get_players()
+
+
+@app.route("/yahoo-players")
+def yahoo_players():
+    return
 
 
 @app.route("/draft-results", methods=['GET', 'POST'])
@@ -43,6 +58,11 @@ def run_draft():
             return draft_results
         except NameError:
             return 'Draft results to appear here!'
+
+
+@app.route("/dfs-optimizer")
+def dfs_optimizer():
+    return 'DFS Optimizer coming soon!'
 
 
 if __name__ == "__main__":

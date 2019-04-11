@@ -13,14 +13,24 @@ body {
   background-color: darkslategray;
 }
 
+.Home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Home-button {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  background-color: red;
+  color: navajowhite;
+  padding: 20px 30px;
+}
+
 .App-header {
   text-align: center;
   color: navajowhite;
-}
-
-.Info-buttons {
-  display: flex;
-  flex-direction: column;
 }
 
 .Player-list-box-div {
@@ -43,16 +53,25 @@ body {
 .Add-button {;
   width: 80px;
   background-color: green;
+  margin-bottom: 5%;
 }
 
 .Remove-button {;
   width: 80px;
   background-color: red;
+  margin-bottom: 5%;
 }
 
 .Clear-button {;
   width: 80px;
   background-color: yellow;
+  margin-bottom: 50%;
+}
+
+.Swap-button {;
+  width: 80px;
+  background-color: whitesmoke;
+  margin-bottom: 5%;
 }
 
 .User-list-box-div {
