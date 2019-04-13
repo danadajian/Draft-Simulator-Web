@@ -1,6 +1,6 @@
 from itertools import combinations as comb
 
-position_matrix = {'QB': [1, 1, 1], 'RB': [3, 2, 2], 'WR': [3, 4, 3], 'TE': [1, 1, 2], 'DST': [1, 1, 1]}
+example_position_matrix = {'QB': [1, 1, 1], 'RB': [3, 2, 2], 'WR': [3, 4, 3], 'TE': [1, 1, 2], 'DST': [1, 1, 1]}
 
 
 def get_total(players, data):
@@ -10,8 +10,8 @@ def get_total(players, data):
 
 def optimize(position_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
     positions = position_matrix.keys()
-    pos_iters = position_matrix.values()[0]
-    for item in position_matrix.values():
+    pos_iters = 0
+    for item in list(position_matrix.values()):
         if len(item) > pos_iters:
             pos_iters = len(item)
     pos_lists = [[player for player in pos_dict.keys() if pos_dict.get(player) == pos]
@@ -21,16 +21,15 @@ def optimize(position_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
     max_points = 0
     for n in range(pos_iters):
         combos_lists = [list(comb(pos_lists_dict.get(pos), position_matrix.get(pos)[n])) for pos in positions]
-        max_pts_list = [max([get_total(combos, proj_pts_dict)
-                        for combos in combos_lists])]
-        min_salary_list = [min([get_total(combos, salary_dict)
-                           for combos in combos_lists])]
+        max_pts_list = [max(get_total(combo, proj_pts_dict) for combo in combos) for combos in combos_lists]
+        min_salary_list = [min(get_total(combo, salary_dict) for combo in combos) for combos in combos_lists]
         potential_max_points = sum(max_pts_list)
         potential_min_salary = sum(min_salary_list)
+        possible_lineup = []
         pos_index = 0
         # need to find a way to remove last player from last position's combos list
         while pos_index < len(positions):
-            for combos in combos_lists:
+            for combos in combos_lists[pos_index]:
                 current_points = get_total(combos, proj_pts_dict)
                 current_salary = get_total(combos, salary_dict)
                 potential_max_points -= max_pts_list[pos_index]
@@ -38,11 +37,15 @@ def optimize(position_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
                 potential_min_salary -= min_salary_list[pos_index]
                 potential_min_salary += current_salary
                 if potential_max_points > max_points and potential_min_salary <= salary_cap:
-                    best_lineup.append(combos)
+                    possible_lineup.append(combos)
+                    if pos_index == len(positions) - 1:
+                        best_lineup = [player for combos in possible_lineup for player in combos]
                     pos_index += 1
                     break
             best_lineup.remove(best_lineup[len(best_lineup) - 1])
             pos_index -= 1
+
+    return best_lineup
 
 
 
