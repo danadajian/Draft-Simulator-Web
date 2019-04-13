@@ -235,6 +235,13 @@ class App extends React.Component {
                     <div className={'Home'}><button onClick={this.enter} className={'Home-button'}>Enter</button></div>
                 </div>
             )
+        } else if (window.location.pathname === '/dfs-optimizer') {
+            return (
+                <div>
+                    <div><p className={'Loading-text'}>Welcome to Draft Simulator!</p></div>
+                    <div className={'Home'}><button onClick={} className={'Home-button'}>Optimize</button></div>
+                </div>
+            )
         }
 
         const {isLoading, players, userPlayers,
