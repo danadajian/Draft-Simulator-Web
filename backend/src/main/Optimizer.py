@@ -1,6 +1,7 @@
 from itertools import combinations as comb
 
 example_position_matrix = {'QB': [1, 1, 1], 'RB': [3, 2, 2], 'WR': [3, 4, 3], 'TE': [1, 1, 2], 'DST': [1, 1, 1]}
+lineup_dict = {0: 'No lineup could be generated.'}
 
 
 def get_total(players, data):
@@ -10,94 +11,57 @@ def get_total(players, data):
 
 def optimize(position_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
     positions = position_matrix.keys()
-    pos_iters = 0
-    for item in list(position_matrix.values()):
-        if len(item) > pos_iters:
-            pos_iters = len(item)
+    configurations = max([len(item) for item in position_matrix.values()])
     pos_lists = [[player for player in pos_dict.keys() if pos_dict.get(player) == pos]
                  for pos in positions]
     pos_lists_dict = dict(zip(positions, pos_lists))
+    current_pts_list = [0 for _ in positions]
+    current_salary_list = [0 for _ in positions]
+    possible_lineup = [[] for _ in positions]
+    final_lineups = {}
     best_lineup = []
-    max_points = 0
-    for n in range(pos_iters):
+
+    for n in range(configurations):
         combos_lists = [list(comb(pos_lists_dict.get(pos), position_matrix.get(pos)[n])) for pos in positions]
         max_pts_list = [max(get_total(combo, proj_pts_dict) for combo in combos) for combos in combos_lists]
         min_salary_list = [min(get_total(combo, salary_dict) for combo in combos) for combos in combos_lists]
-        potential_max_points = sum(max_pts_list)
-        potential_min_salary = sum(min_salary_list)
-        possible_lineup = []
-        pos_index = 0
-        # need to find a way to remove last player from last position's combos list
-        while pos_index < len(positions):
-            for combos in combos_lists[pos_index]:
-                current_points = get_total(combos, proj_pts_dict)
-                current_salary = get_total(combos, salary_dict)
-                potential_max_points -= max_pts_list[pos_index]
-                potential_max_points += current_points
-                potential_min_salary -= min_salary_list[pos_index]
-                potential_min_salary += current_salary
-                if potential_max_points > max_points and potential_min_salary <= salary_cap:
-                    possible_lineup.append(combos)
-                    if pos_index == len(positions) - 1:
-                        best_lineup = [player for combos in possible_lineup for player in combos]
-                    pos_index += 1
-                    break
-            best_lineup.remove(best_lineup[len(best_lineup) - 1])
-            pos_index -= 1
+        result = recursively_check(combos_lists, proj_pts_dict, salary_dict, current_pts_list, current_salary_list, [],
+                                   possible_lineup, max_pts_list, min_salary_list, salary_cap, len(positions) - 1)
+        final_lineups.update({result[0]: result[1]})
+        best_lineup = final_lineups.get(max(final_lineups.keys()))
 
     return best_lineup
 
 
+def recursively_check(combos_lists, proj_pts_dict, salary_dict, current_pts_list, current_salary_list, best_lineup,
+                      possible_lineup, max_pts_list, min_salary_list, salary_cap, n):
+    if n < 0:
+        return
+    else:
+        for combo in combos_lists[n]:
+            current_points = get_total(combo, proj_pts_dict)
+            current_salary = get_total(combo, salary_dict)
+            current_pts_list[n] = current_points
+            current_salary_list[n] = current_salary
+            potential_max_points = sum(
+                [current_pts_list[i] for i in range(len(current_pts_list)) if i > n]) + sum(
+                [max_pts_list[i] for i in range(len(max_pts_list)) if i <= n])
+            potential_min_salary = sum(
+                [current_salary_list[i] for i in range(len(current_salary_list)) if i > n]) + sum(
+                [min_salary_list[i] for i in range(len(min_salary_list)) if i <= n])
+            if potential_max_points > max(lineup_dict.keys()) and potential_min_salary <= salary_cap:
+                possible_lineup[n] = combo
 
-def old_optimize(score_dict, salary_dict, salary_cap, qb_list, rb_list, wr_list, te_list, dst_list):
-    rb_count = [3, 2, 2]
-    wr_count = [3, 4, 3]
-    te_count = [1, 1, 2]
-    best_lineup = []
-    max_points = 0
-    for n in range(3):
-        max_wr_points = max([get_total(wrs, score_dict) for wrs in list(comb(wr_list, wr_count[n]))])
-        min_wr_salary = min([get_total(wrs, salary_dict) for wrs in list(comb(wr_list, wr_count[n]))])
-        max_te_points = max([get_total(tes, score_dict) for tes in list(comb(te_list, te_count[n]))])
-        min_te_salary = min([get_total(tes, salary_dict) for tes in list(comb(te_list, te_count[n]))])
-        max_dst_points = max([score_dict.get(dst) for dst in dst_list])
-        min_dst_salary = min([salary_dict.get(dst) for dst in dst_list])
-        flex = ''
-        for qb in qb_list:
-            qb_points = score_dict.get(qb)
-            qb_salary = salary_dict.get(qb)
-            for rbs in comb(rb_list, rb_count[n]):
-                rb_points = get_total(rbs, score_dict)
-                rb_salary = get_total(rbs, salary_dict)
-                potential_max_points = qb_points + rb_points + max_wr_points + max_te_points + max_dst_points
-                potential_max_salary = qb_salary + rb_salary + min_wr_salary + min_te_salary + min_dst_salary
-                if potential_max_points > max_points and potential_max_salary <= salary_cap:
-                    for wrs in comb(wr_list, wr_count[n]):
-                        wr_points = get_total(wrs, score_dict)
-                        wr_salary = get_total(wrs, salary_dict)
-                        potential_max_points = qb_points + rb_points + wr_points + max_te_points + max_dst_points
-                        potential_max_salary = qb_salary + rb_salary + wr_salary + min_te_salary + min_dst_salary
-                        if potential_max_points > max_points and potential_max_salary <= salary_cap:
-                            for tes in comb(te_list, te_count[n]):
-                                te_points = get_total(tes, score_dict)
-                                te_salary = get_total(tes, salary_dict)
-                                potential_max_points = qb_points + rb_points + wr_points + te_points + max_dst_points
-                                potential_max_salary = qb_salary + rb_salary + wr_salary + te_salary + min_dst_salary
-                                if potential_max_points > max_points and potential_max_salary <= salary_cap:
-                                    for dst in dst_list:
-                                        dst_points = score_dict.get(dst)
-                                        dst_salary = salary_dict.get(dst)
-                                        point_total = qb_points + rb_points + wr_points + te_points + dst_points
-                                        total_salary = qb_salary + rb_salary + wr_salary + te_salary + dst_salary
-                                        if point_total > max_points and total_salary <= salary_cap:
-                                            if len(rbs) > 2:
-                                                flex = rbs[2]
-                                            elif len(wrs) > 3:
-                                                flex = wrs[3]
-                                            elif len(tes) > 1:
-                                                flex = tes[1]
-                                            best_lineup = [qb, rbs[0], rbs[1], wrs[0], wrs[1], wrs[2], tes[0], flex,
-                                                           dst]
-                                            max_points = point_total
+                total_points = sum(current_pts_list)
+                total_salary = sum(current_salary_list)
+                if n == 0 and total_points > max(lineup_dict.keys()) and total_salary <= salary_cap:
+                    best_lineup = [player for combo in possible_lineup for player in combo]
+                    lineup_dict.update({total_points: best_lineup})
 
-    return best_lineup
+                recursively_check(combos_lists, proj_pts_dict, salary_dict, current_pts_list, current_salary_list,
+                                  best_lineup, possible_lineup, max_pts_list, min_salary_list, salary_cap, n - 1)
+
+    final_lineup = lineup_dict.get(max(lineup_dict.keys()))
+    total_proj_pts = sum([proj_pts_dict.get(player) for player in final_lineup]) if final_lineup != [
+        'No lineup could be generated.'] else 0
+    return [total_proj_pts, final_lineup]
