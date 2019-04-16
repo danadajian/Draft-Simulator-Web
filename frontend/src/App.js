@@ -67,6 +67,10 @@ class App extends React.Component {
         }
     }
 
+    enter = () => {
+        window.location.href += 'espn';
+    };
+
     hitEsc = () => {
         const esc = window.$.Event("keydown", {keyCode: 27});
         window.$("body").trigger(esc);
@@ -162,6 +166,7 @@ class App extends React.Component {
     };
 
     simulateDraft = () => {
+        this.refs.navBar.close();
         this.setState({allFreqs: '', userFreqs: '', expectedTeam: ''});
         let userPick = this.refs.pickOrderSlider.getValue();
         this.setState({isRandom: window.$("input[type='checkbox']").is(":checked")}, function () {
@@ -192,8 +197,11 @@ class App extends React.Component {
 
             const getFromEndpoint = async () => {
                 return await $.get(window.location.origin + '/draft-results', (data) => {
-                    if (data === '[]') {
-                        alert('No players were drafted. :(');
+                    if (data === 'Draft error!') {
+                        this.setState({isDrafting: false}, function () {
+                            alert('No players were drafted. :(' +
+                                '\nSomething went wrong . . .');
+                        })
                     } else {
                         this.setState({isDrafting: false}, function () {
                             const output = data.split('|');
@@ -223,10 +231,6 @@ class App extends React.Component {
         this.refs.userListbox.clearSelection();
     };
 
-    enter = () => {
-        window.location.href += 'espn';
-    };
-
     render() {
         if (window.location.pathname === '/') {
             return (
@@ -238,8 +242,8 @@ class App extends React.Component {
         } else if (window.location.pathname === '/dfs-optimizer') {
             return (
                 <div>
-                    <div><p className={'Loading-text'}>Welcome to Draft Simulator!</p></div>
-                    <div className={'Home'}><button onClick={} className={'Home-button'}>Optimize</button></div>
+                    <div><p className={'Loading-text'}>DFS Optimizer</p></div>
+                    <div className={'Home'}><button className={'Home-button'}>Optimize</button></div>
                 </div>
             )
         }
@@ -298,14 +302,14 @@ class App extends React.Component {
                        height={70} selectedItem={null} minimizeButtonPosition={"right"} width={"100%"}>
                     <ul>
                         <li>Home</li>
-                        <li>About</li>
-                        <li>Instructions</li>
+                        <li id={'aboutButton'}>About</li>
+                        <li id={'instructionsButton'}>Instructions</li>
                         <li>DFS Optimizer</li>
                     </ul>
                 </JqxNavBar>
                 <div className={"Info-buttons"}>
-                    <JqxPopover isModal={true} showCloseButton={true} width={310}
-                        position={'bottom'} title={'About Draft Simulator'} selector={"[class^='jqx-navbar-block']:eq(1)"}>
+                    <JqxPopover ref='about' isModal={true} showCloseButton={true} width={310}
+                        position={'bottom'} title={'About Draft Simulator'} selector={"[id^='aboutButton']:last"}>
                         <p>Draft Simulator is a fantasy football draft preparation tool.</p>
                         <p>More often than not, others in your league will only draft among the "top available players"
                             in each round, which are determined by ESPN's preseason rankings.</p>
@@ -315,8 +319,8 @@ class App extends React.Component {
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Got it!</button>
                     </JqxPopover>
-                    <JqxPopover isModal={true} showCloseButton={true} width={310}
-                        position={'bottom'} title={'Instructions'} selector={"[class^='jqx-navbar-block']:eq(2)"}>
+                    <JqxPopover ref='instructions' isModal={true} showCloseButton={true} width={310}
+                        position={'bottom'} title={'Instructions'} selector={"[id^='instructionsButton']:last"}>
                         <ol>
                             <li>Search for and select players from the player list. These should be players you'd feel
                                 strongly about drafting.</li>
@@ -339,8 +343,8 @@ class App extends React.Component {
                 <div className={"Player-list-box-div"}>
                 <JqxListBox ref='playerListbox'
                             width={250} height={300}
-                            source={players} multiple={true} filterable={true} searchMode={"containsignorecase"}
-                            className={"Player-list-box"}/>
+                            source={players} filterable={true} searchMode={"containsignorecase"}
+                            multiple={true} className={"Player-list-box"}/>
                 </div>
                 <div className={"Player-button"}>
                     <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
@@ -351,8 +355,8 @@ class App extends React.Component {
                 </div>
                 <div className={"User-list-box-div"}>
                     <JqxListBox ref='userListbox' width={250} height={300}
-                                source={userPlayersList} multiple={true}
-                                allowDrag={true} allowDrop={true} className={"User-list-box"}/>
+                                source={userPlayersList} allowDrag={true}
+                                allowDrop={true} multiple={true} className={"User-list-box"}/>
                 </div>
                 <div className={"Draft-button-div"}>
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
