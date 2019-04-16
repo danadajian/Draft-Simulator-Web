@@ -31,17 +31,20 @@ def pick_players(user_list, team_dict, draft_order, round_count):
     while any([len(team) < round_count for team in team_dict.values()]):
         for team in draft_order:
             if team == 'user_team':  # your pick logic
+                your_pick = None
                 if user_list:
-                    while not valid_choice(user_list[0], user_team):
+                    while user_list and not valid_choice(user_list[0], user_team):
                         user_list.remove(user_list[0])
-                    your_pick = user_list[0]
-                    user_list.remove(your_pick)
-                else:
+                    if user_list:
+                        your_pick = user_list[0]
+                        user_list.remove(your_pick)
+                if not user_list:
                     your_threshold = threshold
-                    your_pick = None
                     while not valid_choice(your_pick, user_team):
                         your_pick = comp_list[random.randint(0, min(len(comp_list) - 1, your_threshold))]
                         your_threshold += 1
+                if your_pick is None:
+                    return 'Draft error!'
                 user_team.append(your_pick)
                 comp_list.remove(your_pick)
             else:  # AI pick logic
@@ -72,6 +75,8 @@ def simulate_draft(user_player_list, team_count, pick_order, round_count, simula
         team_dict = create_teams(team_count, user_team)
         draft_order = set_draft_order(team_dict, pick_order)
         drafted_team = pick_players(user_list, team_dict, draft_order, round_count)
+        if drafted_team == 'Draft error!':
+            return 'Draft error!'
         drafted_teams.append(drafted_team)
     return drafted_teams
 

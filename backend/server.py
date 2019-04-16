@@ -21,6 +21,11 @@ def yahoo():
     return flask.render_template("index.html")
 
 
+@app.route("/dfs-optimizer")
+def dfs_optimizer():
+    return flask.render_template("index.html")
+
+
 @app.route("/espn-players")
 def espn_players():
     return get_players()
@@ -48,6 +53,9 @@ def run_draft():
         pick_order = int(data_list[2])
         round_count = int(data_list[3])
         teams_drafted = simulate_draft(user_list, team_count, pick_order, round_count, 500)
+        if teams_drafted == 'Draft error!':
+            draft_results = 'Draft error!'
+            return draft_results
         player_draft_freq = calculate_frequencies(teams_drafted)
         expected_team = get_expected_team(teams_drafted, round_count)
         ordered_team = order_team(expected_team, player_draft_freq)
@@ -58,11 +66,6 @@ def run_draft():
             return draft_results
         except NameError:
             return 'Draft results to appear here!'
-
-
-@app.route("/dfs-optimizer")
-def dfs_optimizer():
-    return 'DFS Optimizer coming soon!'
 
 
 if __name__ == "__main__":

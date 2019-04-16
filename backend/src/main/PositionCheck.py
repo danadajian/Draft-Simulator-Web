@@ -18,6 +18,7 @@ def valid_choice(player, team):
 
 def order_team(team, freq_dict):
     ordered_team = []
+    player_pos_list = []
     pos_list = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'RB WR TE', 'DST', 'K', 'BE', 'BE', 'BE', 'BE', 'BE', 'BE', 'BE']
     for spot in pos_list:
         for player in team:
@@ -26,12 +27,16 @@ def order_team(team, freq_dict):
                     player_pos = top300dict.get(player)
                     if player_pos in spot:
                         ordered_team.append(player)
+                        if spot == 'RB WR TE':
+                            player_pos_list.append('FLEX')
+                        else:
+                            player_pos_list.append(top300dict.get(player))
                         break
                 else:
                     ordered_team.append(player)
-    pos_list[6] = 'FLEX'
-    ordered_team_list = [{'Position': pos_list[i], 'Player': ordered_team[i],
-                          'DraftFreq': str(freq_dict.get(ordered_team[i])) + '%'} for i in range(len(ordered_team))]
+                    player_pos_list.append('BE')
+    ordered_team_list = [{'Position': player_pos_list[ordered_team.index(player)], 'Player': player,
+                          'DraftFreq': str(freq_dict.get(player)) + '%'} for player in ordered_team]
     ordered_team_str = str(ordered_team_list).replace("{'", '{"').replace("'}", '"}').replace("': '", '": "')\
         .replace("',", '",').replace(", '", ', "').replace("':", '":')
     return ordered_team_str
