@@ -1,5 +1,7 @@
 from src.main.GetPlayers import get_players
 from src.main.SimulateDraft import *
+from src.main.MLBSalaries import dfsSalaryDict, dfsPointsDict, dfsPositionsDict
+from src.main.Optimizer import optimize
 import os
 import flask
 
@@ -24,6 +26,23 @@ def yahoo():
 @app.route("/dfs-optimizer")
 def dfs_optimizer():
     return flask.render_template("index.html")
+
+
+@app.route("/optimized-lineup")
+def optimized_team():
+    fd_lineup_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
+    dk_lineup_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']
+    fd_proj_dict = dfsPointsDict.get('Fanduel')
+    dk_proj_dict = dfsPointsDict.get('Draftkings')
+    fd_pos_dict = dfsPositionsDict.get('Fanduel')
+    dk_pos_dict = dfsPositionsDict.get('Draftkings')
+    fd_salary_dict = dfsSalaryDict.get('Fanduel')
+    dk_salary_dict = dfsSalaryDict.get('Draftkings')
+    fd_cap = 35000
+    dk_cap = 50000
+    fd_lineup = optimize(fd_lineup_matrix, fd_proj_dict, fd_pos_dict, fd_salary_dict, fd_cap)
+    dk_lineup = optimize(dk_lineup_matrix, dk_proj_dict, dk_pos_dict, dk_salary_dict, dk_cap)
+    return fd_lineup + '|' + dk_lineup
 
 
 @app.route("/espn-players")
