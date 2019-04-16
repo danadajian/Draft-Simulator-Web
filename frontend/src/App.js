@@ -240,10 +240,27 @@ class App extends React.Component {
                 </div>
             )
         } else if (window.location.pathname === '/dfs-optimizer') {
+
+            const dfsFields =
+                          [{ name: 'Position', type: 'string' },
+                           { name: 'Player', type: 'string' },
+                           { name: 'Projected', type: 'string' },
+                           { name: 'Price', type: 'string' }];
+
+            let dfsSource = {datatype: 'json', datafields: dfsFields, localdata: dfsLineup};
+            let dfsDataAdapter = new window.$.jqx.dataAdapter(dfsSource);
+
             return (
                 <div>
                     <div><p className={'Loading-text'}>DFS Optimizer</p></div>
                     <div className={'Home'}><button className={'Home-button'}>Optimize</button></div>
+                    <JqxGrid style={{ border: 'none' }} width={'100%'} height={'100%'}
+                             source={dfsDataAdapter}
+                             columns={
+                               [{ text: 'Position', datafield: 'Position', width: 100 },
+                                { text: 'Player', datafield: 'Player', width: 175 },
+                                { text: 'Projected', datafield: 'Projected', width: 125 },
+                                { text: 'Price', datafield: 'Price', width: 125 }]}/>
                 </div>
             )
         }
@@ -263,19 +280,17 @@ class App extends React.Component {
             );
         }
 
-        const structure = [
-                    { name: 'Position', type: 'string' },
-                    { name: 'Player', type: 'string' },
-                    { name: 'DraftFreq', type: 'string' }
-                ];
+        const dsFields = [{ name: 'Position', type: 'string' },
+                           { name: 'Player', type: 'string' },
+                           { name: 'DraftFreq', type: 'string' }];
 
-        let source1 = {datatype: 'json', datafields: structure, localdata: userFreqs};
+        let source1 = {datatype: 'json', datafields: dsFields, localdata: userFreqs};
         let dataAdapter1 = new window.$.jqx.dataAdapter(source1);
 
-        let source2 = {datatype: 'json', datafields: structure, localdata: allFreqs};
+        let source2 = {datatype: 'json', datafields: dsFields, localdata: allFreqs};
         let dataAdapter2 = new window.$.jqx.dataAdapter(source2);
 
-        let source3 = {datatype: 'json', datafields: structure, localdata: expectedTeam};
+        let source3 = {datatype: 'json', datafields: dsFields, localdata: expectedTeam};
         let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
 
         let tabSpecs =
