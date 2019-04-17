@@ -49,7 +49,7 @@ for site in sites:
         dfsLowerStatsIndex = dfsLowerSalaryIndex + 14
         dfsUpperStatsIndex = dfsLowerStatsIndex + 50
         statsList = dfsText[dfsLowerStatsIndex: dfsUpperStatsIndex].split()
-        fppg = statsList[4]
+        fppg = float(statsList[4])
         dfsPointsList.append(fppg)
         dfsPosition = dfsText[index - 3: index].strip()
         if dfsPosition.startswith('SP'):

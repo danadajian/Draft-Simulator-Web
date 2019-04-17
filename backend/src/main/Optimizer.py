@@ -1,3 +1,5 @@
+from MLBSalaries import *
+
 nfl_matrix = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST']
 mlb_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
 lineup_dict = {0: 'No lineup could be generated.'}
@@ -17,8 +19,12 @@ def optimize(lineup_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
     final_lineups = {}
     max_pts_list = [max(proj_pts_dict.get(player) for player in pool) for pool in pools]
     min_salary_list = [min(salary_dict.get(player) for player in pool) for pool in pools]
+    max_points = 0
+    new_lineup = []
 
     def recursively_check(player_pools, n):
+        nonlocal new_lineup
+        nonlocal max_points
         if n < 0:
             return
         else:
@@ -38,15 +44,16 @@ def optimize(lineup_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
 
                     total_points = sum(current_pts_list)
                     total_salary = sum(current_salary_list)
-                    if n == 0 and total_points > max(lineup_dict.keys()) and total_salary <= salary_cap:
+                    if n == 0 and total_points > max_points and total_salary <= salary_cap:
                         new_lineup = [player for player in possible_lineup]
-                        lineup_dict.update({total_points: new_lineup})
+                        max_points = total_points
+                        print(max_points)
 
                     recursively_check(player_pools, n - 1)
 
         final_lineup = lineup_dict.get(max(lineup_dict.keys()))
-        total_proj_pts = sum([proj_pts_dict.get(player) for player in final_lineup]) if final_lineup != [
-            'No lineup could be generated.'] else 0
+        total_proj_pts = sum([proj_pts_dict.get(player) for player in
+                              final_lineup]) if final_lineup != 'No lineup could be generated.' else 0
         return [total_proj_pts, final_lineup]
 
     result = recursively_check(pools, len(pools) - 1)
@@ -59,3 +66,7 @@ def optimize(lineup_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
     lineup_str = str(lineup_data).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
         .replace("',", '",').replace(", '", ', "')
     return lineup_str
+
+
+print(optimize(mlb_matrix, dfsPointsDict.get('Fanduel'), dfsPositionsDict.get('Fanduel'), dfsSalaryDict.get('Fanduel'),
+               35000))
