@@ -19,8 +19,8 @@ class App extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [],
-            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: '', resized: 0};
+        this.state = {isLoading: true, players: [], userPlayers: [], isDrafting: false, isRandom: false,
+            allFreqs: '', userFreqs: '', expectedTeam: '', fdLineup: '', dkLineup: ''};
     }
 
     componentDidMount() {
@@ -37,6 +37,11 @@ class App extends React.Component {
         } else if (window.location.pathname === '/yahoo') {
             startingList = ['Currently not available.'];
             this.setState({isLoading: false, players: startingList});
+        } else if (window.location.pathname === '/dfs-optimizer') {
+            $.get(window.location.origin + '/optimized-lineup', (data) => {
+                const lineup = data.split('|');
+                this.setState({isLoading: false, fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
+            });
         }
     }
 
@@ -232,6 +237,9 @@ class App extends React.Component {
     };
 
     render() {
+        const {isLoading, players, userPlayers,
+            isDrafting, isRandom, allFreqs, userFreqs, expectedTeam, fdLineup, dkLineup} = this.state;
+
         if (window.location.pathname === '/') {
             return (
                 <div>
@@ -239,35 +247,7 @@ class App extends React.Component {
                     <div className={'Home'}><button onClick={this.enter} className={'Home-button'}>Enter</button></div>
                 </div>
             )
-        } else if (window.location.pathname === '/dfs-optimizer') {
-
-            const dfsFields =
-                          [{ name: 'Position', type: 'string' },
-                           { name: 'Player', type: 'string' },
-                           { name: 'Projected', type: 'string' },
-                           { name: 'Price', type: 'string' }];
-
-            let dfsSource = {datatype: 'json', datafields: dfsFields, localdata: dfsLineup};
-            let dfsDataAdapter = new window.$.jqx.dataAdapter(dfsSource);
-
-            return (
-                <div>
-                    <div><p className={'Loading-text'}>DFS Optimizer</p></div>
-                    <div className={'Home'}><button className={'Home-button'}>Optimize</button></div>
-                    <JqxGrid style={{ border: 'none' }} width={'100%'} height={'100%'}
-                             source={dfsDataAdapter}
-                             columns={
-                               [{ text: 'Position', datafield: 'Position', width: 100 },
-                                { text: 'Player', datafield: 'Player', width: 175 },
-                                { text: 'Projected', datafield: 'Projected', width: 125 },
-                                { text: 'Price', datafield: 'Price', width: 125 }]}/>
-                </div>
-            )
         }
-
-        const {isLoading, players, userPlayers,
-            isDrafting, isRandom, allFreqs, userFreqs, expectedTeam} = this.state;
-        const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         if (isLoading) {
             return <p className={"Loading-text"}>Loading . . .</p>;
@@ -279,6 +259,42 @@ class App extends React.Component {
                 </div>
             );
         }
+
+        if (window.location.pathname === '/dfs-optimizer') {
+
+            const dfsFields =
+                          [{ name: 'Position', type: 'string' },
+                           { name: 'Player', type: 'string' },
+                           { name: 'Projected', type: 'string' },
+                           { name: 'Price', type: 'string' }];
+
+            const dfsColumns = [{ text: 'Position', datafield: 'Position', width: 100 },
+                                { text: 'Player', datafield: 'Player', width: 175 },
+                                { text: 'Projected', datafield: 'Projected', width: 125 },
+                                { text: 'Price', datafield: 'Price', width: 125 }];
+
+            let dfsSource1 = {datatype: 'json', datafields: dfsFields, localdata: fdLineup};
+            let dfsSource2 = {datatype: 'json', datafields: dfsFields, localdata: dkLineup};
+            let dfsDataAdapter1 = new window.$.jqx.dataAdapter(dfsSource1);
+            let dfsDataAdapter2 = new window.$.jqx.dataAdapter(dfsSource2);
+
+            return (
+                <div>
+                    <div><p className={'Loading-text'}>DFS Optimizer</p></div>
+                    <div>
+                    <JqxGrid style={{ border: 'none' }}
+                             source={dfsDataAdapter1} columns={dfsColumns}/>
+                    </div>
+                    <div>
+                     <JqxGrid style={{ border: 'none' }}
+                     source={dfsDataAdapter2} columns={dfsColumns}/>
+                    </div>
+                </div>
+            )
+        }
+
+
+        const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
         const dsFields = [{ name: 'Position', type: 'string' },
                            { name: 'Player', type: 'string' },
