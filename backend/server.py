@@ -42,7 +42,15 @@ def optimized_team():
     dk_cap = 50000
     fd_lineup = optimize(fd_lineup_matrix, fd_proj_dict, fd_pos_dict, fd_salary_dict, fd_cap)
     dk_lineup = optimize(dk_lineup_matrix, dk_proj_dict, dk_pos_dict, dk_salary_dict, dk_cap)
-    return fd_lineup + '|' + dk_lineup
+    fd_data = [{'Position': fd_pos_dict.get(player), 'Player': player, 'Projected': fd_proj_dict.get(player),
+                'Price': '$' + str(fd_salary_dict.get(player))} for player in fd_lineup]
+    fd_data_str = str(fd_data).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
+        .replace("',", '",').replace(", '", ', "')
+    dk_data = [{'Position': dk_pos_dict.get(player), 'Player': player, 'Projected': dk_proj_dict.get(player),
+                'Price': '$' + str(dk_salary_dict.get(player))} for player in dk_lineup]
+    dk_data_str = str(dk_data).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
+        .replace("',", '",').replace(", '", ', "')
+    return fd_data_str + '|' + dk_data_str
 
 
 @app.route("/espn-players")

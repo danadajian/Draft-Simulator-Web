@@ -1,8 +1,4 @@
-from MLBSalaries import *
-
-nfl_matrix = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST']
-mlb_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
-lineup_dict = {0: 'No lineup could be generated.'}
+import statistics
 
 
 def get_total(players, data):
@@ -11,62 +7,42 @@ def get_total(players, data):
 
 
 def optimize(lineup_matrix, proj_pts_dict, pos_dict, salary_dict, salary_cap):
+    sorted_players = sorted(proj_pts_dict, key=proj_pts_dict.__getitem__, reverse=True)
+    sorted_scores = [proj_pts_dict.get(player) for player in sorted_players]
+    proj_pts_dict = dict(zip(sorted_players, sorted_scores))
+
+    sorted_positions = [pos_dict.get(player) for player in sorted_players]
+    pos_dict = dict(zip(sorted_players, sorted_positions))
+
     pools = [[player for player in pos_dict.keys() if pos_dict.get(player) in spot or spot in pos_dict.get(player)]
              for spot in lineup_matrix]
-    current_pts_list = [0 for _ in pools]
-    current_salary_list = [0 for _ in pools]
-    possible_lineup = ['' for _ in pools]
-    final_lineups = {}
-    max_pts_list = [max(proj_pts_dict.get(player) for player in pool) for pool in pools]
-    min_salary_list = [min(salary_dict.get(player) for player in pool) for pool in pools]
-    max_points = 0
-    new_lineup = []
+    current_lineup = []
+    while len(current_lineup) < len(pools):
+        for pool in pools:
+            for i in range(len(pool)):
+                if pool[i] not in current_lineup:
+                    current_lineup.append(pool[i])
+                    break
 
-    def recursively_check(player_pools, n):
-        nonlocal new_lineup
-        nonlocal max_points
-        if n < 0:
-            return
-        else:
-            for player in player_pools[n]:
-                if player in possible_lineup:
-                    continue
-                current_pts_list[n] = proj_pts_dict.get(player)
-                current_salary_list[n] = salary_dict.get(player)
-                potential_max_points = sum(
-                    [current_pts_list[i] for i in range(len(current_pts_list)) if i > n]) + sum(
-                    [max_pts_list[i] for i in range(len(max_pts_list)) if i <= n])
-                potential_min_salary = sum(
-                    [current_salary_list[i] for i in range(len(current_salary_list)) if i > n]) + sum(
-                    [min_salary_list[i] for i in range(len(min_salary_list)) if i <= n])
-                if potential_max_points > max(lineup_dict.keys()) and potential_min_salary <= salary_cap:
-                    possible_lineup[n] = player
+    current_salary = sum([salary_dict.get(player) for player in current_lineup])
+    salary_threshold = statistics.mean(list(salary_dict.values()))
+    while current_salary > salary_cap:
+        min_cost = 100
+        downgrade_index = None
+        new_player = None
+        for i in range(len(current_lineup)):
+            player_index = pools[i].index(current_lineup[i])
+            if len(pools[i]) == player_index + 1 or salary_dict.get(pools[i][player_index]) < salary_threshold or \
+                    pools[i][player_index + 1] in current_lineup:
+                continue
+            current_ratio = proj_pts_dict.get(pools[i][player_index]) / salary_dict.get(pools[i][player_index])
+            downgrade_ratio = proj_pts_dict.get(pools[i][player_index + 1]) / salary_dict.get(pools[i][player_index + 1])
+            cost_to_downgrade = current_ratio - downgrade_ratio
+            if cost_to_downgrade < min_cost:
+                min_cost = cost_to_downgrade
+                downgrade_index = i
+                new_player = pools[i][player_index + 1]
+        current_lineup[downgrade_index] = new_player
+        current_salary = sum([salary_dict.get(player) for player in current_lineup])
 
-                    total_points = sum(current_pts_list)
-                    total_salary = sum(current_salary_list)
-                    if n == 0 and total_points > max_points and total_salary <= salary_cap:
-                        new_lineup = [player for player in possible_lineup]
-                        max_points = total_points
-                        print(max_points)
-
-                    recursively_check(player_pools, n - 1)
-
-        final_lineup = lineup_dict.get(max(lineup_dict.keys()))
-        total_proj_pts = sum([proj_pts_dict.get(player) for player in
-                              final_lineup]) if final_lineup != 'No lineup could be generated.' else 0
-        return [total_proj_pts, final_lineup]
-
-    result = recursively_check(pools, len(pools) - 1)
-
-    final_lineups.update({result[0]: result[1]})
-
-    best_lineup = final_lineups.get(max(final_lineups.keys()))
-    lineup_data = [{'Position': pos_dict.get(player), 'Player': player, 'Projected': proj_pts_dict.get(player),
-                    'Price': salary_dict.get(player)} for player in best_lineup]
-    lineup_str = str(lineup_data).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
-        .replace("',", '",').replace(", '", ', "')
-    return lineup_str
-
-
-print(optimize(mlb_matrix, dfsPointsDict.get('Fanduel'), dfsPositionsDict.get('Fanduel'), dfsSalaryDict.get('Fanduel'),
-               35000))
+    return current_lineup
