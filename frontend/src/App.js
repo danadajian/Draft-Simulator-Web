@@ -280,19 +280,18 @@ class App extends React.Component {
 
             return (
                 <div>
-                    <div><p className={'Loading-text'}>DFS Optimizer</p></div>
-                    <div>
+                    <h1 className={"App-header"}>DFS Optimizer</h1>
+                    <div className={"Player-list-box-div"}>
                     <JqxGrid style={{ border: 'none' }}
                              source={dfsDataAdapter1} columns={dfsColumns}/>
                     </div>
-                    <div>
+                    <div className={"Player-list-box-div"}>
                      <JqxGrid style={{ border: 'none' }}
                      source={dfsDataAdapter2} columns={dfsColumns}/>
                     </div>
                 </div>
             )
         }
-
 
         const userPlayersList = (typeof userPlayers === 'string') ? userPlayers.split(','): userPlayers;
 
