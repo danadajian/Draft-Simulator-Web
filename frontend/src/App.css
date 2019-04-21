@@ -28,6 +28,11 @@ body {
   padding: 20px 30px;
 }
 
+.Nav-bar {
+  position: fixed;
+  top: 0;
+}
+
 .App-header {
   text-align: center;
   color: navajowhite;
@@ -37,6 +42,21 @@ body {
   display: flex;
   float: left;
   margin: 1%;
+}
+
+.Dfs-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 1000px;
+}
+
+.Dfs-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  color: navajowhite;
 }
 
 .Player-list-box {

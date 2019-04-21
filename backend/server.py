@@ -44,13 +44,13 @@ def optimized_team():
     fd_list = best_lineup(fd_lineup_matrix, fd_proj_dict, fd_pos_dict)
     fd_best_lineup, fd_pools, fd_proj_dict = fd_list[0], fd_list[1], fd_list[2]
     fd_optimal_lineup = optimize(fd_best_lineup, fd_pools, fd_proj_dict, fd_salary_dict, fd_cap)
-    fd_total_pts = sum([fd_proj_dict.get(player) for player in fd_optimal_lineup])
+    fd_total_pts = round(sum([fd_proj_dict.get(player) for player in fd_optimal_lineup]), 1)
     fd_total_salary = sum([fd_salary_dict.get(player) for player in fd_optimal_lineup])
     fd_max = sum([fd_proj_dict.get(player) for player in fd_best_lineup])
     dk_list = best_lineup(dk_lineup_matrix, dk_proj_dict, dk_pos_dict)
     dk_best_lineup, dk_pools, dk_proj_dict = dk_list[0], dk_list[1], dk_list[2]
     dk_optimal_lineup = optimize(dk_best_lineup, dk_pools, dk_proj_dict, dk_salary_dict, dk_cap)
-    dk_total_pts = sum([dk_proj_dict.get(player) for player in dk_optimal_lineup])
+    dk_total_pts = round(sum([dk_proj_dict.get(player) for player in dk_optimal_lineup]), 1)
     dk_total_salary = sum([dk_salary_dict.get(player) for player in dk_optimal_lineup])
     dk_max = sum([dk_proj_dict.get(player) for player in dk_best_lineup])
     fd_data = make_data_nice(fd_display_matrix, fd_optimal_lineup, fd_proj_dict, fd_salary_dict, fd_total_pts,
