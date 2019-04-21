@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 import './App.css';
-import JqxListBox from './jqxwidgets/react_jqxlistbox'
-import JqxGrid from './jqxwidgets/react_jqxgrid'
-import JqxTabs from './jqxwidgets/react_jqxtabs'
-import JqxSlider from './jqxwidgets/react_jqxslider'
 import JqxNavBar from './jqxwidgets/react_jqxnavbar'
 import JqxPopover from './jqxwidgets/react_jqxpopover'
+import JqxListBox from './jqxwidgets/react_jqxlistbox'
+import JqxTabs from './jqxwidgets/react_jqxtabs'
+import JqxGrid from './jqxwidgets/react_jqxgrid'
+import JqxSlider from './jqxwidgets/react_jqxslider'
 import $ from 'jquery';
 import football from './football.ico'
 
@@ -15,7 +15,8 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
-class App extends React.Component {
+
+class App extends Component {
 
     constructor(props) {
         super(props);
@@ -262,16 +263,15 @@ class App extends React.Component {
 
         if (window.location.pathname === '/dfs-optimizer') {
 
-            const dfsFields =
-                          [{ name: 'Position', type: 'string' },
-                           { name: 'Player', type: 'string' },
-                           { name: 'Projected', type: 'string' },
-                           { name: 'Price', type: 'string' }];
+            const dfsFields = [{ name: 'Position', type: 'string' },
+                               { name: 'Player', type: 'string' },
+                               { name: 'Projected', type: 'string' },
+                               { name: 'Price', type: 'string' }];
 
-            const dfsColumns = [{ text: 'Position', datafield: 'Position', width: 100 },
+            const dfsColumns = [{ text: 'Position', datafield: 'Position', width: 75 },
                                 { text: 'Player', datafield: 'Player', width: 175 },
-                                { text: 'Projected', datafield: 'Projected', width: 125 },
-                                { text: 'Price', datafield: 'Price', width: 125 }];
+                                { text: 'Projected', datafield: 'Projected', width: 100 },
+                                { text: 'Price', datafield: 'Price', width: 75 }];
 
             let dfsSource1 = {datatype: 'json', datafields: dfsFields, localdata: fdLineup};
             let dfsSource2 = {datatype: 'json', datafields: dfsFields, localdata: dkLineup};
@@ -280,14 +280,19 @@ class App extends React.Component {
 
             return (
                 <div>
+
                     <h1 className={"App-header"}>DFS Optimizer</h1>
-                    <div className={"Player-list-box-div"}>
-                    <JqxGrid style={{ border: 'none' }}
-                             source={dfsDataAdapter1} columns={dfsColumns}/>
-                    </div>
-                    <div className={"Player-list-box-div"}>
-                     <JqxGrid style={{ border: 'none' }}
-                     source={dfsDataAdapter2} columns={dfsColumns}/>
+                    <div className={"Dfs-grid"}>
+                        <div className={"Dfs-header"}>
+                        <h2>Fanduel</h2>
+                        <JqxGrid width={425} height={420}
+                                 source={dfsDataAdapter1} columns={dfsColumns}/>
+                        </div>
+                        <div className={"Dfs-header"}>
+                        <h2>Draftkings</h2>
+                         <JqxGrid width={425} height={420}
+                         source={dfsDataAdapter2} columns={dfsColumns}/>
+                        </div>
                     </div>
                 </div>
             )
@@ -308,12 +313,9 @@ class App extends React.Component {
         let source3 = {datatype: 'json', datafields: dsFields, localdata: expectedTeam};
         let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
 
-        let tabSpecs =
-            [
-                { text: 'Position', datafield: 'Position', width: 100 },
-                { text: 'Player', datafield: 'Player', width: 175 },
-                { text: 'Draft Frequency', datafield: 'DraftFreq', width: 125 }
-            ];
+        let tabSpecs = [{ text: 'Position', datafield: 'Position', width: 100 },
+                        { text: 'Player', datafield: 'Player', width: 175 },
+                        { text: 'Draft Frequency', datafield: 'DraftFreq', width: 125 }];
 
         if (userFreqs + allFreqs + expectedTeam !== '') {
             window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dataAdapter1});
@@ -326,10 +328,10 @@ class App extends React.Component {
         }
 
         return (
-            <div className={"App"}>
+            <div>
                 <div>
                 <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={40}
-                       height={70} selectedItem={null} minimizeButtonPosition={"right"} width={"100%"}>
+                       height={70} selectedItem={null} minimizeButtonPosition={"right"} classname={'Nav-bar'}>
                     <ul>
                         <li>Home</li>
                         <li id={'aboutButton'}>About</li>
@@ -366,9 +368,8 @@ class App extends React.Component {
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Let's draft!</button>
                     </JqxPopover>
-
                 </div>
-                </div>
+            </div>
                 <h1 className={"App-header"}>Draft Simulator</h1>
                 <div className={"Player-list-box-div"}>
                 <JqxListBox ref='playerListbox'
@@ -392,24 +393,24 @@ class App extends React.Component {
                 <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
                 </div>
                 <div className={"Draft-results-div"}>
-                <JqxTabs width={400} height={450}>
-                    <ul>
-                        <li style={{ marginLeft: 15 }}>Draft Frequency</li>
-                        <li>All Players</li>
-                        <li>Expected Team</li>
-                    </ul>
-                    <div style={{ overflow: 'hidden' }}>
-                        <JqxGrid style={{ border: 'none' }}
-                            width={'100%'} height={'100%'} source={dataAdapter1} columns={tabSpecs}/>
-                    </div>
-                    <div style={{ overflow: 'hidden' }}>
-                        <JqxGrid style={{ border: 'none' }}
-                            width={'100%'} height={'100%'} source={dataAdapter2} columns={tabSpecs}/>
-                    </div>
-                    <div style={{ overflow: 'hidden' }}>
-                        <JqxGrid style={{ border: 'none' }}
-                            width={'100%'} height={'100%'} source={dataAdapter3} columns={tabSpecs}/>
-                    </div>
+                    <JqxTabs width={400} height={450}>
+                        <ul>
+                            <li style={{ marginLeft: 15 }}>Draft Frequency</li>
+                            <li>All Players</li>
+                            <li>Expected Team</li>
+                        </ul>
+                        <div style={{ overflow: 'hidden' }}>
+                            <JqxGrid style={{ border: 'none' }}
+                                width={'100%'} height={'100%'} source={dataAdapter1} columns={tabSpecs}/>
+                        </div>
+                        <div style={{ overflow: 'hidden' }}>
+                            <JqxGrid style={{ border: 'none' }}
+                                width={'100%'} height={'100%'} source={dataAdapter2} columns={tabSpecs}/>
+                        </div>
+                        <div style={{ overflow: 'hidden' }}>
+                            <JqxGrid style={{ border: 'none' }}
+                                width={'100%'} height={'100%'} source={dataAdapter3} columns={tabSpecs}/>
+                        </div>
                     </JqxTabs>
                 </div>
                 <div className={"Slider-div"}>
