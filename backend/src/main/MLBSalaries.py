@@ -19,7 +19,7 @@ for site in sites:
     # make http request to scrape html
     dfsSession = requests.session()
     dfsUrl = 'http://rotoguru1.com/cgi-bin/stats.cgi?pos=0&sort=3&game=' + str(site) + \
-             '&colA=0&daypt=0&denom=1&xavg=0&inact=0&maxprc=99999&sched=1&starters=1&hithand=0&numlist=z'
+             '&colA=0&daypt=0&denom=1&xavg=0&inact=0&maxprc=99999&sched=1&starters=1&hithand=1&numlist=z'
     dfsReq = dfsSession.get(dfsUrl)
     dfsDoc = BeautifulSoup(dfsReq.content, 'html.parser')
     dfsText = str(dfsDoc.get_text)
@@ -79,6 +79,6 @@ for site in sites:
     siteSalaries.append(dfsPlayersAndPositions)
 
 # accumulates salaries from each site
-dfsSalaryDict = {'Fanduel': siteSalaries[0], 'Draftkings': siteSalaries[3]}
-dfsPointsDict = {'Fanduel': siteSalaries[1], 'Draftkings': siteSalaries[4]}
-dfsPositionsDict = {'Fanduel': siteSalaries[2], 'Draftkings': siteSalaries[5]}
+mlbSalaryDict = {'Fanduel': siteSalaries[0], 'Draftkings': siteSalaries[3]}
+mlbPointsDict = {'Fanduel': siteSalaries[1], 'Draftkings': siteSalaries[4]}
+mlbPositionsDict = {'Fanduel': siteSalaries[2], 'Draftkings': siteSalaries[5]}
