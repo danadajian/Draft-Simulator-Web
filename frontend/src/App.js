@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Container } from 'react-bootstrap'
+import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
-import JqxNavBar from './jqxwidgets/react_jqxnavbar'
 import JqxPopover from './jqxwidgets/react_jqxpopover'
 import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
@@ -46,17 +45,6 @@ class App extends Component {
     }
 
     componentDidUpdate() {
-        if (this.refs.navBar) {
-            this.refs.navBar.on('change', () => {
-                let index = this.refs.navBar.getSelectedIndex();
-                if (index === 0) {
-                    window.location.pathname = '/';
-                } else if (index === 3) {
-                    window.location.pathname = '/dfs-optimizer';
-                }
-            })
-        }
-
         let done = false;
         if (this.refs.dropDown) {
             this.refs.dropDown.on('change', () => {
@@ -79,7 +67,7 @@ class App extends Component {
 
         if (document.getElementById("swapButton")) {
             document.getElementById("swapButton").innerHTML =
-                (window.location.pathname === '/espn') ? 'Switch to Yahoo' : 'Switch to ESPN';
+                (window.location.pathname.startsWith('/espn')) ? 'Switch to Yahoo' : 'Switch to ESPN';
         }
 
         if (this.refs.teamCountSlider) {
@@ -92,20 +80,17 @@ class App extends Component {
         }
     }
 
-    enter = () => {
-        window.location.href += 'espn';
-    };
-
     hitEsc = () => {
         const esc = window.$.Event("keydown", {keyCode: 27});
         window.$("body").trigger(esc);
-        this.refs.navBar.close();
+        let url = window.location.pathname.split('#');
+        window.location.href = window.location.origin + url[0].toString() + '#';
     };
 
     swapRankings = () => {
-        if (window.location.href.endsWith('yahoo')) {
+        if (window.location.pathname.startsWith('/yahoo')) {
             window.location.href = window.location.href.replace('yahoo', 'espn');
-        } else if (window.location.href.endsWith('espn')) {
+        } else if (window.location.pathname.startsWith('/espn')) {
             window.location.href = window.location.href.replace('espn', 'yahoo');
         }
     };
@@ -191,7 +176,6 @@ class App extends Component {
     };
 
     simulateDraft = () => {
-        this.refs.navBar.close();
         this.setState({allFreqs: '', userFreqs: '', expectedTeam: ''});
         let userPick = this.refs.pickOrderSlider.getValue();
         this.setState({isRandom: window.$("input[type='checkbox']").is(":checked")}, function () {
@@ -262,9 +246,15 @@ class App extends Component {
 
         if (window.location.pathname === '/') {
             return (
-                <div>
-                    <div><p className={'Loading-text'}>Welcome to Draft Simulator!</p></div>
-                    <div className={'Home'}><button onClick={this.enter} className={'Home-button'}>Enter</button></div>
+                <div className={'Home'}>
+                    <h1 className={'Home-header'}>Welcome to Draft Simulator!</h1>
+                    <h3 className={'Dfs-header'}>To start, choose a draft site:</h3>
+                    <div className={"Home-buttons"}>
+                    <button onClick={() => {window.location.href += 'espn'}} className={'Site-button'}>ESPN</button>
+                    <button onClick={() => {window.location.href += 'yahoo'}} className={'Site-button'}>Yahoo</button>
+                    </div>
+                    <h3 className={'Dfs-header'}>Or, check out our DFS Optimizer:</h3>
+                    <button onClick={() => {window.location.href += 'dfs-optimizer'}} className={'Dfs-button'}>DFS Optimizer</button>
                 </div>
             )
         }
@@ -273,9 +263,9 @@ class App extends Component {
             return <p className={"Loading-text"}>Loading . . .</p>;
         } else if (isDrafting) {
             return (
-                <div>
-                    <div><p className={"Loading-text"}>Drafting . . .</p></div>
-                    <div><img src={football} className="App-logo" alt="football"/></div>
+                <div className={"Drafting"}>
+                    <div><p className={"Draft-text"}>Drafting . . .</p></div>
+                    <div><img src={football} className={"App-logo"} alt="football"/></div>
                 </div>
             );
         }
@@ -305,7 +295,13 @@ class App extends Component {
         }
 
             return (
-                <div>
+                <Container fluid={true}>
+                    <Navbar bg="primary" variant="dark">
+                        <Nav className="Nav-bar">
+                          <Nav.Link href="/">Home</Nav.Link>
+                          <Nav.Link href="/espn">Back to Draft Simulator</Nav.Link>
+                        </Nav>
+                    </Navbar>
                     <h1 className={"App-header"}>DFS Optimizer</h1>
                     <div className={"Dfs-sport"}>
                     <h3>Choose a sport:</h3>
@@ -313,18 +309,18 @@ class App extends Component {
                                      source={sports} autoDropDownHeight={true}/>
                     </div>
                     <div className={"Dfs-grid"}>
-                        <div className={"Dfs-header"}>
-                        <h2>Fanduel</h2>
+                        <div>
+                        <h2 className={"Dfs-header"}>Fanduel</h2>
                         <JqxGrid width={425} height={420} autoheight={true}
                                  source={dfsDataAdapter1} columns={dfsColumns}/>
                         </div>
-                        <div className={"Dfs-header"}>
-                        <h2>Draftkings</h2>
+                        <div>
+                        <h2 className={"Dfs-header"}>Draftkings</h2>
                          <JqxGrid width={425} height={420} autoheight={true}
                          source={dfsDataAdapter2} columns={dfsColumns}/>
                         </div>
                     </div>
-                </div>
+                </Container>
             )
         }
 
@@ -359,18 +355,17 @@ class App extends Component {
 
         return (
             <Container fluid={true}>
-                <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={40}
-                       height={70} selectedItem={null} minimizeButtonPosition={"right"} classname={'Nav-bar'}>
-                    <ul>
-                        <li>Home</li>
-                        <li id={'aboutButton'}>About</li>
-                        <li id={'instructionsButton'}>Instructions</li>
-                        <li>DFS Optimizer</li>
-                    </ul>
-                </JqxNavBar>
+                <Navbar bg="primary" variant="dark">
+                    <Nav className="Nav-bar">
+                      <Nav.Link href="/">Home</Nav.Link>
+                      <Nav.Link href="#about">About</Nav.Link>
+                      <Nav.Link href="#instructions">Instructions</Nav.Link>
+                      <Nav.Link href="/dfs-optimizer">DFS Optimizer</Nav.Link>
+                    </Nav>
+                </Navbar>
                 <div className={"Info-buttons"}>
-                    <JqxPopover ref='about' isModal={true} showCloseButton={true} width={310}
-                        position={'bottom'} title={'About Draft Simulator'} selector={"[id^='aboutButton']:last"}>
+                    <JqxPopover ref='about' isModal={true} width={310}
+                        position={'bottom'} title={'About Draft Simulator'} selector={'a[href$="#about"]'}>
                         <p>Draft Simulator is a fantasy football draft preparation tool.</p>
                         <p>More often than not, others in your league will only draft among the "top available players"
                             in each round, which are determined by ESPN's preseason rankings.</p>
@@ -380,8 +375,8 @@ class App extends Component {
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Got it!</button>
                     </JqxPopover>
-                    <JqxPopover ref='instructions' isModal={true} showCloseButton={true} width={310}
-                        position={'bottom'} title={'Instructions'} selector={"[id^='instructionsButton']:last"}>
+                    <JqxPopover ref='instructions' isModal={true} width={310}
+                        position={'bottom'} title={'Instructions'} selector={'a[href$="#instructions"]'}>
                         <ol>
                             <li>Search for and select players from the player list. These should be players you'd feel
                                 strongly about drafting.</li>

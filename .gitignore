@@ -1,8 +1,8 @@
 .idea/
 
-backend/__pycache__
+backend/__pycache__/
 
-backend/src/main/__pycache__
+backend/src/main/__pycache__/
 
 ci/credentials.yml
 
