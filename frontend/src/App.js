@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Container } from 'react-bootstrap'
 import './App.css';
 import JqxNavBar from './jqxwidgets/react_jqxnavbar'
 import JqxPopover from './jqxwidgets/react_jqxpopover'
@@ -6,6 +7,7 @@ import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
+import JqxDropDownList from './jqxwidgets/react_jqxdropdownlist'
 import $ from 'jquery';
 import football from './football.ico'
 
@@ -39,10 +41,7 @@ class App extends Component {
             startingList = ['Currently not available.'];
             this.setState({isLoading: false, players: startingList});
         } else if (window.location.pathname === '/dfs-optimizer') {
-            $.get(window.location.origin + '/optimized-lineup', (data) => {
-                const lineup = data.split('|');
-                this.setState({isLoading: false, fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
-            });
+            this.setState({isLoading: false});
         }
     }
 
@@ -54,6 +53,26 @@ class App extends Component {
                     window.location.pathname = '/';
                 } else if (index === 3) {
                     window.location.pathname = '/dfs-optimizer';
+                }
+            })
+        }
+
+        let done = false;
+        if (this.refs.dropDown) {
+            this.refs.dropDown.on('change', () => {
+                let sport = '';
+                let index = this.refs.dropDown.selectedIndex();
+                if (index === 0) {
+                    sport = 'mlb';
+                } else if (index === 1) {
+                    sport = 'nba';
+                }
+                if (!done) {
+                    $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                        const lineup = data.split('|');
+                        this.setState({fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
+                        done = true;
+                    });
                 }
             })
         }
@@ -263,6 +282,8 @@ class App extends Component {
 
         if (window.location.pathname === '/dfs-optimizer') {
 
+            const sports = ['MLB', 'NBA'];
+
             const dfsFields = [{ name: 'Position', type: 'string' },
                                { name: 'Player', type: 'string' },
                                { name: 'Projected', type: 'string' },
@@ -278,19 +299,28 @@ class App extends Component {
             let dfsDataAdapter1 = new window.$.jqx.dataAdapter(dfsSource1);
             let dfsDataAdapter2 = new window.$.jqx.dataAdapter(dfsSource2);
 
+            if (fdLineup + dkLineup) {
+            window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dfsDataAdapter1});
+            window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dfsDataAdapter2});
+        }
+
             return (
                 <div>
-
                     <h1 className={"App-header"}>DFS Optimizer</h1>
+                    <div className={"Dfs-sport"}>
+                    <h3>Choose a sport:</h3>
+                    <JqxDropDownList ref='dropDown' className={"Drop-down"} width={100} height={30}
+                                     source={sports} autoDropDownHeight={true}/>
+                    </div>
                     <div className={"Dfs-grid"}>
                         <div className={"Dfs-header"}>
                         <h2>Fanduel</h2>
-                        <JqxGrid width={425} height={420}
+                        <JqxGrid width={425} height={420} autoheight={true}
                                  source={dfsDataAdapter1} columns={dfsColumns}/>
                         </div>
                         <div className={"Dfs-header"}>
                         <h2>Draftkings</h2>
-                         <JqxGrid width={425} height={420}
+                         <JqxGrid width={425} height={420} autoheight={true}
                          source={dfsDataAdapter2} columns={dfsColumns}/>
                         </div>
                     </div>
@@ -313,11 +343,11 @@ class App extends Component {
         let source3 = {datatype: 'json', datafields: dsFields, localdata: expectedTeam};
         let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
 
-        let tabSpecs = [{ text: 'Position', datafield: 'Position', width: 100 },
+        let tabSpecs = [{ text: 'Position', datafield: 'Position', width: 95 },
                         { text: 'Player', datafield: 'Player', width: 175 },
-                        { text: 'Draft Frequency', datafield: 'DraftFreq', width: 125 }];
+                        { text: 'Draft Frequency', datafield: 'DraftFreq', width: 130 }];
 
-        if (userFreqs + allFreqs + expectedTeam !== '') {
+        if (userFreqs + allFreqs + expectedTeam) {
             window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dataAdapter1});
             window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dataAdapter2});
             window.$("[id^='jqxGridjqx']:eq(2)").jqxGrid({source: dataAdapter3});
@@ -328,8 +358,7 @@ class App extends Component {
         }
 
         return (
-            <div>
-                <div>
+            <Container fluid={true}>
                 <JqxNavBar ref='navBar' minimizedTitle={"Draft Simulator"} minimized={true} minimizedHeight={40}
                        height={70} selectedItem={null} minimizeButtonPosition={"right"} classname={'Nav-bar'}>
                     <ul>
@@ -369,31 +398,26 @@ class App extends Component {
                             Let's draft!</button>
                     </JqxPopover>
                 </div>
-            </div>
                 <h1 className={"App-header"}>Draft Simulator</h1>
-                <div className={"Player-list-box-div"}>
-                <JqxListBox ref='playerListbox'
-                            width={250} height={300}
-                            source={players} filterable={true} searchMode={"containsignorecase"}
-                            multiple={true} className={"Player-list-box"}/>
-                </div>
-                <div className={"Player-button"}>
-                    <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
-                    <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
-                    </button>
-                    <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
-                    <button id='swapButton' onClick={this.swapRankings} className={"Swap-button"}>Swap Button</button>
-                </div>
-                <div className={"User-list-box-div"}>
-                    <JqxListBox ref='userListbox' width={250} height={300}
+                <div className={"Buttons-and-boxes"}>
+                    <JqxListBox ref='playerListbox'
+                                width={250} height={400}
+                                source={players} filterable={true} searchMode={"containsignorecase"}
+                                multiple={true} className={"Player-list-box"}/>
+                    <div className={"Player-buttons"}>
+                        <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
+                        <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
+                        </button>
+                        <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
+                        <button id='swapButton' onClick={this.swapRankings} className={"Swap-button"}>Swap Button</button>
+                    </div>
+                    <JqxListBox ref='userListbox' width={250} height={400}
                                 source={userPlayersList} allowDrag={true}
-                                allowDrop={true} multiple={true} className={"User-list-box"}/>
-                </div>
-                <div className={"Draft-button-div"}>
-                <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft</button>
-                </div>
-                <div className={"Draft-results-div"}>
-                    <JqxTabs width={400} height={450}>
+                                allowDrop={true} multiple={true} className={"Player-list-box"}/>
+                    <div className={"Draft-button-div"}>
+                        <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
+                    </div>
+                    <JqxTabs width={400} height={400}>
                         <ul>
                             <li style={{ marginLeft: 15 }}>Draft Frequency</li>
                             <li>All Players</li>
@@ -413,35 +437,37 @@ class App extends Component {
                         </div>
                     </JqxTabs>
                 </div>
-                <div className={"Slider-div"}>
+                <div className={"Slider-row"}>
+                    <div className={"Sliders"}>
                     <p>Number of teams per draft:</p>
                     <JqxSlider ref='teamCountSlider'
-                    height={55} width={400}
+                    height={55} width={350}
                     value={teamCount} min={6} max={14} showTickLabels={true}
                     ticksFrequency={2} tooltip={true} mode={'fixed'}/>
-                </div>
-                <div className={"Slider-div"}>
+                    </div>
+                    <div className={"Sliders"}>
                     <p>Your pick in the draft:</p>
                     <JqxSlider ref='pickOrderSlider'
-                        height={55} width={400}
+                        height={55} width={350}
                         value={sliderPick} min={1} max={sliderLength} showTickLabels={true}
                         ticksFrequency={1} tooltip={true} mode={'fixed'}/>
                     <form>
                       <label>
                         Randomize:
-                        <input type="checkbox" value="checked" />
+                        <input type="checkbox" value="checked"/>
                       </label>
                     </form>
-                </div>
-                <div className={"Slider-div"}>
+                    </div>
+                    <div className={"Sliders"}>
                     <p>Number of rounds per draft:</p>
                     <JqxSlider ref='roundCountSlider'
-                    height={55} width={400}
+                    height={55} width={350}
                     value={roundCount} min={1} max={16} showTickLabels={true}
                     ticksFrequency={15} showMinorTicks={true}
                     minorTicksFrequency={1} tooltip={true} mode={'fixed'}/>
+                    </div>
                 </div>
-            </div>
+            </Container>
         )
     }
 }
