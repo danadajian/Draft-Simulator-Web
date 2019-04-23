@@ -10,7 +10,7 @@ Languages/services used:
 * Deployment pipeline: Concourse, Docker
 
 Heroku CLI deploy command:
-* `git subtree push --prefix backend heroku master`
+* `git subtree push --prefix backend https://git.heroku.com/draft-simulator.git master`
 * If it doesn't cooperate...
     * ``git push heroku `git subtree split --prefix backend master`:master --force``
 
