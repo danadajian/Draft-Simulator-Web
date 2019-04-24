@@ -67,6 +67,19 @@ class OptimizerTests(unittest.TestCase):
         result = set(optimize(position_matrix, proj_pts, pos_dict, salary_dict, salary_cap))
         self.assertEqual({'QB3', 'RB2', 'RB4', 'WR1', 'WR2', 'WR3'}, result)
 
+    def test_optimize_not_possible(self):
+        position_matrix = ['QB', 'RB', 'RB', 'WR', 'WR', 'RB WR']
+        proj_pts = {'QB1': 5, 'QB2': 2, 'QB3': 6, 'RB1': 2, 'RB2': 7, 'RB3': 1, 'RB4': 6, 'WR1': 3, 'WR2': 5,
+                    'WR3': 7,
+                    'WR4': 2, 'WR5': 3}
+        pos_dict = {'QB1': 'QB', 'QB2': 'QB', 'QB3': 'QB', 'RB1': 'RB', 'RB2': 'RB', 'RB3': 'RB', 'RB4': 'RB',
+                    'WR1': 'WR', 'WR2': 'WR', 'WR3': 'WR', 'WR4': 'WR', 'WR5': 'WR'}
+        salary_dict = {'QB1': 600, 'QB2': 200, 'QB3': 400, 'RB1': 300, 'RB2': 100, 'RB3': 800, 'RB4': 400,
+                       'WR1': 600, 'WR2': 400, 'WR3': 300, 'WR4': 200, 'WR5': 500}
+        salary_cap = 100
+        result = set(optimize(position_matrix, proj_pts, pos_dict, salary_dict, salary_cap))
+        self.assertEqual('Too few players to optimize.', result)
+
 
 if __name__ == '__main__':
     unittest.main()

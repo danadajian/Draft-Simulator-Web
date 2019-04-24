@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from .MLBStarters import startersList
 
 
 # defines function that finds all string indices of a substring
@@ -38,13 +39,20 @@ for site in sites:
     for index in dfsPlayerIndexList:
         dfsLowerNameIndex = dfsText.find('>', index) + 1
         dfsUpperNameIndex = dfsText.find('<', dfsLowerNameIndex)
+        dfsLastNameIndex = dfsText.find(',', dfsLowerNameIndex)
+        dfsLastName = dfsText[dfsLowerNameIndex: dfsLastNameIndex]
+        dfsFirstName = (dfsText[dfsLastNameIndex + 1: dfsUpperNameIndex])[1:]
+        dfsAbbrev = dfsFirstName[0] + ' ' + dfsLastName
+        if dfsAbbrev not in startersList:
+            continue
         dfsLowerSalaryIndex = dfsText.find('</font>', dfsUpperNameIndex) - 7
-        dfsPlayer = dfsText[dfsLowerNameIndex: dfsUpperNameIndex]
         dfsSalaryText = dfsText[dfsLowerSalaryIndex: dfsLowerSalaryIndex + 7]
         dfsAmount = dfsSalaryText[1:]
         dfsSalary = int(dfsAmount[:dfsAmount.find(',')] + dfsAmount[dfsAmount.find(',') + 1:])
         if dfsSalary == 0:
             continue
+        dfsPlayerName = str(dfsFirstName) + ' ' + str(dfsLastName)
+        dfsPlayerList.append(dfsPlayerName)
         dfsSalaryList.append(dfsSalary)
         dfsLowerStatsIndex = dfsLowerSalaryIndex + 14
         dfsUpperStatsIndex = dfsLowerStatsIndex + 50
@@ -62,11 +70,6 @@ for site in sites:
                 pos2 = position_dict.get(dfsPosition[1])
                 dfsPosition = pos1 + ' ' + pos2
         dfsPositionsList.append(dfsPosition)
-        dfsLastNameIndex = dfsText.find(',', dfsLowerNameIndex)
-        dfsLastName = dfsText[dfsLowerNameIndex: dfsLastNameIndex]
-        dfsFirstName = (dfsText[dfsLastNameIndex + 1: dfsUpperNameIndex])[1:]
-        dfsPlayerName = str(dfsFirstName) + ' ' + str(dfsLastName)
-        dfsPlayerList.append(dfsPlayerName)
 
     # put players and salaries into dictionary
     dfsPlayersAndSalaries = dict(zip(dfsPlayerList, dfsSalaryList))

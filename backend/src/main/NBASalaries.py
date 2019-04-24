@@ -19,7 +19,7 @@ for site in sites:
     # make http request to scrape html
     dfsSession = requests.session()
     dfsUrl = 'http://rotoguru1.com/cgi-bin/hstats.cgi?pos=0&sort=3&game=' + str(site) + \
-             '&colA=0&daypt=0&xavg=3&show=0&fltr=00'
+             '&colA=0&daypt=0&xavg=3&show=1&fltr=00'
     dfsReq = dfsSession.get(dfsUrl)
     dfsDoc = BeautifulSoup(dfsReq.content, 'html.parser')
     dfsText = str(dfsDoc.get_text)
