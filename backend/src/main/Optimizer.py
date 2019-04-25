@@ -1,7 +1,17 @@
 import statistics
 
 
-def best_lineup(lineup_matrix, proj_pts_dict, pos_dict):
+def ignore_players(player_to_remove, black_list, pools):
+    if player_to_remove:
+        black_list.append(player_to_remove)
+        for pool in pools:
+            for player in black_list:
+                if player in pool:
+                    pool.remove(player)
+    return pools
+
+
+def best_lineup(lineup_matrix, ignored_player, black_list, proj_pts_dict, pos_dict):
     sorted_players = sorted(proj_pts_dict, key=proj_pts_dict.__getitem__, reverse=True)
     sorted_scores = [proj_pts_dict.get(player) for player in sorted_players]
     proj_pts_dict = dict(zip(sorted_players, sorted_scores))
@@ -9,8 +19,10 @@ def best_lineup(lineup_matrix, proj_pts_dict, pos_dict):
     sorted_positions = [pos_dict.get(player) for player in sorted_players]
     pos_dict = dict(zip(sorted_players, sorted_positions))
 
-    pools = [[player for player in pos_dict.keys() if pos_dict.get(player) in spot or spot in pos_dict.get(player)]
-             for spot in lineup_matrix]
+    starting_pools = [
+        [player for player in pos_dict.keys() if pos_dict.get(player) in spot or spot in pos_dict.get(player)] for spot
+        in lineup_matrix]
+    pools = ignore_players(ignored_player, black_list, starting_pools)
     starting_lineup = []
     while len(starting_lineup) < len(pools):
         for pool in pools:
@@ -42,6 +54,8 @@ def optimize(starting_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
                 min_cost = cost_to_downgrade
                 downgrade_index = i
                 new_player = pools[i][player_index + 1]
+        if not new_player:
+            return 'Not enough players to sufficiently downgrade.'
         optimal_lineup[downgrade_index] = new_player
         current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
 
@@ -61,28 +75,15 @@ def make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total
     return data_str
 
 
-def output_lineups(fd_lineup_matrix, fd_display_matrix, dk_lineup_matrix, dk_display_matrix, points_dict,
-                   positions_dict, salary_dict, fd_cap, dk_cap):
-    fd_proj_dict = points_dict.get('Fanduel')
-    dk_proj_dict = points_dict.get('Draftkings')
-    fd_pos_dict = positions_dict.get('Fanduel')
-    dk_pos_dict = positions_dict.get('Draftkings')
-    fd_salary_dict = salary_dict.get('Fanduel')
-    dk_salary_dict = salary_dict.get('Draftkings')
-    fd_list = best_lineup(fd_lineup_matrix, fd_proj_dict, fd_pos_dict)
-    fd_best_lineup, fd_pools, fd_proj_dict = fd_list[0], fd_list[1], fd_list[2]
-    fd_optimal_lineup = optimize(fd_best_lineup, fd_pools, fd_proj_dict, fd_salary_dict, fd_cap)
-    fd_total_pts = round(sum([fd_proj_dict.get(player) for player in fd_optimal_lineup]), 1)
-    fd_total_salary = sum([fd_salary_dict.get(player) for player in fd_optimal_lineup])
-    fd_max = sum([fd_proj_dict.get(player) for player in fd_best_lineup])
-    dk_list = best_lineup(dk_lineup_matrix, dk_proj_dict, dk_pos_dict)
-    dk_best_lineup, dk_pools, dk_proj_dict = dk_list[0], dk_list[1], dk_list[2]
-    dk_optimal_lineup = optimize(dk_best_lineup, dk_pools, dk_proj_dict, dk_salary_dict, dk_cap)
-    dk_total_pts = round(sum([dk_proj_dict.get(player) for player in dk_optimal_lineup]), 1)
-    dk_total_salary = sum([dk_salary_dict.get(player) for player in dk_optimal_lineup])
-    dk_max = sum([dk_proj_dict.get(player) for player in dk_best_lineup])
-    fd_data = make_data_nice(fd_display_matrix, fd_optimal_lineup, fd_proj_dict, fd_salary_dict, fd_total_pts,
-                             fd_total_salary, fd_max)
-    dk_data = make_data_nice(dk_display_matrix, dk_optimal_lineup, dk_proj_dict, dk_salary_dict, dk_total_pts,
-                             dk_total_salary, dk_max)
-    return fd_data + '|' + dk_data
+def output_lineups(lineup_matrix, display_matrix, ignored_player, black_list, proj_dict, pos_dict, salary_dict, cap):
+    the_list = best_lineup(lineup_matrix, ignored_player, black_list, proj_dict, pos_dict)
+    the_best_lineup, pools, proj_dict = the_list[0], the_list[1], the_list[2]
+    optimal_lineup = optimize(the_best_lineup, pools, proj_dict, salary_dict, cap)
+    print(optimal_lineup)
+    if optimal_lineup == 'Not enough players to sufficiently downgrade.':
+        return '[{"Position": "", "Player": "", "Projected": "", "Price": ""}]'
+    total_pts = round(sum([proj_dict.get(player) for player in optimal_lineup]), 1)
+    total_salary = sum([salary_dict.get(player) for player in optimal_lineup])
+    result_max = sum([proj_dict.get(player) for player in the_best_lineup])
+    data = make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total_pts, total_salary, result_max)
+    return data
