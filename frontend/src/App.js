@@ -59,10 +59,46 @@ class App extends Component {
                     $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
                         const lineup = data.split('|');
                         this.setState({fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
+                        console.log('whoa');
                         done = true;
                     });
                 }
             })
+        }
+
+        let done2 = false;
+        if (this.refs.fdGrid) {
+            this.refs.fdGrid.on('rowclick', (event) => {
+                let row_index = event.args.rowindex;
+                console.log(row_index);
+                let index = this.refs.dropDown.selectedIndex();
+                let sport = '';
+                if (index === 0) {
+                    sport = 'mlb';
+                } else if (index === 1) {
+                    sport = 'nba';
+                }
+                const postToEndpoint = async () => {
+                    return $.post(window.location.origin + '/optimized-lineup/' + sport, 'Caleb Smith|Gordon Beckham,Cody Bellinger');
+                };
+
+                const getFromEndpoint = async () => {
+                    if (!done2) {
+                        return $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                            const lineup = data.split('|');
+                            this.setState({fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
+                            done2 = true;
+                        });
+                    }
+                };
+
+                const changePlayers = async () => {
+                    await postToEndpoint();
+                    await getFromEndpoint();
+                };
+
+                return changePlayers();
+            });
         }
 
         if (document.getElementById("swapButton")) {
@@ -292,7 +328,15 @@ class App extends Component {
             if (fdLineup + dkLineup) {
             window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dfsDataAdapter1});
             window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dfsDataAdapter2});
-        }
+            let blankLineup = '[{"Position": "", "Player": "", "Projected": "", "Price": ""}]';
+            if (fdLineup === blankLineup && dkLineup === blankLineup) {
+                alert('Not enough player data is currently available to generate lineups.')
+            } else if (fdLineup === blankLineup) {
+                alert('Not enough player data is currently available to generate a Fanduel lineup.')
+            } else if (dkLineup === blankLineup) {
+                alert('Not enough player data is currently available to generate a Draftkings lineup.')
+            }
+            }
 
             return (
                 <Container fluid={true}>
@@ -311,12 +355,12 @@ class App extends Component {
                     <div className={"Dfs-grid"}>
                         <div>
                         <h2 className={"Dfs-header"}>Fanduel</h2>
-                        <JqxGrid width={425} height={420} autoheight={true}
+                        <JqxGrid ref='fdGrid' width={425} height={420} autoheight={true}
                                  source={dfsDataAdapter1} columns={dfsColumns}/>
                         </div>
                         <div>
                         <h2 className={"Dfs-header"}>Draftkings</h2>
-                         <JqxGrid width={425} height={420} autoheight={true}
+                         <JqxGrid ref='dkGrid' width={425} height={420} autoheight={true}
                          source={dfsDataAdapter2} columns={dfsColumns}/>
                         </div>
                     </div>
