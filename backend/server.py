@@ -37,43 +37,14 @@ def optimized_team(sport):
         clean = str(data)[2:-1]
         ignored_players = tuple(clean.split('|'))
         print(ignored_players)
-        ignored_player = ignored_players[0]
-        black_list = ignored_players[1].split(',')
-        if sport == 'mlb':
-            fd_lineup_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
-            fd_display_matrix = ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util']
-            dk_lineup_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']
-            fd_proj_dict = mlbPointsDict.get('Fanduel')
-            fd_pos_dict = mlbPositionsDict.get('Fanduel')
-            fd_salary_dict = mlbSalaryDict.get('Fanduel')
-            dk_proj_dict = mlbPointsDict.get('Draftkings')
-            dk_pos_dict = mlbPositionsDict.get('Draftkings')
-            dk_salary_dict = mlbSalaryDict.get('Draftkings')
-            fd_data = output_lineups(fd_lineup_matrix, fd_display_matrix, ignored_player, black_list, fd_proj_dict,
-                                     fd_pos_dict, fd_salary_dict, 35000)
-            dk_data = output_lineups(dk_lineup_matrix, dk_lineup_matrix, ignored_player, black_list, dk_proj_dict,
-                                     dk_pos_dict, dk_salary_dict, 50000)
-            return fd_data + '|' + dk_data
-        elif sport == 'nba':
-            fd_lineup_matrix = ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
-            dk_lineup_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C']
-            dk_display_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util']
-            fd_proj_dict = nbaPointsDict.get('Fanduel')
-            fd_pos_dict = nbaPositionsDict.get('Fanduel')
-            fd_salary_dict = nbaSalaryDict.get('Fanduel')
-            dk_proj_dict = nbaPointsDict.get('Draftkings')
-            dk_pos_dict = nbaPositionsDict.get('Draftkings')
-            dk_salary_dict = nbaSalaryDict.get('Draftkings')
-            fd_data = output_lineups(fd_lineup_matrix, fd_lineup_matrix, ignored_player, black_list, fd_proj_dict,
-                                     fd_pos_dict, fd_salary_dict, 60000)
-            dk_data = output_lineups(dk_lineup_matrix, dk_display_matrix, ignored_player, black_list, dk_proj_dict,
-                                     dk_pos_dict, dk_salary_dict, 50000)
-            return fd_data + '|' + dk_data
-        else:
-            return 'Sport not yet selected.'
+        return ignored_players
     else:
-        ignored_player = ''
-        black_list = []
+        try:
+            ignored_player = ignored_players[0]
+            black_list = ignored_players[1].split(',')
+        except NameError:
+            ignored_player = ''
+            black_list = []
         if sport == 'mlb':
             fd_lineup_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
             fd_display_matrix = ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util']
