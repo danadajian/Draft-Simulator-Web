@@ -16,6 +16,7 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
+let removedList = [];
 
 class App extends Component {
 
@@ -45,59 +46,79 @@ class App extends Component {
     }
 
     componentDidUpdate() {
-        let done = false;
+        let lineup1 = '';
+        let lineup2 = '';
+        let done = 0;
         if (this.refs.dropDown) {
             this.refs.dropDown.on('change', () => {
-                let sport = '';
-                let index = this.refs.dropDown.selectedIndex();
-                if (index === 0) {
-                    sport = 'mlb';
-                } else if (index === 1) {
-                    sport = 'nba';
-                }
-                if (!done) {
+                done += 1;
+                if (done % 2 === 1) {
+                    let sport = '';
+                    let index = this.refs.dropDown.selectedIndex();
+                    if (index === 0) {
+                        sport = 'mlb';
+                    } else if (index === 1) {
+                        sport = 'nba';
+                    }
                     $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
                         const lineup = data.split('|');
-                        this.setState({fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
-                        console.log('whoa');
-                        done = true;
+                        lineup1 = lineup[0].toString();
+                        lineup2 = lineup[1].toString();
+                        if (lineup1 !== this.state.fdLineup || lineup2 !== this.state.dkLineup) {
+                            this.setState({fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
+                        }
                     });
                 }
             })
         }
 
-        let done2 = false;
         if (this.refs.fdGrid) {
             this.refs.fdGrid.on('rowclick', (event) => {
-                let row_index = event.args.rowindex;
-                console.log(row_index);
-                let index = this.refs.dropDown.selectedIndex();
-                let sport = '';
-                if (index === 0) {
-                    sport = 'mlb';
-                } else if (index === 1) {
-                    sport = 'nba';
-                }
-                const postToEndpoint = async () => {
-                    return $.post(window.location.origin + '/optimized-lineup/' + sport, 'Caleb Smith|Gordon Beckham,Cody Bellinger');
-                };
+                done += 1;
+                if (done % 2 === 1) {
+                    let index = this.refs.dropDown.selectedIndex();
+                    let sport = '';
+                    if (index === 0) {
+                        sport = 'mlb';
+                    } else if (index === 1) {
+                        sport = 'nba';
+                    }
 
-                const getFromEndpoint = async () => {
-                    if (!done2) {
+                    let row_index = event.args.rowindex;
+                    let row_data = this.refs.fdGrid.getrowdata(row_index);
+                    removedList.push(row_data.Player);
+                    console.log(row_data.Player);
+
+                    const postToEndpoint = async () => {
+                        return $.post(window.location.origin + '/optimized-lineup/' + sport,
+                            row_data.Player + '|' + removedList.toString());
+                    };
+
+                    const getFromEndpoint = async () => {
                         return $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
                             const lineup = data.split('|');
-                            this.setState({fdLineup: lineup[0].toString(), dkLineup: lineup[1].toString()});
-                            done2 = true;
+                            lineup1 = lineup[0].toString();
+                            lineup2 = lineup[1].toString();
+
+                            if (lineup1 !== this.state.fdLineup || lineup2 !== this.state.dkLineup) {
+                                this.setState({
+                                    fdLineup: lineup[0].toString(),
+                                    dkLineup: lineup[1].toString()
+                                }, function () {
+                                    this.refs.fdGrid.unselectrow(row_index);
+                                    alert('You have removed ' + row_data.Player + ' from your lineup.');
+                                });
+                            }
                         });
-                    }
-                };
+                    };
 
-                const changePlayers = async () => {
-                    await postToEndpoint();
-                    await getFromEndpoint();
-                };
+                    const changePlayers = async () => {
+                        await postToEndpoint();
+                        await getFromEndpoint();
+                    };
 
-                return changePlayers();
+                    return changePlayers();
+                }
             });
         }
 
