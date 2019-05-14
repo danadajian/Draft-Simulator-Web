@@ -1,7 +1,7 @@
 from src.main.GetPlayers import get_players
 from src.main.SimulateDraft import *
-from src.main.MLBSalaries import mlbSalaryDict, mlbPointsDict, mlbPositionsDict
-from src.main.NBASalaries import nbaSalaryDict, nbaPointsDict, nbaPositionsDict
+from src.main.MLBSalaries import *
+from src.main.NBASalaries import *
 from src.main.Optimizer import *
 import os
 import flask
@@ -32,51 +32,31 @@ def dfs_optimizer():
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 def optimized_team(sport):
     global ignored_players
+    global site
     if flask.request.method == 'POST':
         data = flask.request.get_data()
         clean = str(data)[2:-1]
         ignored_players = tuple(clean.split('|'))
         print(ignored_players)
-        return ignored_players
+        if ignored_players[2] == 'fd':
+            site = 'fd'
+        elif ignored_players[2] == 'dk':
+            site = 'dk'
+        return ignored_players[:2]
     else:
         try:
             ignored_player = ignored_players[0]
-            black_list = ignored_players[1].split(',')
+            black_list = ignored_players[1].split(',') if ',' in ignored_players[1] else [ignored_players[1]]
         except NameError:
             ignored_player = ''
             black_list = []
-        if sport == 'mlb':
-            fd_lineup_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
-            fd_display_matrix = ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util']
-            dk_lineup_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']
-            fd_proj_dict = mlbPointsDict.get('Fanduel')
-            fd_pos_dict = mlbPositionsDict.get('Fanduel')
-            fd_salary_dict = mlbSalaryDict.get('Fanduel')
-            dk_proj_dict = mlbPointsDict.get('Draftkings')
-            dk_pos_dict = mlbPositionsDict.get('Draftkings')
-            dk_salary_dict = mlbSalaryDict.get('Draftkings')
-            fd_data = output_lineups(fd_lineup_matrix, fd_display_matrix, ignored_player, black_list, fd_proj_dict,
-                                     fd_pos_dict, fd_salary_dict, 35000)
-            dk_data = output_lineups(dk_lineup_matrix, dk_lineup_matrix, ignored_player, black_list, dk_proj_dict,
-                                     dk_pos_dict, dk_salary_dict, 50000)
-            return fd_data + '|' + dk_data
-        elif sport == 'nba':
-            fd_lineup_matrix = ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
-            dk_lineup_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C']
-            dk_display_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util']
-            fd_proj_dict = nbaPointsDict.get('Fanduel')
-            fd_pos_dict = nbaPositionsDict.get('Fanduel')
-            fd_salary_dict = nbaSalaryDict.get('Fanduel')
-            dk_proj_dict = nbaPointsDict.get('Draftkings')
-            dk_pos_dict = nbaPositionsDict.get('Draftkings')
-            dk_salary_dict = nbaSalaryDict.get('Draftkings')
-            fd_data = output_lineups(fd_lineup_matrix, fd_lineup_matrix, ignored_player, black_list, fd_proj_dict,
-                                     fd_pos_dict, fd_salary_dict, 60000)
-            dk_data = output_lineups(dk_lineup_matrix, dk_display_matrix, ignored_player, black_list, dk_proj_dict,
-                                     dk_pos_dict, dk_salary_dict, 50000)
-            return fd_data + '|' + dk_data
-        else:
-            return 'Sport not yet selected.'
+            fd = get_fd_lineup(sport, ignored_player, black_list)
+            dk = get_dk_lineup(sport, ignored_player, black_list)
+            return fd + '|' + dk
+        if site == 'fd':
+            return get_fd_lineup(sport, ignored_player, black_list)
+        elif site == 'dk':
+            return get_dk_lineup(sport, ignored_player, black_list)
 
 
 @app.route("/espn-players")
