@@ -61,6 +61,10 @@ class App extends Component {
                         sport = 'nba';
                     }
                     $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                        if (data.includes('Not enough player data is currently available.')) {
+                            alert('Not enough player data is currently available.');
+                            return;
+                        }
                         const lineup = data.split('|');
                         lineup1 = lineup[0].toString();
                         lineup2 = lineup[1].toString();
@@ -86,27 +90,73 @@ class App extends Component {
 
                     let row_index = event.args.rowindex;
                     let row_data = this.refs.fdGrid.getrowdata(row_index);
-                    removedList.push(row_data.Player);
-                    console.log(row_data.Player);
+                    if (!removedList.includes(row_data.Player)) {
+                        removedList.push(row_data.Player);
+                    }
 
                     const postToEndpoint = async () => {
                         return $.post(window.location.origin + '/optimized-lineup/' + sport,
-                            row_data.Player + '|' + removedList.toString());
+                            row_data.Player + '|' + removedList.toString() + '|fd');
                     };
 
                     const getFromEndpoint = async () => {
                         return $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
-                            const lineup = data.split('|');
-                            lineup1 = lineup[0].toString();
-                            lineup2 = lineup[1].toString();
-
-                            if (lineup1 !== this.state.fdLineup || lineup2 !== this.state.dkLineup) {
-                                this.setState({
-                                    fdLineup: lineup[0].toString(),
-                                    dkLineup: lineup[1].toString()
-                                }, function () {
+                            if (data !== this.state.fdLineup) {
+                                if (data.includes('Not enough player data is currently available.')) {
+                                alert('Not enough player data is currently available.');
+                                return;
+                                }
+                                this.setState({fdLineup: data}, function () {
                                     this.refs.fdGrid.unselectrow(row_index);
-                                    alert('You have removed ' + row_data.Player + ' from your lineup.');
+                                    alert('You have removed ' + row_data.Player + ' from your Fanduel lineup.');
+                                });
+                            }
+                        });
+                    };
+
+                    const changePlayers = async () => {
+                        await postToEndpoint();
+                        await getFromEndpoint();
+                    };
+
+                    return changePlayers();
+                }
+            });
+        }
+        
+        if (this.refs.dkGrid) {
+            this.refs.dkGrid.on('rowclick', (event) => {
+                done += 1;
+                if (done % 2 === 1) {
+                    let index = this.refs.dropDown.selectedIndex();
+                    let sport = '';
+                    if (index === 0) {
+                        sport = 'mlb';
+                    } else if (index === 1) {
+                        sport = 'nba';
+                    }
+
+                    let row_index = event.args.rowindex;
+                    let row_data = this.refs.dkGrid.getrowdata(row_index);
+                    if (!removedList.includes(row_data.Player)) {
+                        removedList.push(row_data.Player);
+                    }
+
+                    const postToEndpoint = async () => {
+                        return $.post(window.location.origin + '/optimized-lineup/' + sport,
+                            row_data.Player + '|' + removedList.toString() + '|dk');
+                    };
+
+                    const getFromEndpoint = async () => {
+                        return $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                            if (data !== this.state.dkLineup) {
+                                if (data.includes('Not enough player data is currently available.')) {
+                                alert('Not enough player data is currently available.');
+                                return;
+                                }
+                                this.setState({dkLineup: data}, function () {
+                                    this.refs.dkGrid.unselectrow(row_index);
+                                    alert('You have removed ' + row_data.Player + ' from your Draftkings lineup.');
                                 });
                             }
                         });
