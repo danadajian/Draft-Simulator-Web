@@ -33,30 +33,40 @@ def dfs_optimizer():
 def optimized_team(sport):
     global ignored_players
     global site
+    global fd_ignored
+    global dk_ignored
+    global fd_lineup
+    global dk_lineup
     if flask.request.method == 'POST':
         data = flask.request.get_data()
         clean = str(data)[2:-1]
         ignored_players = tuple(clean.split('|'))
-        print(ignored_players)
-        if ignored_players[2] == 'fd':
+        if ignored_players[3] == 'fd':
             site = 'fd'
-        elif ignored_players[2] == 'dk':
+            fd_ignored = ignored_players[1]
+        elif ignored_players[3] == 'dk':
             site = 'dk'
+            dk_ignored = ignored_players[1]
         return ignored_players[:2]
     else:
-        try:
-            ignored_player = ignored_players[0]
-            black_list = ignored_players[1].split(',') if ',' in ignored_players[1] else [ignored_players[1]]
-        except NameError:
-            ignored_player = ''
-            black_list = []
-            fd = get_fd_lineup(sport, ignored_player, black_list)
-            dk = get_dk_lineup(sport, ignored_player, black_list)
-            return fd + '|' + dk
-        if site == 'fd':
-            return get_fd_lineup(sport, ignored_player, black_list)
-        elif site == 'dk':
-            return get_dk_lineup(sport, ignored_player, black_list)
+        if sport == 'reset':
+            ignored_players = ()
+            return ''
+        if ignored_players:
+            print(ignored_players)
+            fd_black_list = ignored_players[1].split(',') if ',' in ignored_players[1] else [ignored_players[1]]
+            dk_black_list = ignored_players[2].split(',') if ',' in ignored_players[2] else [ignored_players[2]]
+            if site == 'fd':
+                fd_ignored = ignored_players[0]
+                fd_lineup = get_fd_lineup(sport, fd_ignored, fd_black_list)
+            elif site == 'dk':
+                dk_ignored = ignored_players[0]
+                dk_lineup = get_dk_lineup(sport, dk_ignored, dk_black_list)
+        else:
+            fd_lineup = get_fd_lineup(sport, '', [])
+            dk_lineup = get_dk_lineup(sport, '', [])
+
+        return fd_lineup + '|' + dk_lineup
 
 
 @app.route("/espn-players")
