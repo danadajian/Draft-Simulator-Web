@@ -4,32 +4,123 @@ from src.main.MLBSalaries import *
 from src.main.NBASalaries import *
 from src.main.Optimizer import *
 import os
-import flask
+from flask import Flask, render_template, request, redirect, url_for
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField
+from wtforms.validators import InputRequired, Email, Length
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import exc
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
-app = flask.Flask("__name__")
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+bootstrap = Bootstrap(app)
+db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 
-@app.route("/")
+class Users(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(15), unique=True)
+    email = db.Column(db.String(50), unique=True)
+    password = db.Column(db.String(80))
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+
+class LoginForm(FlaskForm):
+    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+    remember = BooleanField('remember me')
+
+
+class RegisterForm(FlaskForm):
+    email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
+    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = Users.query.filter_by(username=form.username.data).first()
+        if user:
+            if check_password_hash(user.password, form.password.data):
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('home'))
+
+        return '<h1>Invalid username or password</h1>'
+
+    return render_template('login.html', form=form)
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        new_user = Users(username=form.username.data, email=form.email.data, password=hashed_password)
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            return '<h1>User already exists.</h1>'
+
+        return '<h1>New user has been created!</h1>'
+
+    return render_template('signup.html', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/')
+@login_required
+def landing():
+    return redirect(url_for('home'))
+
+
+@app.route("/home")
+@login_required
 def home():
-    return flask.render_template("index.html")
+    return render_template("index.html")
 
 
 @app.route("/espn")
+@login_required
 def espn():
-    return flask.render_template("index.html")
+    return render_template("index.html")
 
 
 @app.route("/yahoo")
+@login_required
 def yahoo():
-    return flask.render_template("index.html")
+    return render_template("index.html")
 
 
 @app.route("/dfs-optimizer")
+@login_required
 def dfs_optimizer():
-    return flask.render_template("index.html")
+    return render_template("index.html")
 
 
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
+@login_required
 def optimized_team(sport):
     global ignored_players
     global site
@@ -37,8 +128,8 @@ def optimized_team(sport):
     global dk_ignored
     global fd_lineup
     global dk_lineup
-    if flask.request.method == 'POST':
-        data = flask.request.get_data()
+    if request.method == 'POST':
+        data = request.get_data()
         clean = str(data)[2:-1]
         ignored_players = tuple(clean.split('|'))
         if ignored_players[3] == 'fd':
@@ -70,21 +161,24 @@ def optimized_team(sport):
 
 
 @app.route("/espn-players")
+@login_required
 def espn_players():
     return get_players()
 
 
 @app.route("/yahoo-players")
+@login_required
 def yahoo_players():
     return
 
 
 @app.route("/draft-results", methods=['GET', 'POST'])
+@login_required
 def run_draft():
     global draft_results
-    if flask.request.method == 'POST':
+    if request.method == 'POST':
         draft_results = None
-        data = flask.request.get_data()
+        data = request.get_data()
         clean = str(data)[2:-1]
         data_list = clean.split('|')
         players_string = data_list[0]
