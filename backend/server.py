@@ -3,10 +3,11 @@ from src.main.SimulateDraft import *
 from src.main.MLBSalaries import *
 from src.main.NBASalaries import *
 from src.main.Optimizer import *
-import os
+# import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
+from flask_heroku import Heroku
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
@@ -16,7 +17,10 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+# For running postgres locally: app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+
+# For running postgres in production:
+heroku = Heroku(app)
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -207,5 +211,5 @@ def run_draft():
 
 if __name__ == "__main__":
     app.run()
-    # port = int(os.environ.get("PORT", 5432))
+    # port = int(os.environ.get("PORT", 5000))
     # app.run(host='0.0.0.0', port=port)
