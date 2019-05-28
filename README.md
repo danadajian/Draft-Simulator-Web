@@ -14,6 +14,9 @@ Heroku CLI deploy command:
 * If it doesn't cooperate...
     * ``git push heroku `git subtree split --prefix backend master`:master --force``
 
+Heroku Postgres commands:
+* `heroku pg:push accounts DATABASE_URL -a draft-simulator`
+
 Docker Commands:
 * in concourse-setup:
     * `docker-compose up -d`
