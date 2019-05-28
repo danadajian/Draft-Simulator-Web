@@ -105,12 +105,12 @@ class App extends Component {
                     }
 
                     const postToEndpoint = async () => {
-                        return $.post(window.location.origin + '/optimized-lineup/' + sport,
+                        return await $.post(window.location.origin + '/optimized-lineup/' + sport,
                             ignoredPlayer + '|' + fdRemovedList.toString() + '|' + dkRemovedList.toString() + '|fd');
                     };
 
                     const getFromEndpoint = async () => {
-                        return $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                        return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
                             const lineup = data.split('|');
                             lineup1 = lineup[0].toString();
 
@@ -158,12 +158,12 @@ class App extends Component {
                     }
 
                     const postToEndpoint = async () => {
-                        return $.post(window.location.origin + '/optimized-lineup/' + sport,
+                        return await $.post(window.location.origin + '/optimized-lineup/' + sport,
                             ignoredPlayer + '|' + fdRemovedList.toString() + '|' + dkRemovedList.toString() + '|dk');
                     };
 
                     const getFromEndpoint = async () => {
-                        return $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                        return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
                             const lineup = data.split('|');
                             lineup2 = lineup[1].toString();
                             if (lineup2 !== this.state.dkLineup) {
@@ -209,6 +209,22 @@ class App extends Component {
         window.$("body").trigger(esc);
         let url = window.location.pathname.split('#');
         window.location.href = window.location.origin + url[0].toString() + '#';
+    };
+
+    loadRankings = () => {
+        let playerList = this.state.players;
+        let userPlayers = this.state.userPlayers;
+        $.get(window.location.origin + '/espn-rankings', (data) => {
+            let userRanking = data.split(',');
+            if (userPlayers) {this.clearPlayers()}
+            for (let i = 0; i < userRanking.length; i++) {
+                this.refs.userListbox.addItem(userRanking[i]);
+                this.refs.playerListbox.removeItem(userRanking[i]);
+                let playerIndex = playerList.indexOf(userRanking[i]);
+                playerList.splice(playerIndex, 1);
+            }
+            this.setState({userPlayers: userRanking});
+        });
     };
 
     swapRankings = () => {
@@ -529,6 +545,7 @@ class App extends Component {
                         <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
                         </button>
                         <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
+                        <button id='rankingButton' onClick={this.loadRankings} className={"Swap-button"}>Load Previous Rankings</button>
                         <button id='swapButton' onClick={this.swapRankings} className={"Swap-button"}>Swap Button</button>
                     </div>
                     <JqxListBox ref='userListbox' width={250} height={400}

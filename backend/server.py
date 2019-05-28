@@ -17,7 +17,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
-# For running postgres locally: app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+# For running postgres locally:
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
 # For running postgres in production:
 heroku = Heroku(app)
@@ -33,6 +34,7 @@ class Users(UserMixin, db.Model):
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
+    draft_ranking = db.Column(db.String(10000), unique=False)
 
 
 @login_manager.user_loader
@@ -63,7 +65,8 @@ def login():
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for('home'))
 
-        return '<h1>Invalid username or password</h1>'
+        return '<h1>Invalid username or password</h1>' \
+               '<h2>Please <a href="login">try again</a>.</h2>'
 
     return render_template('login.html', form=form)
 
@@ -74,14 +77,17 @@ def signup():
 
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
-        new_user = Users(username=form.username.data, email=form.email.data, password=hashed_password)
+        new_user = Users(username=form.username.data, email=form.email.data, password=hashed_password,
+                         draft_ranking='No ranking specified.')
         try:
             db.session.add(new_user)
             db.session.commit()
         except exc.SQLAlchemyError:
-            return '<h1>User already exists.</h1>'
+            return '<h1>User already exists.</h1>' \
+                   '<h2>Please <a href="signup">try again</a>.</h2>'
 
-        return '<h1>New user has been created!</h1>'
+        return '<h1>Your account has been created!</h1>' \
+               '<h2>Now please <a href="login">login</a>.</h2>'
 
     return render_template('signup.html', form=form)
 
@@ -109,6 +115,13 @@ def home():
 @login_required
 def espn():
     return render_template("index.html")
+
+
+@app.route("/espn-rankings")
+@login_required
+def espn_rankings():
+    user = Users.query.filter_by(username=current_user.username).first()
+    return user.draft_ranking
 
 
 @app.route("/yahoo")
@@ -186,6 +199,9 @@ def run_draft():
         clean = str(data)[2:-1]
         data_list = clean.split('|')
         players_string = data_list[0]
+        user = Users.query.filter_by(username=current_user.username).first()
+        user.draft_ranking = players_string
+        db.session.commit()
         replace_list = ['(QB)', '(RB)', '(WR)', '(TE)', '(K)', '(DST)', '    ']
         for item in replace_list:
             players_string = players_string.replace(item, '')
