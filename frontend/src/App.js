@@ -16,16 +16,16 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
-let ignoredPlayer = '';
-let fdRemovedList = [];
-let dkRemovedList = [];
+let lineup1 = '';
+let lineup2 = '';
+let blankLineup = '[{"Position": "", "Player": "Not enough player data.", "Projected": "", "Price": ""}]';
 
 class App extends Component {
 
     constructor(props) {
         super(props);
         this.state = {isLoading: true, players: [], userPlayers: [], isDrafting: false, isRandom: false,
-            allFreqs: '', userFreqs: '', expectedTeam: '', fdLineup: '', dkLineup: ''};
+            allFreqs: '', userFreqs: '', expectedTeam: '', sport: '', fdLineup: '', dkLineup: ''};
     }
 
     componentDidMount() {
@@ -44,14 +44,102 @@ class App extends Component {
             this.setState({isLoading: false, players: startingList});
         } else if (window.location.pathname === '/dfs-optimizer') {
             this.setState({isLoading: false});
-            $.get(window.location.origin + '/optimized-lineup/' + 'reset');
+            this.setState({sport: 'reset'}, function () {
+                $.get(window.location.origin + '/optimized-lineup/' + 'reset');
+            })
+        }
+    }
+
+    componentWillUpdate() {
+        if (this.refs.fdGrid) {
+            this.refs.fdGrid.on('rowclick', (event) => {
+                let index = this.refs.dropDown.selectedIndex();
+                let sport = '';
+                if (index === 0) {
+                    sport = 'mlb';
+                } else if (index === 1) {
+                    sport = 'nba';
+                }
+
+                let row_index = event.args.rowindex;
+                let row_data = this.refs.fdGrid.getrowdata(row_index);
+
+                const postToEndpoint = async () => {
+                    return await $.post(window.location.origin + '/optimized-lineup/' + sport, row_index + '|fd');
+                };
+
+                const getFromEndpoint = async () => {
+                    return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                        const lineup = data.split('|');
+                        lineup1 = lineup[0].toString();
+
+                        if (lineup1 !== this.state.fdLineup) {
+                            if (lineup1 === 'Not enough player data is currently available.') {
+                                this.setState({fdLineup: blankLineup});
+                            } else {
+                                this.setState({fdLineup: lineup1}, function () {
+                                    this.refs.fdGrid.unselectrow(row_index);
+                                    alert('You have removed ' + row_data.Player + ' from your Fanduel lineup.');
+                                });
+                            }
+                        }
+                    });
+                };
+
+                const changePlayers = async () => {
+                    await postToEndpoint();
+                    await getFromEndpoint();
+                };
+
+                return changePlayers();
+            });
+        }
+
+        if (this.refs.dkGrid) {
+            this.refs.dkGrid.on('rowclick', (event) => {
+                let index = this.refs.dropDown.selectedIndex();
+                let sport = '';
+                if (index === 0) {
+                    sport = 'mlb';
+                } else if (index === 1) {
+                    sport = 'nba';
+                }
+
+                let row_index = event.args.rowindex;
+                let row_data = this.refs.dkGrid.getrowdata(row_index);
+
+                const postToEndpoint = async () => {
+                    return await $.post(window.location.origin + '/optimized-lineup/' + sport, row_index + '|dk');
+                };
+
+                const getFromEndpoint = async () => {
+                    return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
+                        const lineup = data.split('|');
+                        lineup2 = lineup[1].toString();
+                        if (lineup2 !== this.state.dkLineup) {
+                            if (lineup1 === 'Not enough player data is currently available.') {
+                                this.setState({fdLineup: blankLineup});
+                            } else {
+                                this.setState({dkLineup: lineup2}, function () {
+                                    this.refs.dkGrid.unselectrow(row_index);
+                                    alert('You have removed ' + row_data.Player + ' from your Draftkings lineup.');
+                                });
+                            }
+                        }
+                    });
+                };
+
+                const changePlayers = async () => {
+                    await postToEndpoint();
+                    await getFromEndpoint();
+                };
+
+                return changePlayers();
+            });
         }
     }
 
     componentDidUpdate() {
-        let lineup1 = '';
-        let lineup2 = '';
-        let blankLineup = '[{"Position": "", "Player": "Not enough player data.", "Projected": "", "Price": ""}]';
         let done = 0;
         if (this.refs.dropDown) {
             this.refs.dropDown.on('change', () => {
@@ -70,121 +158,20 @@ class App extends Component {
                         lineup2 = lineup[1].toString();
 
                         if (lineup1 === 'Not enough player data is currently available.') {
-                            this.setState({fdLineup: blankLineup});
+                            this.setState({fdLineup: blankLineup}, function () {
+                                alert('Not enough player data is currently available. \nPlease try again later.');
+                            });
                         } else {
                             this.setState({fdLineup: lineup1});
                         }
                         if (lineup2 === 'Not enough player data is currently available.') {
-                            this.setState({dkLineup: blankLineup});
+                            this.setState({dkLineup: blankLineup}, function () {
+                                alert('Not enough player data is currently available. \nPlease try again later.');
+                            });
                         } else {
                             this.setState({dkLineup: lineup2});
                         }
                     });
-                }
-            });
-        }
-
-        if (this.refs.fdGrid) {
-            this.refs.fdGrid.on('rowclick', (event) => {
-                if (this.state.fdLineup === blankLineup) {return;}
-                done += 1;
-                if (done % 2 === 1) {
-                    let index = this.refs.dropDown.selectedIndex();
-                    let sport = '';
-                    if (index === 0) {
-                        sport = 'mlb';
-                    } else if (index === 1) {
-                        sport = 'nba';
-                    }
-
-                    let row_index = event.args.rowindex;
-                    let row_data = this.refs.fdGrid.getrowdata(row_index);
-                    ignoredPlayer = row_data.Player;
-                    if (!fdRemovedList.includes(ignoredPlayer)) {
-                        fdRemovedList.push(ignoredPlayer);
-                    }
-
-                    const postToEndpoint = async () => {
-                        return await $.post(window.location.origin + '/optimized-lineup/' + sport,
-                            ignoredPlayer + '|' + fdRemovedList.toString() + '|' + dkRemovedList.toString() + '|fd');
-                    };
-
-                    const getFromEndpoint = async () => {
-                        return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
-                            const lineup = data.split('|');
-                            lineup1 = lineup[0].toString();
-
-                            if (lineup1 !== this.state.fdLineup) {
-                                if (lineup1 === 'Not enough player data is currently available.') {
-                                    this.setState({fdLineup: blankLineup});
-                                } else {
-                                    this.setState({fdLineup: lineup1}, function () {
-                                        this.refs.fdGrid.unselectrow(row_index);
-                                        alert('You have removed ' + ignoredPlayer + ' from your Fanduel lineup.');
-                                    });
-                                }
-                            }
-                        });
-                    };
-
-                    const changePlayers = async () => {
-                        await postToEndpoint();
-                        await getFromEndpoint();
-                    };
-
-                    return changePlayers();
-                }
-            });
-        }
-        
-        if (this.refs.dkGrid) {
-            this.refs.dkGrid.on('rowclick', (event) => {
-                if (this.state.dkLineup === blankLineup) {return;}
-                done += 1;
-                if (done % 2 === 1) {
-                    let index = this.refs.dropDown.selectedIndex();
-                    let sport = '';
-                    if (index === 0) {
-                        sport = 'mlb';
-                    } else if (index === 1) {
-                        sport = 'nba';
-                    }
-
-                    let row_index = event.args.rowindex;
-                    let row_data = this.refs.dkGrid.getrowdata(row_index);
-                    ignoredPlayer = row_data.Player;
-                    if (!dkRemovedList.includes(ignoredPlayer)) {
-                        dkRemovedList.push(ignoredPlayer);
-                    }
-
-                    const postToEndpoint = async () => {
-                        return await $.post(window.location.origin + '/optimized-lineup/' + sport,
-                            ignoredPlayer + '|' + fdRemovedList.toString() + '|' + dkRemovedList.toString() + '|dk');
-                    };
-
-                    const getFromEndpoint = async () => {
-                        return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
-                            const lineup = data.split('|');
-                            lineup2 = lineup[1].toString();
-                            if (lineup2 !== this.state.dkLineup) {
-                                if (lineup1 === 'Not enough player data is currently available.') {
-                                    this.setState({fdLineup: blankLineup});
-                                } else {
-                                    this.setState({dkLineup: lineup2}, function () {
-                                        this.refs.dkGrid.unselectrow(row_index);
-                                        alert('You have removed ' + ignoredPlayer + ' from your Draftkings lineup.');
-                                    });
-                                }
-                            }
-                        });
-                    };
-
-                    const changePlayers = async () => {
-                        await postToEndpoint();
-                        await getFromEndpoint();
-                    };
-
-                    return changePlayers();
                 }
             });
         }
