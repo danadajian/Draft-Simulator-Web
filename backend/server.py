@@ -139,40 +139,49 @@ def dfs_optimizer():
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 @login_required
 def optimized_team(sport):
-    global ignored_players
+    global ignored
     global site
     global fd_ignored
     global dk_ignored
+    global fd_black_list
+    global dk_black_list
     global fd_lineup
     global dk_lineup
     if request.method == 'POST':
         data = request.get_data()
         clean = str(data)[2:-1]
-        ignored_players = tuple(clean.split('|'))
-        if ignored_players[3] == 'fd':
+        ignored = tuple(clean.split('|'))
+        if ignored[1] == 'fd':
             site = 'fd'
-            fd_ignored = ignored_players[1]
-        elif ignored_players[3] == 'dk':
+            fd_ignored = eval(fd_lineup[1:-1].split('}, ')[int(ignored[0])] + '}').get("Player")
+        elif ignored[1] == 'dk':
             site = 'dk'
-            dk_ignored = ignored_players[1]
-        return ignored_players[:2]
+            dk_ignored = eval(dk_lineup[1:-1].split('}, ')[int(ignored[0])] + '}').get("Player")
+        return ignored
     else:
         if sport == 'reset':
-            ignored_players = ()
+            ignored = ()
+            fd_ignored = ''
+            dk_ignored = ''
+            fd_black_list = []
+            dk_black_list = []
             return ''
-        if ignored_players:
-            print(ignored_players)
-            fd_black_list = ignored_players[1].split(',') if ',' in ignored_players[1] else [ignored_players[1]]
-            dk_black_list = ignored_players[2].split(',') if ',' in ignored_players[2] else [ignored_players[2]]
+        if ignored:
             if site == 'fd':
-                fd_ignored = ignored_players[0]
-                fd_lineup = get_fd_lineup(sport, fd_ignored, fd_black_list)
+                print(fd_ignored)
+                fd_black_list.append(fd_ignored)
+                fd_black_list = list(set(fd_black_list))
+
             elif site == 'dk':
-                dk_ignored = ignored_players[0]
-                dk_lineup = get_dk_lineup(sport, dk_ignored, dk_black_list)
-        else:
-            fd_lineup = get_fd_lineup(sport, '', [])
-            dk_lineup = get_dk_lineup(sport, '', [])
+                print(dk_ignored)
+                dk_black_list.append(dk_ignored)
+                dk_black_list = list(set(dk_black_list))
+
+        print(ignored)
+        print(fd_black_list)
+        print(dk_black_list)
+        fd_lineup = get_fd_lineup(sport, fd_ignored, fd_black_list + [fd_ignored])
+        dk_lineup = get_dk_lineup(sport, dk_ignored, dk_black_list + [dk_ignored])
 
         return fd_lineup + '|' + dk_lineup
 
