@@ -1,4 +1,4 @@
-from .GetPlayers import top300dict
+from .GetESPNPlayers import top300dict
 
 
 # functions for ensuring teams draft appropriate positions

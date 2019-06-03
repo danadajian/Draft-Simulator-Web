@@ -39,7 +39,7 @@ top300dict = dict(zip(top300List, top300Positions))
 final_player_list = [str(player) + '    (' + str(pos) + ')' for player, pos in top300dict.items()]
 
 
-def get_players():
+def get_espn_players():
     if str(request) != '<Response [200]>':
         return 'HTTP request failed.'
     return str(final_player_list)

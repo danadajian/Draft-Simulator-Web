@@ -1,9 +1,9 @@
-from src.main.GetPlayers import get_players
+from src.main.GetESPNPlayers import get_espn_players
+from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.SimulateDraft import *
 from src.main.MLBSalaries import *
 from src.main.NBASalaries import *
 from src.main.Optimizer import *
-# import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
@@ -17,7 +17,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
-# For running postgres locally. Comment out the line below when deploying to heroku:
+# For running postgres locally, uncomment the line below:
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
 # For running postgres in production:
@@ -117,7 +117,7 @@ def espn():
     return render_template("index.html")
 
 
-@app.route("/espn-rankings")
+@app.route("/user-rankings")
 @login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
@@ -128,6 +128,24 @@ def espn_rankings():
 @login_required
 def yahoo():
     return render_template("index.html")
+
+
+@app.route("/save-ranking", methods=['GET', 'POST'])
+@login_required
+def save_to_db():
+    global user_ranking
+    if request.method == 'POST':
+        user_ranking = None
+        data = request.get_data()
+        clean = str(data)[2:-1]
+        data_list = clean.split('|')
+        players_string = data_list[0]
+        user = Users.query.filter_by(username=current_user.username).first()
+        user.draft_ranking = players_string
+        db.session.commit()
+        return
+    else:
+        return user_ranking
 
 
 @app.route("/dfs-optimizer")
@@ -189,13 +207,13 @@ def optimized_team(sport):
 @app.route("/espn-players")
 @login_required
 def espn_players():
-    return get_players()
+    return get_espn_players()
 
 
 @app.route("/yahoo-players")
 @login_required
 def yahoo_players():
-    return
+    return get_yahoo_players()
 
 
 @app.route("/draft-results", methods=['GET', 'POST'])
@@ -236,5 +254,3 @@ def run_draft():
 
 if __name__ == "__main__":
     app.run()
-    # port = int(os.environ.get("PORT", 5000))
-    # app.run(host='0.0.0.0', port=port)
