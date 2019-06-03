@@ -18,7 +18,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
 # For running postgres locally, uncomment the line below:
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
 # For running postgres in production:
 heroku = Heroku(app)
@@ -43,15 +43,25 @@ def load_user(user_id):
 
 
 class LoginForm(FlaskForm):
-    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
-    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
-    remember = BooleanField('remember me')
+    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
+    remember = BooleanField('Remember Me')
 
 
 class RegisterForm(FlaskForm):
-    email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
-    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
-    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+    email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
+    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
+
+
+@app.route('/')
+def landing_page():
+    try:
+        user = current_user.username
+    except AttributeError:
+        return render_template('home.html')
+    if user:
+        return redirect(url_for('home'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -97,12 +107,6 @@ def signup():
 def logout():
     logout_user()
     return redirect(url_for('login'))
-
-
-@app.route('/')
-@login_required
-def landing():
-    return redirect(url_for('home'))
 
 
 @app.route("/home")
@@ -226,9 +230,6 @@ def run_draft():
         clean = str(data)[2:-1]
         data_list = clean.split('|')
         players_string = data_list[0]
-        user = Users.query.filter_by(username=current_user.username).first()
-        user.draft_ranking = players_string
-        db.session.commit()
         replace_list = ['(QB)', '(RB)', '(WR)', '(TE)', '(K)', '(DST)', '    ']
         for item in replace_list:
             players_string = players_string.replace(item, '')

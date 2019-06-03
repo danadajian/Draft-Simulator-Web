@@ -8,23 +8,22 @@ Login
 {% block styles %}
 {{super()}}
 <link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+<link rel="shortcut icon" href="/static/react/football.ico"/>
 {% endblock %}
 
 {% block content %}
-    <div class="container">
+    <div class="container" style="color:navajowhite;">
 
       <form class="form-signin" method="POST" action="/login">
-        <h2 class="form-signin-heading">Please sign in</h2>
+        <h2 class="form-signin-heading" style="text-align: center; margin-bottom: 15%;">Please Log In</h2>
         {{ form.hidden_tag() }}
         {{ wtf.form_field(form.username) }}
         {{ wtf.form_field(form.password) }}
         {{ wtf.form_field(form.remember) }}
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Log In</button>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" style="margin-top: 10%;">Log In</button>
+        <button class="btn btn-lg btn-primary btn-block" style="margin-top: 5%;"
+                onclick="window.location.href = window.location.origin + '/signup'">Sign Up</button>
       </form>
-
-    <div class="form-signin">
-        <button class="btn btn-lg btn-primary btn-block" onclick="window.location.href = window.location.origin + '/signup'">Sign up</button>
-    </div>
 
     </div> <!-- /container -->
 {% endblock %}
