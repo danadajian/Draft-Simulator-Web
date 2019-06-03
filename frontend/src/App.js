@@ -40,8 +40,13 @@ class App extends Component {
                 }
             });
         } else if (window.location.pathname === '/yahoo') {
-            startingList = ['Currently not available.'];
-            this.setState({isLoading: false, players: startingList});
+            $.get(window.location.origin + '/yahoo-players', (data) => {
+                const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
+                this.setState({isLoading: false, players: playerList});
+                for (let i = 0; i < playerList.length; i++) {
+                    startingList.push(playerList[i]);
+                }
+            });
         } else if (window.location.pathname === '/dfs-optimizer') {
             this.setState({isLoading: false});
             this.setState({sport: 'reset'}, function () {
@@ -179,6 +184,9 @@ class App extends Component {
         if (document.getElementById("swapButton")) {
             document.getElementById("swapButton").innerHTML =
                 (window.location.pathname.startsWith('/espn')) ? 'Switch to Yahoo' : 'Switch to ESPN';
+
+            document.getElementById("swapButton").style.backgroundColor =
+                (window.location.pathname.startsWith('/espn')) ? '#6C00B3' : '#CE0000';
         }
 
         if (this.refs.teamCountSlider) {
@@ -201,7 +209,7 @@ class App extends Component {
     loadRankings = () => {
         let playerList = this.state.players;
         let userPlayers = this.state.userPlayers;
-        $.get(window.location.origin + '/espn-rankings', (data) => {
+        $.get(window.location.origin + '/user-rankings', (data) => {
             let userRanking = data.split(',');
             if (userPlayers) {this.clearPlayers()}
             for (let i = 0; i < userRanking.length; i++) {
@@ -302,6 +310,15 @@ class App extends Component {
         }
     };
 
+    saveRankings = () => {
+        let userRanking = this.state.userPlayers;
+        if (!userRanking || userRanking.length === 0) {
+            alert('Please rank at least one player before saving.');
+            return;
+        }
+        $.post(window.location.origin + '/save-ranking', userRanking.toString());
+    };
+
     simulateDraft = () => {
         this.setState({allFreqs: '', userFreqs: '', expectedTeam: ''});
         let userPick = this.refs.pickOrderSlider.getValue();
@@ -328,7 +345,9 @@ class App extends Component {
             };
 
             const postPlayers = async () => {
-                await postToEndpoint();
+                if (this.state.isDrafting) {
+                    await postToEndpoint();
+                }
             };
 
             const getFromEndpoint = async () => {
@@ -349,7 +368,9 @@ class App extends Component {
             };
 
             const getResults = async () => {
-                await getFromEndpoint();
+                if (this.state.isDrafting) {
+                    await getFromEndpoint();
+                }
             };
 
             this.setState({userPlayers: reorderedPlayers.toString()}, function () {
@@ -365,6 +386,10 @@ class App extends Component {
         });
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
+    };
+
+    cancelDraft = () => {
+        this.setState({isDrafting: false});
     };
 
     render() {
@@ -394,6 +419,7 @@ class App extends Component {
                 <div className={"Drafting"}>
                     <div><p className={"Draft-text"}>Drafting . . .</p></div>
                     <div><img src={football} className={"App-logo"} alt="football"/></div>
+                    <div><button onClick={this.cancelDraft} className={"Cancel-draft-button"}>Cancel</button></div>
                 </div>
             );
         }
@@ -532,13 +558,14 @@ class App extends Component {
                         <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
                         </button>
                         <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
-                        <button id='rankingButton' onClick={this.loadRankings} className={"Swap-button"}>Load Previous Rankings</button>
+                        <button id='rankingButton' onClick={this.loadRankings} className={"Ranking-button"}>Load Saved Rankings</button>
                         <button id='swapButton' onClick={this.swapRankings} className={"Swap-button"}>Swap Button</button>
                     </div>
                     <JqxListBox ref='userListbox' width={250} height={400}
                                 source={userPlayersList} allowDrag={true}
                                 allowDrop={true} multiple={true} className={"Player-list-box"}/>
-                    <div className={"Draft-button-div"}>
+                    <div className={"Draft-buttons"}>
+                        <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
                         <button onClick={this.simulateDraft} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
                     </div>
                     <JqxTabs width={400} height={400}>

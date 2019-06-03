@@ -1,7 +1,7 @@
 {
-  "main.css": "/static/react/css/main.a7eb0fe1.chunk.css",
-  "main.js": "/static/react/js/main.f42bed03.chunk.js",
-  "main.js.map": "/static/react/js/main.f42bed03.chunk.js.map",
+  "main.css": "/static/react/css/main.f24b803b.chunk.css",
+  "main.js": "/static/react/js/main.a2615872.chunk.js",
+  "main.js.map": "/static/react/js/main.a2615872.chunk.js.map",
   "runtime~main.js": "/static/react/js/runtime~main.5d7886d3.js",
   "runtime~main.js.map": "/static/react/js/runtime~main.5d7886d3.js.map",
   "css/2.30dfd29d.chunk.css": "/static/react/css/2.30dfd29d.chunk.css",
@@ -9,9 +9,9 @@
   "js/2.44d0450a.chunk.js.map": "/static/react/js/2.44d0450a.chunk.js.map",
   "../../templates/index.html": "/static/react/../../templates/index.html",
   "css/2.30dfd29d.chunk.css.map": "/static/react/css/2.30dfd29d.chunk.css.map",
-  "css/main.a7eb0fe1.chunk.css.map": "/static/react/css/main.a7eb0fe1.chunk.css.map",
+  "css/main.f24b803b.chunk.css.map": "/static/react/css/main.f24b803b.chunk.css.map",
   "media/football.ico": "/static/react/media/football.c5005feb.ico",
   "media/jqx.base.css": "/static/react/media/map-saturation-overlay.b01e6120.png",
-  "precache-manifest.723145b55a915092635de2cc96a3c748.js": "/static/react/precache-manifest.723145b55a915092635de2cc96a3c748.js",
+  "precache-manifest.30204b9e68adbc9b0bef566461428dcc.js": "/static/react/precache-manifest.30204b9e68adbc9b0bef566461428dcc.js",
   "service-worker.js": "/static/react/service-worker.js"
 }

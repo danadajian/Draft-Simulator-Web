@@ -128,7 +128,7 @@ a:active {
   background-color: lightblue;
 }
 
-.Player-buttons {;
+.Player-buttons {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -136,29 +136,30 @@ a:active {
   height: 200px;
 }
 
-.Add-button {;
+.Add-button {
   width: 80px;
   background-color: green;
 }
 
-.Remove-button {;
+.Remove-button {
   width: 80px;
   background-color: red;
 }
 
-.Clear-button {;
+.Clear-button {
   width: 80px;
   background-color: yellow;
 }
 
-.Swap-button {;
+.Swap-button {
   width: 80px;
-  background-color: whitesmoke;
+  color: white;
 }
 
-.Draft-button-div {;
-  display: flex;
-  align-items: center;
+.Ranking-button {
+  width: 80px;
+  color: white;
+  background-color: darkblue;
 }
 
 .Draft-button {;
@@ -183,11 +184,27 @@ a:active {
   align-items: center;
 }
 
+.Draft-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 125px;
+}
+
 .Drafting {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
+}
+
+.Cancel-draft-button {
+  margin-top: 100%;
+  width: 80px;
+  height: 40px;
+  background-color: red;
+  font-weight: bold;
 }
 
 .Draft-text {
