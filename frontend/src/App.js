@@ -230,6 +230,14 @@ class App extends Component {
         }
     };
 
+    updateListsAndClearSelections = (playerList, userPlayers) => {
+        this.setState({players: playerList});
+        this.setState({userPlayers: userPlayers});
+        this.refs.playerListbox.clearFilter();
+        this.refs.playerListbox.clearSelection();
+        this.refs.userListbox.clearSelection();
+    };
+
     addPlayers = () => {
         let playerList = this.state.players;
         let userPlayers = this.state.userPlayers;
@@ -246,12 +254,7 @@ class App extends Component {
                 playerList.splice(playerIndex, 1);
             }
         }
-
-        this.setState({players: playerList});
-        this.setState({userPlayers: userPlayers});
-        this.refs.playerListbox.clearFilter();
-        this.refs.playerListbox.clearSelection();
-        this.refs.userListbox.clearSelection();
+        this.updateListsAndClearSelections(playerList, userPlayers);
     };
 
     removePlayers = () => {
@@ -277,12 +280,7 @@ class App extends Component {
                 remainingPlayers.push(userItems[i].label);
             }
         }
-
-        this.setState({players: playerList});
-        this.setState({userPlayers: remainingPlayers});
-        this.refs.playerListbox.clearFilter();
-        this.refs.playerListbox.clearSelection();
-        this.refs.userListbox.clearSelection();
+        this.updateListsAndClearSelections(playerList, remainingPlayers);
     };
 
     clearPlayers = () => {
@@ -301,12 +299,7 @@ class App extends Component {
                     playerList.splice(playerIndex, 0, sortedItems[i].label);
                 }
             }
-
-            this.setState({players: playerList});
-            this.setState({userPlayers: []});
-            this.refs.playerListbox.clearFilter();
-            this.refs.playerListbox.clearSelection();
-            this.refs.userListbox.clearSelection();
+            this.updateListsAndClearSelections(playerList, []);
         }
     };
 
