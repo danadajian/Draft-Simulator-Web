@@ -1,5 +1,9 @@
 describe('Draft tests', function () {
     it('cannot draft players with empty list', function () {
+        cy.visit('http://localhost:5000/login');
+        cy.get('[class^=form-group]').find('#username').type('testytest');
+        cy.get('#password').type('testing123');
+        cy.get('[class^=btn]').contains('Log In').click();
         cy.visit('http://localhost:5000/espn');
         cy.get('[class$=jqx-item]').should('not.exist');
         const stub = cy.stub();
@@ -23,7 +27,7 @@ describe('Draft tests', function () {
         cy.route({method: 'GET', url: /draft-results/}).as('getResults');
         cy.get('[class=Draft-button]').click();
         cy.wait('@postPlayers').wait('@getResults');
-        cy.get('[id^=jqxGridjqx]').contains('Todd Gurley II').should('exist');
+        cy.get('[id^=jqxGridjqx]').contains('Saquon Barkley').should('exist');
         cy.get('[id^=jqxGridjqx]').get('[class$=jqx-item]').should('have.length', 3);
         cy.contains('All Players').click();
         cy.get('[id^=jqxGridjqx]').get('[class$=jqx-item]').should('have.length', 36);

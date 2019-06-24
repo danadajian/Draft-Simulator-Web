@@ -1,5 +1,9 @@
 describe('Pre-draft tests', function () {
     it('Loads successfully', function () {
+      cy.visit('http://localhost:5000/login');
+      cy.get('[class^=form-group]').find('#username').type('testytest');
+      cy.get('#password').type('testing123');
+      cy.get('[class^=btn]').contains('Log In').click();
       cy.visit('http://localhost:5000/espn');
       cy.contains('Draft Simulator').should('exist');
       cy.contains('No data to display').should('exist');

@@ -17,6 +17,11 @@ Heroku CLI deploy command:
 Heroku Postgres commands:
 * `heroku pg:push accounts DATABASE_URL -a draft-simulator`
 
+Cypress commands:
+* `cd frontend`
+* `npm install cypress`
+* `node_modules/.bin/cypress open`
+
 Docker Commands:
 * in concourse-setup:
     * `docker-compose up -d`
