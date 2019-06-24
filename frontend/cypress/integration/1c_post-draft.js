@@ -1,5 +1,9 @@
 describe('Post-draft tests', function () {
     it('preserves draft settings', function () {
+        cy.visit('http://localhost:5000/login');
+        cy.get('[class^=form-group]').find('#username').type('testytest');
+        cy.get('#password').type('testing123');
+        cy.get('[class^=btn]').contains('Log In').click();
         cy.visit('http://localhost:5000/espn');
         cy.get('[class$=jqx-item]').should('not.exist');
         cy.get('[class^=Player-list-box]:eq(1)').find('[id^=listitem0jqx]').should('not.exist');
@@ -31,6 +35,10 @@ describe('Post-draft tests', function () {
     });
 
     it('can add/remove new players after drafting', function () {
+        cy.visit('http://localhost:5000/login');
+        cy.get('[class^=form-group]').find('#username').type('testytest');
+        cy.get('#password').type('testing123');
+        cy.get('[class^=btn]').contains('Log In').click();
         cy.visit('http://localhost:5000/espn');
         cy.get('[class^=Player-list-box]:eq(0)').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();
@@ -39,7 +47,7 @@ describe('Post-draft tests', function () {
         cy.route({method: 'GET', url: /draft-results/}).as('getResults');
         cy.get('[class=Draft-button]').click();
         cy.wait('@postPlayers').wait('@getResults');
-        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Saq');
+        cy.get('[id^=filterjqxListBox]').get('input:eq(0)').type('Ezek');
         cy.get('[class^=Player-list-box]:eq(0)').find('[id^=listitem0jqx]').click();
         cy.get('[class=Add-button]').click();
         cy.get('[class^=Player-list-box]:eq(1)').find('[id^=listitem0jqx]').should('exist');

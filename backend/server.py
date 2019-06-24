@@ -18,7 +18,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
 # For running postgres locally, uncomment the line below:
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
 # For running postgres in production:
 heroku = Heroku(app)
@@ -221,7 +221,8 @@ def yahoo_players():
 
 
 @app.route("/draft-results", methods=['GET', 'POST'])
-@login_required
+# Comment out @login_required when testing with cypress
+# @login_required
 def run_draft():
     global draft_results
     if request.method == 'POST':
