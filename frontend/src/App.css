@@ -248,6 +248,18 @@ a:active {
   color: navajowhite;
 }
 
+.Dfs-delete-buttons-and-grid {
+  display: flex;
+}
+
+.Dfs-delete-buttons {
+  display: flex;
+  flex-direction: column;
+  height: 38px;
+  width: 40px;
+  margin-top: 32px;
+}
+
 .Dfs-sport {
   display: flex;
   flex-direction: column;

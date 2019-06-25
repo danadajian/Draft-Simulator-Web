@@ -179,6 +179,7 @@ def optimized_team(sport):
         elif ignored[1] == 'dk':
             site = 'dk'
             dk_ignored = eval(dk_lineup[1:-1].split('}, ')[int(ignored[0])] + '}').get("Player")
+        print(ignored)
         return ignored
     else:
         ignored = ()
@@ -218,7 +219,7 @@ def yahoo_players():
 
 @app.route("/draft-results", methods=['GET', 'POST'])
 # Comment out @login_required when testing with cypress
-# @login_required
+@login_required
 def run_draft():
     global draft_results
     if request.method == 'POST':
