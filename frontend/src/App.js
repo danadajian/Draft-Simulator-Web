@@ -16,7 +16,6 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
-let blankLineup = JSON.parse('[{"Position": "", "Player": "Not enough player data.", "Projected": "", "Price": ""}]');
 
 class App extends Component {
 
@@ -58,13 +57,9 @@ class App extends Component {
                             const lineup = data.split('|');
                             let fdLineup = (lineup[0] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[0]);
                             let dkLineup = (lineup[1] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[1]);
-
                             this.setState({
-                                sport: sport,
-                                fdLineup: (!fdLineup) ? fdLineup : blankLineup,
-                                dkLineup: (!dkLineup) ? dkLineup : blankLineup
-                            }, function () {
-                                if (this.state.fdLineup === blankLineup || this.state.dkLineup === blankLineup) {
+                                sport: sport, fdLineup: fdLineup, dkLineup: dkLineup}, function () {
+                                if (fdLineup.length === 0 || dkLineup.length === 0) {
                                     alert('Some player data is currently unavailable. \nPlease try again later.');
                                 }
                             });
@@ -73,20 +68,21 @@ class App extends Component {
         }
     };
 
-    // fdRowsSelected = () => {
-    //     console.log('hi');
-    //     this.setState({
-    //         fdIndexes: this.state.fdIndexes.concat(this.state.fdLineup.map(player => player.rowIdx))
-    //     });
-    // };
+    postRemovedDfsPlayer = async (lineupIndex, site) => {
+        let sport = this.state.sport;
+        await fetch(window.location.origin + '/optimized-lineup/' + sport, {
+            method: 'POST',
+            body: lineupIndex + '|' + site
+        }).then(response => {
+            console.log(response);
+        })
+    };
 
-    // updateDfsLineup = (site) => {
-        // let sport = this.state.sport;
+    removePlayerFromDfsLineup = (lineupIndex, site) => {
+        console.log(lineupIndex);
+        return this.postRemovedDfsPlayer(lineupIndex, site);
+    };
 
-        // const postToEndpoint = async () => {
-        //     return await $.post(window.location.origin + '/optimized-lineup/' + sport,
-        //         (site === 'Fanduel') ? row_index + '|fd' : row_index + '|dk');
-        // };
         //
         // const getFromEndpoint = async () => {
         //     return await fetch(window.location.origin + '/optimized-lineup/' + sport)
@@ -117,7 +113,6 @@ class App extends Component {
         // };
         //
         // return changePlayers();
-    // };
 
     componentDidUpdate() {
         if (document.getElementById("swapButton")) {
@@ -398,35 +393,41 @@ class App extends Component {
                     <div className={"Dfs-grid"}>
                         <div>
                         <h2 className={"Dfs-header"}>Fanduel</h2>
-                            <ReactDataGrid
-                            columns={dfsColumns}
-                            rowGetter={i => fdLineup[i]}
-                            rowsCount={fdLineup.length}
-                            minWidth={425}
-                            minHeight={35*fdLineup.length}
-                            // rowSelection={{
-                            //     onRowsSelected: this.fdRowsSelected,
-                            //     selectBy: {
-                            //         indexes: this.state.fdIndexes
-                            //     }
-                            // }}
-                            />
+                            <div className={"Dfs-delete-buttons-and-grid"}>
+                                <div className={"Dfs-delete-buttons"}>
+                                    {fdLineup.slice(0, fdLineup.length - 2).map((player) => (
+                                        <button style={{marginTop: '14px', marginRight: '10px'}}
+                                                onClick={() => this.removePlayerFromDfsLineup(fdLineup.indexOf(player), 'fd')}>X</button>
+                                    ))}
+                                </div>
+                                <ReactDataGrid
+                                columns={dfsColumns}
+                                rowGetter={i => fdLineup[i]}
+                                rowsCount={fdLineup.length}
+                                minWidth={459}
+                                minHeight={38.5*fdLineup.length}
+                                headerRowHeight={35}
+                                />
+                            </div>
                         </div>
                         <div>
                         <h2 className={"Dfs-header"}>Draftkings</h2>
-                            <ReactDataGrid
-                            columns={dfsColumns}
-                            rowGetter={i => dkLineup[i]}
-                            rowsCount={dkLineup.length}
-                            minWidth={425}
-                            minHeight={35*dkLineup.length}
-                            // rowSelection={{
-                            //     onRowsSelected: this.dkRowsSelected,
-                            //     selectBy: {
-                            //         indexes: this.state.dkIndexes
-                            //     }
-                            // }}
-                            />
+                            <div className={"Dfs-delete-buttons-and-grid"}>
+                                <div className={"Dfs-delete-buttons"}>
+                                    {dkLineup.slice(0, dkLineup.length - 2).map((player) => (
+                                        <button style={{marginTop: '14px', marginRight: '10px'}}
+                                                onClick={() => this.removePlayerFromDfsLineup(dkLineup.indexOf(player), 'dk')}>X</button>
+                                    ))}
+                                </div>
+                                <ReactDataGrid
+                                columns={dfsColumns}
+                                rowGetter={i => dkLineup[i]}
+                                rowsCount={dkLineup.length}
+                                minWidth={459}
+                                minHeight={38.5*dkLineup.length}
+                                headerRowHeight={35}
+                                />
+                            </div>
                         </div>
                     </div>
                 </Container>
