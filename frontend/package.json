@@ -43,6 +43,7 @@
     "react-addons-test-utils": "^15.6.2",
     "react-app-polyfill": "^0.2.2",
     "react-bootstrap": "^1.0.0-beta.6",
+    "react-data-grid": "^6.1.0",
     "react-dev-utils": "^8.0.0",
     "react-dom": "^16.8.4",
     "react-router": "^3.2.1",

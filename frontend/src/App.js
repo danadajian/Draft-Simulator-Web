@@ -6,7 +6,7 @@ import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
-import JqxDropDownList from './jqxwidgets/react_jqxdropdownlist'
+import ReactDataGrid from "react-data-grid";
 import $ from 'jquery';
 import football from './football.ico'
 
@@ -16,171 +16,110 @@ let sliderPick = 5;
 let sliderLength = 10;
 let roundCount = 16;
 let startingList = [];
-let lineup1 = '';
-let lineup2 = '';
-let blankLineup = '[{"Position": "", "Player": "Not enough player data.", "Projected": "", "Price": ""}]';
+let blankLineup = JSON.parse('[{"Position": "", "Player": "Not enough player data.", "Projected": "", "Price": ""}]');
 
 class App extends Component {
 
     constructor(props) {
         super(props);
         this.state = {isLoading: true, players: [], userPlayers: [], isDrafting: false, isRandom: false,
-            allFreqs: '', userFreqs: '', expectedTeam: '', sport: '', fdLineup: '', dkLineup: ''};
+            allFreqs: '', userFreqs: '', expectedTeam: '', sport: '', fdLineup: [], dkLineup: [], fdIndexes: [], dkIndexes: []};
     }
+
+    fetchPlayers = (site) => {
+        fetch(window.location.origin + site + '-players')
+            .then(response => {
+                response.text()
+                    .then((data) => {
+                        const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
+                        this.setState({isLoading: false, players: playerList});
+                        for (let i = 0; i < playerList.length; i++) {
+                            startingList.push(playerList[i]);
+                        }
+                    })
+            });
+    };
 
     componentDidMount() {
-        this.setState({isLoading: true});
-
-        if (window.location.pathname === '/espn') {
-            $.get(window.location.origin + '/espn-players', (data) => {
-                const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
-                this.setState({isLoading: false, players: playerList});
-                for (let i = 0; i < playerList.length; i++) {
-                    startingList.push(playerList[i]);
-                }
-            });
-        } else if (window.location.pathname === '/yahoo') {
-            $.get(window.location.origin + '/yahoo-players', (data) => {
-                const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
-                this.setState({isLoading: false, players: playerList});
-                for (let i = 0; i < playerList.length; i++) {
-                    startingList.push(playerList[i]);
-                }
-            });
-        } else if (window.location.pathname === '/dfs-optimizer') {
+        if (window.location.pathname !== '/dfs-optimizer') {
+            this.fetchPlayers(window.location.pathname);
+        } else {
             this.setState({isLoading: false});
-            this.setState({sport: 'reset'}, function () {
-                $.get(window.location.origin + '/optimized-lineup/' + 'reset');
-            })
         }
     }
 
-    componentWillUpdate() {
-        if (this.refs.fdGrid) {
-            this.refs.fdGrid.on('rowclick', (event) => {
-                let index = this.refs.dropDown.selectedIndex();
-                let sport = '';
-                if (index === 0) {
-                    sport = 'mlb';
-                } else if (index === 1) {
-                    sport = 'nba';
-                }
+    dfsSportChange = (event) => {
+        let sport = event.target.value;
+        if (sport) {
+            fetch(window.location.origin + '/optimized-lineup/' + sport)
+                .then(response => {
+                    response.text()
+                        .then((data) => {
+                            const lineup = data.split('|');
+                            let fdLineup = (lineup[0] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[0]);
+                            let dkLineup = (lineup[1] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[1]);
 
-                let row_index = event.args.rowindex;
-                let row_data = this.refs.fdGrid.getrowdata(row_index);
-
-                const postToEndpoint = async () => {
-                    return await $.post(window.location.origin + '/optimized-lineup/' + sport, row_index + '|fd');
-                };
-
-                const getFromEndpoint = async () => {
-                    return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
-                        const lineup = data.split('|');
-                        lineup1 = lineup[0].toString();
-
-                        if (lineup1 !== this.state.fdLineup) {
-                            if (lineup1 === 'Not enough player data is currently available.') {
-                                this.setState({fdLineup: blankLineup});
-                            } else {
-                                this.setState({fdLineup: lineup1}, function () {
-                                    this.refs.fdGrid.unselectrow(row_index);
-                                    alert('You have removed ' + row_data.Player + ' from your Fanduel lineup.');
-                                });
-                            }
-                        }
-                    });
-                };
-
-                const changePlayers = async () => {
-                    await postToEndpoint();
-                    await getFromEndpoint();
-                };
-
-                return changePlayers();
-            });
+                            this.setState({
+                                sport: sport,
+                                fdLineup: (!fdLineup) ? fdLineup : blankLineup,
+                                dkLineup: (!dkLineup) ? dkLineup : blankLineup
+                            }, function () {
+                                if (this.state.fdLineup === blankLineup || this.state.dkLineup === blankLineup) {
+                                    alert('Some player data is currently unavailable. \nPlease try again later.');
+                                }
+                            });
+                        })
+                });
         }
+    };
 
-        if (this.refs.dkGrid) {
-            this.refs.dkGrid.on('rowclick', (event) => {
-                let index = this.refs.dropDown.selectedIndex();
-                let sport = '';
-                if (index === 0) {
-                    sport = 'mlb';
-                } else if (index === 1) {
-                    sport = 'nba';
-                }
+    // fdRowsSelected = () => {
+    //     console.log('hi');
+    //     this.setState({
+    //         fdIndexes: this.state.fdIndexes.concat(this.state.fdLineup.map(player => player.rowIdx))
+    //     });
+    // };
 
-                let row_index = event.args.rowindex;
-                let row_data = this.refs.dkGrid.getrowdata(row_index);
+    // updateDfsLineup = (site) => {
+        // let sport = this.state.sport;
 
-                const postToEndpoint = async () => {
-                    return await $.post(window.location.origin + '/optimized-lineup/' + sport, row_index + '|dk');
-                };
-
-                const getFromEndpoint = async () => {
-                    return await $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
-                        const lineup = data.split('|');
-                        lineup2 = lineup[1].toString();
-                        if (lineup2 !== this.state.dkLineup) {
-                            if (lineup1 === 'Not enough player data is currently available.') {
-                                this.setState({fdLineup: blankLineup});
-                            } else {
-                                this.setState({dkLineup: lineup2}, function () {
-                                    this.refs.dkGrid.unselectrow(row_index);
-                                    alert('You have removed ' + row_data.Player + ' from your Draftkings lineup.');
-                                });
-                            }
-                        }
-                    });
-                };
-
-                const changePlayers = async () => {
-                    await postToEndpoint();
-                    await getFromEndpoint();
-                };
-
-                return changePlayers();
-            });
-        }
-    }
+        // const postToEndpoint = async () => {
+        //     return await $.post(window.location.origin + '/optimized-lineup/' + sport,
+        //         (site === 'Fanduel') ? row_index + '|fd' : row_index + '|dk');
+        // };
+        //
+        // const getFromEndpoint = async () => {
+        //     return await fetch(window.location.origin + '/optimized-lineup/' + sport)
+        //         .then(response => {response.text()
+        //             .then((data) => {
+        //             const lineup = data.split('|');
+        //             let lineupSite = site === 'Fanduel' ? 0 : 1;
+        //             let lineupString = lineup[lineupSite].toString();
+        //
+        //             if (lineupString !== (site === 'Fanduel') ? this.state.fdLineup : this.state.dkLineup) {
+        //                 if (lineupString === 'Not enough player data is currently available.') {
+        //                     this.setState((site === 'Fanduel') ? {fdLineup: blankLineup} : {dkLineup: blankLineup});
+        //                 } else {
+        //                     this.setState((site === 'Fanduel') ? {fdLineup: lineupString} : {dkLineup: lineupString},
+        //                         function () {
+        //                         lineupObject.unselectrow(row_index);
+        //                         alert('You have removed ' + row_data.Player
+        //                             + (site === 'Fanduel') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.');
+        //                     });
+        //                 }
+        //             }
+        //         })});
+        // };
+        //
+        // const changePlayers = async () => {
+        //     await postToEndpoint();
+        //     await getFromEndpoint();
+        // };
+        //
+        // return changePlayers();
+    // };
 
     componentDidUpdate() {
-        let done = 0;
-        if (this.refs.dropDown) {
-            this.refs.dropDown.on('change', () => {
-                done += 1;
-                if (done % 2 === 1) {
-                    let sport = '';
-                    let index = this.refs.dropDown.selectedIndex();
-                    if (index === 0) {
-                        sport = 'mlb';
-                    } else if (index === 1) {
-                        sport = 'nba';
-                    }
-                    $.get(window.location.origin + '/optimized-lineup/' + sport, (data) => {
-                        const lineup = data.split('|');
-                        lineup1 = lineup[0].toString();
-                        lineup2 = lineup[1].toString();
-
-                        if (lineup1 === 'Not enough player data is currently available.') {
-                            this.setState({fdLineup: blankLineup}, function () {
-                                alert('Not enough player data is currently available. \nPlease try again later.');
-                            });
-                        } else {
-                            this.setState({fdLineup: lineup1});
-                        }
-                        if (lineup2 === 'Not enough player data is currently available.') {
-                            this.setState({dkLineup: blankLineup}, function () {
-                                alert('Not enough player data is currently available. \nPlease try again later.');
-                            });
-                        } else {
-                            this.setState({dkLineup: lineup2});
-                        }
-                    });
-                }
-            });
-        }
-
         if (document.getElementById("swapButton")) {
             document.getElementById("swapButton").innerHTML =
                 (window.location.pathname.startsWith('/espn')) ? 'Switch to Yahoo' : 'Switch to ESPN';
@@ -209,17 +148,23 @@ class App extends Component {
     loadRankings = () => {
         let playerList = this.state.players;
         let userPlayers = this.state.userPlayers;
-        $.get(window.location.origin + '/user-rankings', (data) => {
-            let userRanking = data.split(',');
-            if (userPlayers) {this.clearPlayers()}
-            for (let i = 0; i < userRanking.length; i++) {
-                this.refs.userListbox.addItem(userRanking[i]);
-                this.refs.playerListbox.removeItem(userRanking[i]);
-                let playerIndex = playerList.indexOf(userRanking[i]);
-                playerList.splice(playerIndex, 1);
-            }
-            this.setState({userPlayers: userRanking});
-        });
+        fetch(window.location.origin + '/user-rankings')
+            .then(response => {
+                    response.text()
+                        .then((data) => {
+                            let userRanking = data.split(',');
+                            if (userPlayers) {
+                                this.clearPlayers()
+                            }
+                            for (let i = 0; i < userRanking.length; i++) {
+                                this.refs.userListbox.addItem(userRanking[i]);
+                                this.refs.playerListbox.removeItem(userRanking[i]);
+                                let playerIndex = playerList.indexOf(userRanking[i]);
+                                playerList.splice(playerIndex, 1);
+                            }
+                            this.setState({userPlayers: userRanking});
+                        })
+            });
     };
 
     swapRankings = () => {
@@ -309,7 +254,16 @@ class App extends Component {
             alert('Please rank at least one player before saving.');
             return;
         }
-        $.post(window.location.origin + '/save-ranking', userRanking.toString());
+        fetch(window.location.origin + '/saved-ranking', {
+            method: 'POST',
+            body: userRanking.toString()
+        }).then(response => {
+            if (response.status === 200) {
+                alert('User ranking saved successfully.');
+            } else {
+                alert('User ranking unable to be saved.');
+            }
+        });
     };
 
     simulateDraft = () => {
@@ -419,27 +373,10 @@ class App extends Component {
 
         if (window.location.pathname === '/dfs-optimizer') {
 
-            const sports = ['MLB', 'NBA'];
-
-            const dfsFields = [{ name: 'Position', type: 'string' },
-                               { name: 'Player', type: 'string' },
-                               { name: 'Projected', type: 'string' },
-                               { name: 'Price', type: 'string' }];
-
-            const dfsColumns = [{ text: 'Position', datafield: 'Position', width: 75 },
-                                { text: 'Player', datafield: 'Player', width: 175 },
-                                { text: 'Projected', datafield: 'Projected', width: 100 },
-                                { text: 'Price', datafield: 'Price', width: 75 }];
-
-            let dfsSource1 = {datatype: 'json', datafields: dfsFields, localdata: fdLineup};
-            let dfsSource2 = {datatype: 'json', datafields: dfsFields, localdata: dkLineup};
-            let dfsDataAdapter1 = new window.$.jqx.dataAdapter(dfsSource1);
-            let dfsDataAdapter2 = new window.$.jqx.dataAdapter(dfsSource2);
-
-            if (fdLineup + dkLineup) {
-                window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dfsDataAdapter1});
-                window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dfsDataAdapter2});
-            }
+            const dfsColumns = [{ key: 'Position', name: 'Position', width: 75},
+                                { key: 'Player', name: 'Player', width: 175},
+                                { key: 'Projected', name: 'Projected', width: 100},
+                                { key: 'Price', name: 'Price', width: 75}];
 
             return (
                 <Container fluid={true}>
@@ -452,19 +389,44 @@ class App extends Component {
                     <h1 className={"App-header"}>DFS Optimizer</h1>
                     <div className={"Dfs-sport"}>
                     <h3>Choose a sport:</h3>
-                    <JqxDropDownList ref='dropDown' className={"Drop-down"} width={100} height={30}
-                                     source={sports} autoDropDownHeight={true}/>
+                    <select className={"Drop-down"} onChange={this.dfsSportChange}>
+                        <option value="none"> </option>
+                        <option value="mlb">MLB</option>
+                        <option value="nba">NBA</option>
+                    </select>
                     </div>
                     <div className={"Dfs-grid"}>
                         <div>
                         <h2 className={"Dfs-header"}>Fanduel</h2>
-                        <JqxGrid ref='fdGrid' width={425} height={420} autoheight={true}
-                                 source={dfsDataAdapter1} columns={dfsColumns}/>
+                            <ReactDataGrid
+                            columns={dfsColumns}
+                            rowGetter={i => fdLineup[i]}
+                            rowsCount={fdLineup.length}
+                            minWidth={425}
+                            minHeight={35*fdLineup.length}
+                            // rowSelection={{
+                            //     onRowsSelected: this.fdRowsSelected,
+                            //     selectBy: {
+                            //         indexes: this.state.fdIndexes
+                            //     }
+                            // }}
+                            />
                         </div>
                         <div>
                         <h2 className={"Dfs-header"}>Draftkings</h2>
-                         <JqxGrid ref='dkGrid' width={425} height={420} autoheight={true}
-                         source={dfsDataAdapter2} columns={dfsColumns}/>
+                            <ReactDataGrid
+                            columns={dfsColumns}
+                            rowGetter={i => dkLineup[i]}
+                            rowsCount={dkLineup.length}
+                            minWidth={425}
+                            minHeight={35*dkLineup.length}
+                            // rowSelection={{
+                            //     onRowsSelected: this.dkRowsSelected,
+                            //     selectBy: {
+                            //         indexes: this.state.dkIndexes
+                            //     }
+                            // }}
+                            />
                         </div>
                     </div>
                 </Container>

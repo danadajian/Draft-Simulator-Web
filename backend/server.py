@@ -134,7 +134,7 @@ def yahoo():
     return render_template("index.html")
 
 
-@app.route("/save-ranking", methods=['GET', 'POST'])
+@app.route("/saved-ranking", methods=['GET', 'POST'])
 @login_required
 def save_to_db():
     global user_ranking
@@ -147,7 +147,7 @@ def save_to_db():
         user = Users.query.filter_by(username=current_user.username).first()
         user.draft_ranking = players_string
         db.session.commit()
-        return
+        return 'User ranking added.'
     else:
         return user_ranking
 
@@ -181,23 +181,19 @@ def optimized_team(sport):
             dk_ignored = eval(dk_lineup[1:-1].split('}, ')[int(ignored[0])] + '}').get("Player")
         return ignored
     else:
-        if sport == 'reset':
-            ignored = ()
-            fd_ignored = ''
-            dk_ignored = ''
-            fd_black_list = []
-            dk_black_list = []
-            return ''
-        if ignored:
-            if site == 'fd':
-                print(fd_ignored)
-                fd_black_list.append(fd_ignored)
-                fd_black_list = list(set(fd_black_list))
-
-            elif site == 'dk':
-                print(dk_ignored)
-                dk_black_list.append(dk_ignored)
-                dk_black_list = list(set(dk_black_list))
+        ignored = ()
+        fd_ignored = ''
+        dk_ignored = ''
+        fd_black_list = []
+        dk_black_list = []
+        if site == 'fd':
+            print(fd_ignored)
+            fd_black_list.append(fd_ignored)
+            fd_black_list = list(set(fd_black_list))
+        elif site == 'dk':
+            print(dk_ignored)
+            dk_black_list.append(dk_ignored)
+            dk_black_list = list(set(dk_black_list))
 
         print(ignored)
         print(fd_black_list)
