@@ -153,13 +153,13 @@ def save_to_db():
 
 
 @app.route("/dfs-optimizer")
-# @login_required
+@login_required
 def dfs_optimizer():
     return render_template("index.html")
 
 
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def optimized_team(sport):
     global fd_lineup
     global dk_lineup
