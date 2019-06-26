@@ -25,94 +25,13 @@ class App extends Component {
             allFreqs: '', userFreqs: '', expectedTeam: '', sport: '', fdLineup: [], dkLineup: [], fdIndexes: [], dkIndexes: []};
     }
 
-    fetchPlayers = (site) => {
-        fetch(window.location.origin + site + '-players')
-            .then(response => {
-                response.text()
-                    .then((data) => {
-                        const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
-                        this.setState({isLoading: false, players: playerList});
-                        for (let i = 0; i < playerList.length; i++) {
-                            startingList.push(playerList[i]);
-                        }
-                    })
-            });
-    };
-
     componentDidMount() {
         if (window.location.pathname !== '/dfs-optimizer') {
-            this.fetchPlayers(window.location.pathname);
+            this.fetchPlayersForSimulator(window.location.pathname);
         } else {
             this.setState({isLoading: false});
         }
     }
-
-    dfsSportChange = (event) => {
-        let sport = event.target.value;
-        if (sport) {
-            fetch(window.location.origin + '/optimized-lineup/' + sport)
-                .then(response => {
-                    response.text()
-                        .then((data) => {
-                            const lineup = data.split('|');
-                            let fdLineup = (lineup[0] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[0]);
-                            let dkLineup = (lineup[1] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[1]);
-                            this.setState({
-                                sport: sport, fdLineup: fdLineup, dkLineup: dkLineup}, function () {
-                                if (fdLineup.length === 0 || dkLineup.length === 0) {
-                                    alert('Some player data is currently unavailable. \nPlease try again later.');
-                                }
-                            });
-                        })
-                });
-        }
-    };
-
-    postRemovedDfsPlayer = async (lineupIndex, site) => {
-        let sport = this.state.sport;
-        await fetch(window.location.origin + '/optimized-lineup/' + sport, {
-            method: 'POST',
-            body: lineupIndex + '|' + site
-        }).then(response => {
-            console.log(response);
-        })
-    };
-
-    removePlayerFromDfsLineup = (lineupIndex, site) => {
-        console.log(lineupIndex);
-        return this.postRemovedDfsPlayer(lineupIndex, site);
-    };
-
-        //
-        // const getFromEndpoint = async () => {
-        //     return await fetch(window.location.origin + '/optimized-lineup/' + sport)
-        //         .then(response => {response.text()
-        //             .then((data) => {
-        //             const lineup = data.split('|');
-        //             let lineupSite = site === 'Fanduel' ? 0 : 1;
-        //             let lineupString = lineup[lineupSite].toString();
-        //
-        //             if (lineupString !== (site === 'Fanduel') ? this.state.fdLineup : this.state.dkLineup) {
-        //                 if (lineupString === 'Not enough player data is currently available.') {
-        //                     this.setState((site === 'Fanduel') ? {fdLineup: blankLineup} : {dkLineup: blankLineup});
-        //                 } else {
-        //                     this.setState((site === 'Fanduel') ? {fdLineup: lineupString} : {dkLineup: lineupString},
-        //                         function () {
-        //                         lineupObject.unselectrow(row_index);
-        //                         alert('You have removed ' + row_data.Player
-        //                             + (site === 'Fanduel') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.');
-        //                     });
-        //                 }
-        //             }
-        //         })});
-        // };
-        //
-        // const changePlayers = async () => {
-        //     await postToEndpoint();
-        //     await getFromEndpoint();
-        // };
-        //
-        // return changePlayers();
 
     componentDidUpdate() {
         if (document.getElementById("swapButton")) {
@@ -132,6 +51,56 @@ class App extends Component {
             });
         }
     }
+
+    fetchPlayersForSimulator = (site) => {
+        fetch(window.location.origin + site + '-players')
+            .then(response => {
+                response.text()
+                    .then((data) => {
+                        const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
+                        this.setState({isLoading: false, players: playerList});
+                        for (let i = 0; i < playerList.length; i++) {
+                            startingList.push(playerList[i]);
+                        }
+                    })
+            });
+    };
+
+    ingestDfsLineup = (lineupData, sport) => {
+        const lineup = lineupData.split('|');
+        let fdLineup = (lineup[0] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[0]);
+        let dkLineup = (lineup[1] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[1]);
+        this.setState({
+            sport: sport, fdLineup: fdLineup, dkLineup: dkLineup}, function () {
+            if (fdLineup.length === 0 || dkLineup.length === 0) {
+                alert('Some player data is currently unavailable. \nPlease try again later.');
+            }
+        });
+    };
+
+    dfsSportChange = (event) => {
+        let sport = event.target.value;
+        if (sport) {
+            fetch(window.location.origin + '/optimized-lineup/' + sport)
+                .then(response => {
+                    response.text()
+                        .then((lineupData) => {this.ingestDfsLineup(lineupData, sport)});
+                });
+        }
+    };
+
+    removePlayerFromDfsLineup = (lineupIndex, site) => {
+        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
+        fetch(window.location.origin + '/optimized-lineup/' + this.state.sport, {
+            method: 'POST',
+            body: lineupIndex + '|' + site
+        }).then(response => {
+            response.text()
+                .then((lineupData) => {this.ingestDfsLineup(lineupData)});
+        });
+        let alertString = (site === 'fd') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
+        alert('You have removed ' + removedPlayer + alertString);
+    };
 
     hitEsc = () => {
         const esc = window.$.Event("keydown", {keyCode: 27});
