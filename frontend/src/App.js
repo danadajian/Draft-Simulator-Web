@@ -26,10 +26,10 @@ class App extends Component {
     }
 
     componentDidMount() {
-        if (window.location.pathname !== '/dfs-optimizer') {
-            this.fetchPlayersForSimulator(window.location.pathname);
+        if (window.location.pathname === '/dfs-optimizer') {
+            this.fetchPlayersForOptimizer();
         } else {
-            this.setState({isLoading: false});
+            this.fetchPlayersForSimulator(window.location.pathname);
         }
     }
 
@@ -64,6 +64,19 @@ class App extends Component {
                         }
                     })
             });
+    };
+
+    fetchPlayersForOptimizer = () => {
+        let sports = ['mlb', 'nba'];
+        for (let sportIndex in sports) {
+            fetch(window.location.origin + '/optimized-lineup/' + sports[sportIndex])
+                .then((response) => {
+                    if (response.status !== 200) {
+                        alert(sports[sportIndex].toUpperCase() + ' data failed to load.');
+                    }
+                });
+        }
+        this.setState({isLoading: false});
     };
 
     ingestDfsLineup = (lineupData, sport) => {
