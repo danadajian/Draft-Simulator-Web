@@ -14,13 +14,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
-# For running postgres locally, uncomment the line below:
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
-# For running postgres in production:
+is_production = os.environ.get('IS_HEROKU', None)
+if not is_production:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+
 heroku = Heroku(app)
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)

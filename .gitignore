@@ -4,6 +4,8 @@ backend/__pycache__/
 
 backend/src/main/__pycache__/
 
+backend/src/main/apiCredentials.py
+
 ci/credentials.yml
 
 backend/node_modules/
