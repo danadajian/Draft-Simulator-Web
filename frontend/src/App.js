@@ -31,6 +31,7 @@ class App extends Component {
         } else {
             this.fetchPlayersForSimulator(window.location.pathname);
         }
+
     }
 
     componentDidUpdate() {
@@ -67,28 +68,30 @@ class App extends Component {
     };
 
     fetchPlayersForOptimizer = () => {
-        let sports = ['mlb', 'nba'];
-        for (let sportIndex in sports) {
-            fetch(window.location.origin + '/optimized-lineup/' + sports[sportIndex])
-                .then((response) => {
-                    if (response.status !== 200) {
-                        alert(sports[sportIndex].toUpperCase() + ' data failed to load.');
-                    }
-                });
-        }
-        this.setState({isLoading: false});
+        fetch(window.location.origin + '/dfs-optimizer/projections')
+            .then((response) => {
+                if (response.status !== 200) {
+                    alert('Projections data failed to load.');
+                }
+                this.setState({isLoading: false});
+            });
     };
 
-    ingestDfsLineup = (lineupData, sport) => {
+    ingestDfsLineup = (lineupData, sport, site) => {
         const lineup = lineupData.split('|');
-        let fdLineup = (lineup[0] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[0]);
-        let dkLineup = (lineup[1] === 'Not enough player data is currently available.') ? [] : JSON.parse(lineup[1]);
+        if (site === 'fd' && lineup[0].startsWith('Warning:')) {
+            alert(lineup[0]);
+        } else if (site === 'dk' && lineup[1].startsWith('Warning:')) {
+            alert(lineup[1]);
+        } else if (site === 'none' && lineup[0].startsWith('Warning:')) {
+            alert (lineup[0]);
+            this.refs.dropDown.value = this.state.sport;
+            return
+        }
+        let fdLineup = (lineup[0].startsWith('Warning:')) ? this.state.fdLineup : JSON.parse(lineup[0]);
+        let dkLineup = (lineup[1].startsWith('Warning:')) ? this.state.dkLineup : JSON.parse(lineup[1]);
         this.setState({
-            sport: sport, fdLineup: fdLineup, dkLineup: dkLineup}, function () {
-            if (fdLineup.length === 0 || dkLineup.length === 0) {
-                alert('Some player data is currently unavailable. \nPlease try again later.');
-            }
-        });
+            sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
     };
 
     dfsSportChange = (event) => {
@@ -97,19 +100,20 @@ class App extends Component {
             fetch(window.location.origin + '/optimized-lineup/' + sport)
                 .then(response => {
                     response.text()
-                        .then((lineupData) => {this.ingestDfsLineup(lineupData, sport)});
+                        .then((lineupData) => {this.ingestDfsLineup(lineupData, sport, 'none')});
                 });
         }
     };
 
     removePlayerFromDfsLineup = (lineupIndex, site) => {
+        let sport = this.state.sport;
         let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
         fetch(window.location.origin + '/optimized-lineup/' + this.state.sport, {
             method: 'POST',
-            body: lineupIndex + '|' + site
+            body: removedPlayer + '|' + site
         }).then(response => {
             response.text()
-                .then((lineupData) => {this.ingestDfsLineup(lineupData)});
+                .then((lineupData) => {this.ingestDfsLineup(lineupData, sport, site)});
         });
         let alertString = (site === 'fd') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
         alert('You have removed ' + removedPlayer + alertString);
@@ -366,7 +370,7 @@ class App extends Component {
                     <h1 className={"App-header"}>DFS Optimizer</h1>
                     <div className={"Dfs-sport"}>
                     <h3>Choose a sport:</h3>
-                    <select className={"Drop-down"} onChange={this.dfsSportChange}>
+                    <select ref={"dropDown"} className={"Drop-down"} onChange={this.dfsSportChange}>
                         <option value="none"> </option>
                         <option value="mlb">MLB</option>
                         <option value="nba">NBA</option>
