@@ -215,9 +215,9 @@ def dfs_projections():
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 @login_required
 def optimized_team(sport):
-    global fd_lineup, dk_lineup, fd_black_list, dk_black_list
-    map_sport_to_dict = {'mlb': mlb_projections, 'nfl': nfl_projections, 'nba': nba_projections}
+    global fd_black_list, dk_black_list
     try:
+        map_sport_to_dict = {'mlb': mlb_projections, 'nfl': nfl_projections, 'nba': nba_projections}
         projections_dict = map_sport_to_dict.get(sport)
     except NameError:
         map_sport_to_function = {'mlb': get_mlb_projections(), 'nfl': get_nfl_projections(), 'nba': get_nba_projections()}
