@@ -1,6 +1,5 @@
 import statistics
-from src.main.apiSetup import *
-from src.main.NBASalaries import *
+from src.main.GetDFSData import *
 
 
 def ignore_players(black_list, pools):

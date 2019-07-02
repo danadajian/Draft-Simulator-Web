@@ -1,8 +1,7 @@
 from src.main.GetESPNPlayers import get_espn_players
 from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.SimulateDraft import *
-from src.main.apiSetup import *
-from src.main.NBASalaries import *
+from src.main.GetDFSData import *
 from src.main.Optimizer import *
 from flask import Flask, render_template, request, redirect, url_for
 from flask_bootstrap import Bootstrap
@@ -154,52 +153,6 @@ def save_to_db():
         return user_ranking
 
 
-@app.route("/dfs-optimizer")
-@login_required
-def dfs_optimizer():
-    return render_template("index.html")
-
-
-@app.route("/dfs-optimizer/projections")
-@login_required
-def dfs_projections():
-    global mlb_projections, nba_projections
-    mlb_projections = get_mlb_projections()
-    nba_projections = get_nba_projections()
-    return 'MLB: ' + str(mlb_projections) + 'NBA: ' + str(nba_projections)
-
-
-@app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
-@login_required
-def optimized_team(sport):
-    global fd_lineup, dk_lineup, fd_black_list, dk_black_list
-    projections_dict = mlb_projections if sport == 'mlb' else nba_projections
-    if projections_dict == 'offseason':
-        return 'Warning: \nThis league is currently in the offseason.|'
-    if request.method == 'POST':
-        data = request.get_data()
-        clean = str(data)[2:-1]
-        ignored = tuple(clean.split('|'))
-        site = ignored[1]
-        fd_ignored = ignored[0] if site == 'fd' else None
-        dk_ignored = ignored[0] if site == 'dk' else None
-        if site == 'fd':
-            if fd_ignored not in fd_black_list:
-                fd_black_list.append(fd_ignored)
-        elif site == 'dk':
-            if dk_ignored not in dk_black_list:
-                dk_black_list.append(dk_ignored)
-        fd_lineup = get_fd_lineup(sport, projections_dict, fd_black_list)
-        dk_lineup = get_dk_lineup(sport, projections_dict, dk_black_list)
-        return fd_lineup + '|' + dk_lineup
-    else:
-        fd_black_list = []
-        dk_black_list = []
-        fd_lineup = get_fd_lineup(sport, projections_dict, fd_black_list)
-        dk_lineup = get_dk_lineup(sport, projections_dict, dk_black_list)
-        return fd_lineup + '|' + dk_lineup
-
-
 @app.route("/espn-players")
 @login_required
 def espn_players():
@@ -213,7 +166,6 @@ def yahoo_players():
 
 
 @app.route("/draft-results", methods=['GET', 'POST'])
-# Comment out @login_required when testing with cypress
 @login_required
 def run_draft():
     global draft_results
@@ -244,6 +196,53 @@ def run_draft():
             return draft_results
         except NameError:
             return 'Draft results to appear here!'
+
+
+@app.route("/dfs-optimizer")
+@login_required
+def dfs_optimizer():
+    return render_template("index.html")
+
+
+@app.route("/dfs-optimizer/projections")
+@login_required
+def dfs_projections():
+    global mlb_projections, nfl_projections, nba_projections
+    mlb_projections, nfl_projections, nba_projections = get_mlb_projections(), get_nfl_projections(), get_nba_projections()
+    return 'MLB: ' + str(mlb_projections) + 'NFL: ' + str(nfl_projections) + 'NBA: ' + str(nba_projections)
+
+
+@app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
+@login_required
+def optimized_team(sport):
+    global fd_lineup, dk_lineup, fd_black_list, dk_black_list
+    map_sport_to_dict = {'mlb': mlb_projections, 'nfl': nfl_projections, 'nba': nba_projections}
+    try:
+        projections_dict = map_sport_to_dict.get(sport)
+    except NameError:
+        map_sport_to_function = {'mlb': get_mlb_projections(), 'nfl': get_nfl_projections(), 'nba': get_nba_projections()}
+        projections_dict = map_sport_to_function.get(sport)
+    if projections_dict == 'offseason':
+        return 'Warning: \nThis league is currently in the offseason.|'
+    if request.method == 'POST':
+        data = request.get_data()
+        clean = str(data)[2:-1]
+        ignored = tuple(clean.split('|'))
+        site = ignored[1]
+        fd_ignored = ignored[0] if site == 'fd' else None
+        dk_ignored = ignored[0] if site == 'dk' else None
+        if site == 'fd':
+            if fd_ignored not in fd_black_list:
+                fd_black_list.append(fd_ignored)
+        elif site == 'dk':
+            if dk_ignored not in dk_black_list:
+                dk_black_list.append(dk_ignored)
+    else:
+        fd_black_list = []
+        dk_black_list = []
+    fd_lineup = get_fd_lineup(sport, projections_dict, fd_black_list)
+    dk_lineup = get_dk_lineup(sport, projections_dict, dk_black_list)
+    return fd_lineup + '|' + dk_lineup
 
 
 if __name__ == "__main__":

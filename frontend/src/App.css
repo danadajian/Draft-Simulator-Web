@@ -192,7 +192,7 @@ a:active {
   height: 125px;
 }
 
-.Drafting {
+.Loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -207,7 +207,7 @@ a:active {
   font-weight: bold;
 }
 
-.Draft-text {
+.Loading-text {
   font-size: x-large;
   font-weight: bold;
   font-style: oblique;
@@ -217,8 +217,8 @@ a:active {
 }
 
 .App-logo {
-  animation: App-logo-spin infinite 5s linear;
-  height: 30vmin;
+  animation: App-logo-spin infinite 2.5s linear;
+  height: 20vmin;
   pointer-events: none;
 }
 

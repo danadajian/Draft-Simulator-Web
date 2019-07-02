@@ -7,27 +7,22 @@ import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
 import ReactDataGrid from "react-data-grid";
-import $ from 'jquery';
 import football from './football.ico'
 
-let teamCount = 10;
-let pickOrder = 5;
-let sliderPick = 5;
-let sliderLength = 10;
-let roundCount = 16;
 let startingList = [];
 
 class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [], isDrafting: false, isRandom: false,
-            allFreqs: '', userFreqs: '', expectedTeam: '', sport: '', fdLineup: [], dkLineup: [], fdIndexes: [], dkIndexes: []};
+        this.state = {isLoading: true, players: [], userPlayers: [], teamCount: 10, pickOrder: 5,
+            roundCount: 16, isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: '',
+            sport: '', fdLineup: [], dkLineup: []};
     }
 
     componentDidMount() {
         if (window.location.pathname === '/dfs-optimizer') {
-            this.fetchPlayersForOptimizer();
+            this.fetchDataForOptimizer();
         } else {
             this.fetchPlayersForSimulator(window.location.pathname);
         }
@@ -44,11 +39,12 @@ class App extends Component {
         }
 
         if (this.refs.teamCountSlider) {
-            sliderLength = this.refs.teamCountSlider.getValue();
-            window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
+            let teamCount = this.refs.teamCountSlider.getValue();
+            let pickSliderMax = this.state.teamCount;
             this.refs.teamCountSlider.on('change', () => {
-                sliderLength = this.refs.teamCountSlider.getValue();
-                window.$("[id^='jqxSliderjqx']:eq(1)").jqxSlider({max: sliderLength});
+                if (teamCount !== pickSliderMax) {
+                    this.setState({teamCount: teamCount});
+                }
             });
         }
     }
@@ -65,58 +61,6 @@ class App extends Component {
                         }
                     })
             });
-    };
-
-    fetchPlayersForOptimizer = () => {
-        fetch(window.location.origin + '/dfs-optimizer/projections')
-            .then((response) => {
-                if (response.status !== 200) {
-                    alert('Projections data failed to load.');
-                }
-                this.setState({isLoading: false});
-            });
-    };
-
-    ingestDfsLineup = (lineupData, sport, site) => {
-        const lineup = lineupData.split('|');
-        if (site === 'fd' && lineup[0].startsWith('Warning:')) {
-            alert(lineup[0]);
-        } else if (site === 'dk' && lineup[1].startsWith('Warning:')) {
-            alert(lineup[1]);
-        } else if (site === 'none' && lineup[0].startsWith('Warning:')) {
-            alert (lineup[0]);
-            this.refs.dropDown.value = this.state.sport;
-            return
-        }
-        let fdLineup = (lineup[0].startsWith('Warning:')) ? this.state.fdLineup : JSON.parse(lineup[0]);
-        let dkLineup = (lineup[1].startsWith('Warning:')) ? this.state.dkLineup : JSON.parse(lineup[1]);
-        this.setState({
-            sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
-    };
-
-    dfsSportChange = (event) => {
-        let sport = event.target.value;
-        if (sport) {
-            fetch(window.location.origin + '/optimized-lineup/' + sport)
-                .then(response => {
-                    response.text()
-                        .then((lineupData) => {this.ingestDfsLineup(lineupData, sport, 'none')});
-                });
-        }
-    };
-
-    removePlayerFromDfsLineup = (lineupIndex, site) => {
-        let sport = this.state.sport;
-        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
-        fetch(window.location.origin + '/optimized-lineup/' + this.state.sport, {
-            method: 'POST',
-            body: removedPlayer + '|' + site
-        }).then(response => {
-            response.text()
-                .then((lineupData) => {this.ingestDfsLineup(lineupData, sport, site)});
-        });
-        let alertString = (site === 'fd') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
-        alert('You have removed ' + removedPlayer + alertString);
     };
 
     hitEsc = () => {
@@ -157,8 +101,7 @@ class App extends Component {
     };
 
     updateListsAndClearSelections = (playerList, userPlayers) => {
-        this.setState({players: playerList});
-        this.setState({userPlayers: userPlayers});
+        this.setState({players: playerList, userPlayers: userPlayers});
         this.refs.playerListbox.clearFilter();
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
@@ -247,71 +190,42 @@ class App extends Component {
         });
     };
 
+    determineIfRandom = (event) => {
+        this.setState({isRandom: event.target.checked})
+    };
+
     simulateDraft = () => {
-        this.setState({allFreqs: '', userFreqs: '', expectedTeam: ''});
-        let userPick = this.refs.pickOrderSlider.getValue();
-        this.setState({isRandom: window.$("input[type='checkbox']").is(":checked")}, function () {
-            pickOrder = (this.state.isRandom) ? 0: userPick;
-            sliderPick = userPick;
-        });
-        teamCount = this.refs.teamCountSlider.getValue();
-        roundCount = this.refs.roundCountSlider.getValue();
-        let reorderedPlayers = [];
-        let userItems = this.refs.userListbox.getItems();
-        if (!userItems || userItems.length === 0) {
+        let userPlayers = this.state.userPlayers;
+        if (userPlayers.length === 0) {
             alert('Please select at least one player to draft.');
-            return;
-        }
-        this.setState({isDrafting: true}, function () {
-            for (let i = 0; i < userItems.length; i++) {
-                reorderedPlayers.push(userItems[i].label);
+        } else {
+            this.setState({isDrafting: true});
+            let reorderedPlayers = [];
+            for (let i = 0; i < userPlayers.length; i++) {
+                reorderedPlayers.push(userPlayers[i]);
             }
-
-            const postToEndpoint = async () => {
-                return await $.post(window.location.origin + '/draft-results',
-                    this.state.userPlayers + '|' + teamCount + '|' + pickOrder + '|' + roundCount);
-            };
-
-            const postPlayers = async () => {
-                if (this.state.isDrafting) {
-                    await postToEndpoint();
-                }
-            };
-
-            const getFromEndpoint = async () => {
-                return await $.get(window.location.origin + '/draft-results', (data) => {
-                    if (data === 'Draft error!') {
-                        this.setState({isDrafting: false}, function () {
-                            alert('No players were drafted. :(' +
-                                '\nSomething went wrong . . .');
-                        })
-                    } else {
-                        this.setState({isDrafting: false}, function () {
-                            const output = data.split('|');
-                            this.setState({userFreqs: output[0].toString(), allFreqs: output[1].toString(),
-                            expectedTeam: output[2].toString()});
-                        });
-                    }
-                });
-            };
-
-            const getResults = async () => {
-                if (this.state.isDrafting) {
-                    await getFromEndpoint();
-                }
-            };
-
-            this.setState({userPlayers: reorderedPlayers.toString()}, function () {
-                const playersArePosted = async () => {
-                    return await postPlayers();
-                };
-                const draftPlayers = async () => {
-                    await playersArePosted();
-                    getResults();
-                };
-                draftPlayers();
+            let teamCount = this.refs.teamCountSlider.getValue();
+            let roundCount = this.refs.roundCountSlider.getValue();
+            let userPick = this.refs.pickOrderSlider.getValue();
+            let pickOrder = (this.state.isRandom) ? 0: userPick;
+            fetch(window.location.origin + '/draft-results', {
+                method: 'POST',
+                body: reorderedPlayers.toString() + '|' + teamCount + '|' + pickOrder + '|' + roundCount
+            }).then(response => {
+                response.text()
+                    .then((draftResults) => {this.generateDraftOutput(draftResults)});
             });
-        });
+        }
+    };
+
+    generateDraftOutput = (draftResults) => {
+        if (draftResults === 'Draft error!') {
+            alert('No players were drafted. :( \nSomething went wrong . . .');
+        }
+        const output = draftResults.split('|');
+        this.setState({isDrafting: false, userFreqs: output[0].toString(), allFreqs: output[1].toString(),
+            expectedTeam: output[2].toString()});
+
         this.refs.playerListbox.clearSelection();
         this.refs.userListbox.clearSelection();
     };
@@ -320,9 +234,66 @@ class App extends Component {
         this.setState({isDrafting: false});
     };
 
+    fetchDataForOptimizer = () => {
+        fetch(window.location.origin + '/dfs-optimizer/projections')
+            .then((response) => {
+                if (response.status !== 200) {
+                    alert('Projections data failed to load.');
+                }
+                this.setState({isLoading: false});
+            });
+    };
+
+    ingestDfsLineup = (lineupData, sport, site) => {
+        const lineup = lineupData.split('|');
+        if (site === 'fd' && lineup[0].startsWith('Warning:')) {
+            alert(lineup[0]);
+        } else if (site === 'dk' && lineup[1].startsWith('Warning:')) {
+            alert(lineup[1]);
+        } else if (site === 'none' && lineup[0].startsWith('Warning:')) {
+            alert (lineup[0]);
+            this.refs.dropDown.value = this.state.sport;
+            return
+        }
+        let fdLineup = (lineup[0].startsWith('Warning:')) ? this.state.fdLineup : JSON.parse(lineup[0]);
+        let dkLineup = (lineup[1].startsWith('Warning:')) ? this.state.dkLineup : JSON.parse(lineup[1]);
+        this.setState({sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
+    };
+
+    fetchDfsLineups = (sport) => {
+        fetch(window.location.origin + '/optimized-lineup/' + sport)
+            .then(response => {
+                response.text()
+                    .then((lineupData) => {this.ingestDfsLineup(lineupData, sport, 'none')});
+            });
+    };
+
+    dfsSportChange = (event) => {
+        let sport = event.target.value;
+        if (sport === 'none') {
+            this.refs.dropDown.value = this.state.sport;
+        } else {
+            this.fetchDfsLineups(sport);
+        }
+    };
+
+    removePlayerFromDfsLineup = (lineupIndex, site) => {
+        let sport = this.state.sport;
+        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
+        fetch(window.location.origin + '/optimized-lineup/' + sport, {
+            method: 'POST',
+            body: removedPlayer + '|' + site
+        }).then(response => {
+            response.text()
+                .then((lineupData) => {this.ingestDfsLineup(lineupData, sport, site)});
+        });
+        let alertString = (site === 'fd') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
+        alert('You have removed ' + removedPlayer + alertString);
+    };
+
     render() {
-        const {isLoading, players, userPlayers,
-            isDrafting, isRandom, allFreqs, userFreqs, expectedTeam, fdLineup, dkLineup} = this.state;
+        const {isLoading, players, userPlayers, teamCount, pickOrder, roundCount,
+            isDrafting, isRandom, allFreqs, userFreqs, expectedTeam, sport, fdLineup, dkLineup} = this.state;
 
         if (window.location.pathname === '/home') {
             return (
@@ -341,11 +312,16 @@ class App extends Component {
         }
 
         if (isLoading) {
-            return <p className={"Loading-text"}>Loading . . .</p>;
+            return (
+                <div className={"Loading"}>
+                    <div><p className={"Loading-text"}>Loading . . .</p></div>
+                    <div><img src={football} className={"App-logo"} alt="football"/></div>
+                </div>
+            );
         } else if (isDrafting) {
             return (
-                <div className={"Drafting"}>
-                    <div><p className={"Draft-text"}>Drafting . . .</p></div>
+                <div className={"Loading"}>
+                    <div><p className={"Loading-text"}>Drafting . . .</p></div>
                     <div><img src={football} className={"App-logo"} alt="football"/></div>
                     <div><button onClick={this.cancelDraft} className={"Cancel-draft-button"}>Cancel</button></div>
                 </div>
@@ -370,11 +346,14 @@ class App extends Component {
                     <h1 className={"App-header"}>DFS Optimizer</h1>
                     <div className={"Dfs-sport"}>
                     <h3>Choose a sport:</h3>
-                    <select ref={"dropDown"} className={"Drop-down"} onChange={this.dfsSportChange}>
-                        <option value="none"> </option>
-                        <option value="mlb">MLB</option>
-                        <option value="nba">NBA</option>
-                    </select>
+                        <select ref={"dropDown"} className={"Drop-down"} onChange={this.dfsSportChange}>
+                            <option value="none"> </option>
+                            <option value="mlb">MLB</option>
+                            <option value="nfl">NFL</option>
+                            <option value="nba">NBA</option>
+                        </select>
+                        <button style={{marginTop: '10px'}}
+                                onClick={() => this.fetchDfsLineups(sport)}>Reset</button>
                     </div>
                     <div className={"Dfs-grid"}>
                         <div>
@@ -542,12 +521,12 @@ class App extends Component {
                     <p>Your pick in the draft:</p>
                     <JqxSlider ref='pickOrderSlider'
                         height={55} width={350}
-                        value={sliderPick} min={1} max={sliderLength} showTickLabels={true}
+                        value={pickOrder} min={1} max={teamCount} showTickLabels={true}
                         ticksFrequency={1} tooltip={true} mode={'fixed'}/>
                     <form>
                       <label>
                         Randomize:
-                        <input type="checkbox" value="checked"/>
+                        <input type="checkbox" onChange={this.determineIfRandom}/>
                       </label>
                     </form>
                     </div>
