@@ -16,14 +16,11 @@ else:
     api_key = api_key_from_credentials
     api_secret = api_secret_from_credentials
 
-timestamp = repr(int(time.time()))
-encoded_string = str.encode(api_key + api_secret + timestamp)
-signature = hashlib.sha256(encoded_string).hexdigest()
-now = datetime.datetime.now()
-dateString = str(now.year) + '-' + str(now.month) + '-' + str(now.day)
-
 
 def call_api(endpoint, extra_params):
+    timestamp = repr(int(time.time()))
+    encoded_string = str.encode(api_key + api_secret + timestamp)
+    signature = hashlib.sha256(encoded_string).hexdigest()
     params = 'accept=json&api_key=' + api_key + '&sig=' + signature + extra_params
     url = 'http://api.stats.com/v1/stats/' + endpoint + '?' + params
     response = requests.get(url)
@@ -35,8 +32,10 @@ def call_api(endpoint, extra_params):
 
 
 def get_mlb_projections():
+    now = datetime.datetime.now()
+    date_string = str(now.year) + '-' + str(now.month) + '-' + str(now.day)
     events_endpoint = 'baseball/mlb/events/'
-    events = call_api(events_endpoint, '&date=' + dateString).get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
+    events = call_api(events_endpoint, '&date=' + date_string).get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     eventids = [event.get('eventId') for event in events]
 
     projections_endpoint = 'baseball/mlb/fantasyProjections/'
