@@ -29,6 +29,7 @@ def call_api(endpoint, extra_params):
     response = requests.get(url)
     if response.status_code != 200:
         print(response.status_code)
+        print(url)
         raise Exception
     return response.json()
 
