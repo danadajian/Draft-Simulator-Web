@@ -16,7 +16,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
+app.config['SECRET_KEY'] = 'secret'
 
 is_production = os.environ.get('IS_HEROKU', None)
 if not is_production:
