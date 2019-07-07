@@ -15,18 +15,17 @@ class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [], teamCount: 10, pickOrder: 5,
-            roundCount: 16, isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: '',
+        this.state = {isLoading: true, players: [], userPlayers: [],
+            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: '',
             sport: '', fdLineup: [], dkLineup: []};
     }
 
     componentDidMount() {
         if (window.location.pathname === '/dfs-optimizer') {
             this.fetchDataForOptimizer();
-        } else {
+        } else if (['/espn', '/yahoo'].includes(window.location.pathname)) {
             this.fetchPlayersForSimulator(window.location.pathname);
         }
-
     }
 
     componentDidUpdate() {
@@ -39,12 +38,10 @@ class App extends Component {
         }
 
         if (this.refs.teamCountSlider) {
-            let teamCount = this.refs.teamCountSlider.getValue();
-            let pickSliderMax = this.state.teamCount;
-            this.refs.teamCountSlider.on('change', () => {
-                if (teamCount !== pickSliderMax) {
-                    this.setState({teamCount: teamCount});
-                }
+            this.refs.teamCountSlider.on('change', (event) => {
+                let newTeamCount = event.args.value;
+                console.log(newTeamCount);
+                this.refs.pickOrderSlider.setOptions({max: newTeamCount});
             });
         }
     }
@@ -292,7 +289,7 @@ class App extends Component {
     };
 
     render() {
-        const {isLoading, players, userPlayers, teamCount, pickOrder, roundCount,
+        const {isLoading, players, userPlayers,
             isDrafting, isRandom, allFreqs, userFreqs, expectedTeam, sport, fdLineup, dkLineup} = this.state;
 
         if (window.location.pathname === '/home') {
@@ -424,10 +421,6 @@ class App extends Component {
             window.$("[id^='jqxGridjqx']:eq(2)").jqxGrid({source: dataAdapter3});
         }
 
-        if (isRandom) {
-            window.$("input[type='checkbox']").prop('checked', true);
-        }
-
         return (
             <Container fluid={true}>
                 <Navbar bg="primary" variant="dark">
@@ -514,19 +507,19 @@ class App extends Component {
                     <p>Number of teams per draft:</p>
                     <JqxSlider ref='teamCountSlider'
                     height={55} width={350}
-                    value={teamCount} min={6} max={14} showTickLabels={true}
+                    value={10} min={6} max={14} showTickLabels={true}
                     ticksFrequency={2} tooltip={true} mode={'fixed'}/>
                     </div>
                     <div className={"Sliders"}>
                     <p>Your pick in the draft:</p>
                     <JqxSlider ref='pickOrderSlider'
                         height={55} width={350}
-                        value={pickOrder} min={1} max={teamCount} showTickLabels={true}
+                        value={5} min={1} max={10} showTickLabels={true}
                         ticksFrequency={1} tooltip={true} mode={'fixed'}/>
                     <form>
                       <label>
                         Randomize:
-                        <input type="checkbox" onChange={this.determineIfRandom}/>
+                        <input type="checkbox" checked={isRandom} onChange={this.determineIfRandom}/>
                       </label>
                     </form>
                     </div>
@@ -534,7 +527,7 @@ class App extends Component {
                     <p>Number of rounds per draft:</p>
                     <JqxSlider ref='roundCountSlider'
                     height={55} width={350}
-                    value={roundCount} min={1} max={16} showTickLabels={true}
+                    value={16} min={1} max={16} showTickLabels={true}
                     ticksFrequency={15} showMinorTicks={true}
                     minorTicksFrequency={1} tooltip={true} mode={'fixed'}/>
                     </div>
