@@ -104,39 +104,39 @@ def signup():
 
 
 @app.route('/logout')
-# @login_required
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
 
 @app.route("/home")
-# @login_required
+@login_required
 def home():
     return render_template("index.html")
 
 
 @app.route("/espn")
-# @login_required
+@login_required
 def espn():
     return render_template("index.html")
 
 
 @app.route("/user-rankings")
-# @login_required
+@login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
     return user.draft_ranking
 
 
 @app.route("/yahoo")
-# @login_required
+@login_required
 def yahoo():
     return render_template("index.html")
 
 
 @app.route("/saved-ranking", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def save_to_db():
     global user_ranking
     if request.method == 'POST':
@@ -154,19 +154,19 @@ def save_to_db():
 
 
 @app.route("/espn-players")
-# @login_required
+@login_required
 def espn_players():
     return get_espn_players()
 
 
 @app.route("/yahoo-players")
-# @login_required
+@login_required
 def yahoo_players():
     return get_yahoo_players()
 
 
 @app.route("/draft-results", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def run_draft():
     global draft_results
     if request.method == 'POST':
@@ -199,13 +199,13 @@ def run_draft():
 
 
 @app.route("/dfs-optimizer")
-# @login_required
+@login_required
 def dfs_optimizer():
     return render_template("index.html")
 
 
 @app.route("/dfs-optimizer/projections")
-# @login_required
+@login_required
 def dfs_projections():
     global mlb_projections, nfl_projections, nba_projections
     mlb_projections, nfl_projections, nba_projections = get_mlb_projections(), get_nfl_projections(), get_nba_projections()
@@ -213,7 +213,7 @@ def dfs_projections():
 
 
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def optimized_team(sport):
     global fd_black_list, dk_black_list
     try:
