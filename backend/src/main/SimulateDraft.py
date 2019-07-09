@@ -94,18 +94,15 @@ def calculate_frequencies(drafted_teams):
     return draft_frequency
 
 
-def get_expected_team(drafted_teams, round_count):
-    picks_by_round = [[team[i] for team in drafted_teams] for i in range(round_count)]
+def get_expected_team(draft_frequencies, round_count):
+    most_to_least_drafted = sorted(draft_frequencies, key=draft_frequencies.__getitem__, reverse=True)
+    print(most_to_least_drafted)
     expected_team = []
-    while len(expected_team) < round_count:
-        for group in picks_by_round:
-            round_picks = sorted(Counter(group).keys(), key=Counter(group).__getitem__, reverse=True)
-            for player in round_picks:
-                if valid_choice(player, expected_team) and player not in expected_team:
-                    expected_team.append(player)
-                    break
-                elif round_picks.index(player) == len(round_picks) - 1:
-                    return expected_team
+    for player in most_to_least_drafted:
+        if len(expected_team) >= round_count:
+            break
+        elif valid_choice(player, expected_team) and player not in expected_team:
+            expected_team.append(player)
     return expected_team
 
 

@@ -29,20 +29,12 @@ class App extends Component {
     }
 
     componentDidUpdate() {
-        if (document.getElementById("swapButton")) {
+         if (document.getElementById("swapButton")) {
             document.getElementById("swapButton").innerHTML =
                 (window.location.pathname.startsWith('/espn')) ? 'Switch to Yahoo' : 'Switch to ESPN';
 
             document.getElementById("swapButton").style.backgroundColor =
                 (window.location.pathname.startsWith('/espn')) ? '#6C00B3' : '#CE0000';
-        }
-
-        if (this.refs.teamCountSlider) {
-            this.refs.teamCountSlider.on('change', (event) => {
-                let newTeamCount = event.args.value;
-                console.log(newTeamCount);
-                this.refs.pickOrderSlider.setOptions({max: newTeamCount});
-            });
         }
     }
 
@@ -53,6 +45,7 @@ class App extends Component {
                     .then((data) => {
                         const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
                         this.setState({isLoading: false, players: playerList});
+                        this.bindSliders();
                         for (let i = 0; i < playerList.length; i++) {
                             startingList.push(playerList[i]);
                         }
@@ -60,11 +53,32 @@ class App extends Component {
             });
     };
 
-    hitEsc = () => {
-        const esc = window.$.Event("keydown", {keyCode: 27});
-        window.$("body").trigger(esc);
+    bindSliders = () => {
+        this.refs.teamCountSlider.on('change', (event) => {
+            let newTeamCount = event.args.value;
+            console.log(newTeamCount);
+            this.refs.pickOrderSlider.setOptions({max: newTeamCount});
+        });
+    };
+
+    closeAbout = () => {
+        this.refs.about.close();
         let url = window.location.pathname.split('#');
         window.location.href = window.location.origin + url[0].toString() + '#';
+    };
+
+    closeInstructions = () => {
+        this.refs.instructions.close();
+        let url = window.location.pathname.split('#');
+        window.location.href = window.location.origin + url[0].toString() + '#';
+    };
+
+    swapRankings = () => {
+        if (window.location.pathname.startsWith('/yahoo')) {
+            window.location.href = window.location.href.replace('yahoo', 'espn');
+        } else if (window.location.pathname.startsWith('/espn')) {
+            window.location.href = window.location.href.replace('espn', 'yahoo');
+        }
     };
 
     loadRankings = () => {
@@ -89,12 +103,22 @@ class App extends Component {
             });
     };
 
-    swapRankings = () => {
-        if (window.location.pathname.startsWith('/yahoo')) {
-            window.location.href = window.location.href.replace('yahoo', 'espn');
-        } else if (window.location.pathname.startsWith('/espn')) {
-            window.location.href = window.location.href.replace('espn', 'yahoo');
+    saveRankings = () => {
+        let userRanking = this.refs.userListbox.getItems();
+        if (!userRanking || userRanking.length === 0) {
+            alert('Please rank at least one player before saving.');
+            return;
         }
+        fetch(window.location.origin + '/saved-ranking', {
+            method: 'POST',
+            body: userRanking.toString()
+        }).then(response => {
+            if (response.status === 200) {
+                alert('User ranking saved successfully.');
+            } else {
+                alert('User ranking unable to be saved.');
+            }
+        });
     };
 
     updateListsAndClearSelections = (playerList, userPlayers) => {
@@ -167,24 +191,6 @@ class App extends Component {
             }
             this.updateListsAndClearSelections(playerList, []);
         }
-    };
-
-    saveRankings = () => {
-        let userRanking = this.state.userPlayers;
-        if (!userRanking || userRanking.length === 0) {
-            alert('Please rank at least one player before saving.');
-            return;
-        }
-        fetch(window.location.origin + '/saved-ranking', {
-            method: 'POST',
-            body: userRanking.toString()
-        }).then(response => {
-            if (response.status === 200) {
-                alert('User ranking saved successfully.');
-            } else {
-                alert('User ranking unable to be saved.');
-            }
-        });
     };
 
     determineIfRandom = (event) => {
@@ -320,7 +326,7 @@ class App extends Component {
                 <div className={"Loading"}>
                     <div><p className={"Loading-text"}>Drafting . . .</p></div>
                     <div><img src={football} className={"App-logo"} alt="football"/></div>
-                    <div><button onClick={this.cancelDraft} className={"Cancel-draft-button"}>Cancel</button></div>
+                    <div><button onClick={() => this.cancelDraft} className={"Cancel-draft-button"}>Cancel</button></div>
                 </div>
             );
         }
@@ -415,12 +421,6 @@ class App extends Component {
                         { text: 'Player', datafield: 'Player', width: 175 },
                         { text: 'Draft Frequency', datafield: 'DraftFreq', width: 130 }];
 
-        if (userFreqs + allFreqs + expectedTeam) {
-            window.$("[id^='jqxGridjqx']:eq(0)").jqxGrid({source: dataAdapter1});
-            window.$("[id^='jqxGridjqx']:eq(1)").jqxGrid({source: dataAdapter2});
-            window.$("[id^='jqxGridjqx']:eq(2)").jqxGrid({source: dataAdapter3});
-        }
-
         return (
             <Container fluid={true}>
                 <Navbar bg="primary" variant="dark">
@@ -439,7 +439,7 @@ class App extends Component {
                             in each round, which are determined by ESPN's preseason rankings.</p>
                         <p>However, Draft Simulator allows you to create and refine your own personal rankings that you
                             can bring to your draft to get the team you've always dreamed of.</p>
-                        <button onClick={this.hitEsc}
+                        <button onClick={this.closeAbout}
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Got it!</button>
                     </JqxPopover>
@@ -456,7 +456,7 @@ class App extends Component {
                                 preferred players.</li>
                             <li>The "Expected Team" tab shows your most likely fantasy team given the simulations.</li>
                         </ol>
-                        <button onClick={this.hitEsc}
+                        <button onClick={this.closeInstructions}
                         style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
                             Let's draft!</button>
                     </JqxPopover>

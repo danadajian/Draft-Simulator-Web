@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 
 
-# ranked player list that everyone drafts from
 session = requests.session()
 request = session.get('http://www.espn.com/fantasy/football/story/_/id/26692058/fantasy-football-updated-2019-non-ppr-rankings-mike-clay')
 doc = BeautifulSoup(request.content, 'html.parser')
@@ -40,6 +39,6 @@ final_player_list = [str(player) + '    (' + str(pos) + ')' for player, pos in t
 
 
 def get_espn_players():
-    if str(request) != '<Response [200]>':
+    if request.status_code != 200:
         return 'HTTP request failed.'
     return str(final_player_list)

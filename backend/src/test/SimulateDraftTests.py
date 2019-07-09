@@ -101,12 +101,10 @@ class SimulateDraftTests(unittest.TestCase):
         self.assertEqual({'Saquon': 75.0, 'Odell': 50.0, 'Eli': 25.0}, calculate_frequencies(drafted_teams))
 
     def test_get_expected_team(self):
-        drafted_teams = [['Saquon Barkley', 'Odell Beckham Jr', 'Zach Ertz', 'Rob Gronkowski'],
-                         ['Saquon Barkley', 'Evan Engram', 'Zach Ertz', 'Rob Gronkowski'],
-                         ['Odell Beckham Jr', 'Evan Engram', 'Aaron Rodgers', 'Rob Gronkowski'],
-                         ['Saquon Barkley', 'Eli Manning', 'Zach Ertz', 'Eli Manning']]
-        self.assertEqual(['Saquon Barkley', 'Evan Engram', 'Zach Ertz', 'Eli Manning'],
-                         get_expected_team(drafted_teams, 4))
+        draft_freqs = {'Golden Tate': 50.0, 'Evan Engram': 80.0, 'Eli Manning': 25.0, 'Sterling Shepard': 15.0,
+                       'Travis Kelce': 65.0, 'Saquon Barkley': 85.0, 'Zach Ertz': 59.0}
+        self.assertEqual(['Saquon Barkley', 'Evan Engram', 'Travis Kelce', 'Golden Tate'],
+                         get_expected_team(draft_freqs, 4))
 
     def test_aggregate_data(self):
         freq_dict = {'Saquon Barkley': 75.0, 'Odell Beckham Jr': 50.0, 'Eli Manning': 25.0}
