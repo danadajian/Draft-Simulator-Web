@@ -104,7 +104,11 @@ class App extends Component {
     };
 
     saveRankings = () => {
-        let userRanking = this.refs.userListbox.getItems();
+        let userItems = this.refs.userListbox.getItems();
+        let userRanking = [];
+        for (let i = 0; i < userItems.length; i++) {
+            userRanking.push(userItems[i].label)
+        }
         if (!userRanking || userRanking.length === 0) {
             alert('Please rank at least one player before saving.');
             return;
