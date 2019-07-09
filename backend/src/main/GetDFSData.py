@@ -24,9 +24,10 @@ def call_api(endpoint, extra_params):
     params = 'accept=json&api_key=' + api_key + '&sig=' + signature + extra_params
     url = 'http://api.stats.com/v1/stats/' + endpoint + '?' + params
     response = requests.get(url)
-    if response.status_code != 200:
+    if response.status_code == 404:
+        return '404 error'
+    elif response.status_code != 200:
         print(response.status_code)
-        print(url)
         raise Exception
     return response.json()
 
@@ -35,7 +36,10 @@ def get_mlb_projections():
     now = datetime.datetime.now()
     date_string = str(now.year) + '-' + str(now.month) + '-' + str(now.day)
     events_endpoint = 'baseball/mlb/events/'
-    events = call_api(events_endpoint, '&date=' + date_string).get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
+    events_call = call_api(events_endpoint, '&date=' + date_string)
+    if events_call == '404 error':
+        return 'no games'
+    events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     eventids = [event.get('eventId') for event in events]
 
     projections_endpoint = 'baseball/mlb/fantasyProjections/'

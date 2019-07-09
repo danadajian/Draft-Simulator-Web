@@ -25,6 +25,6 @@ final_player_list = [str(player) + '    (' + str(pos) + ')' for player, pos in t
 
 
 def get_yahoo_players():
-    if str(request) != '<Response [200]>':
+    if request.status_code != 200:
         return 'HTTP request failed.'
     return str(final_player_list)
