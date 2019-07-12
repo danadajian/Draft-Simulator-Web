@@ -1,4 +1,4 @@
-from src.main.GetESPNPlayers import get_espn_players
+from src.main.GetESPNPlayers import get_espn_players, top300dict
 from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.SimulateDraft import *
 from src.main.GetDFSData import *
@@ -68,14 +68,13 @@ def landing_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(url_for('home'))
-
+                return redirect(
+                    url_for(request.args.get('next'))) if request.args.get('next') else redirect(url_for('/home'))
         return '<h1>Invalid username or password</h1>' \
                '<h2>Please <a href="login">try again</a>.</h2>'
 
@@ -188,7 +187,7 @@ def run_draft():
             return draft_results
         player_draft_freq = calculate_frequencies(teams_drafted)
         expected_team = get_expected_team(player_draft_freq, round_count)
-        ordered_team = order_team(expected_team, player_draft_freq)
+        ordered_team = order_team(expected_team, player_draft_freq, top300dict)
         draft_results = aggregate_data(player_draft_freq, user_list) + '|' + ordered_team
         return draft_results
     else:
@@ -242,8 +241,8 @@ def optimized_team(sport):
     else:
         fd_black_list = []
         dk_black_list = []
-    fd_lineup = get_fd_lineup(sport, projections_dict, fd_black_list)
-    dk_lineup = get_dk_lineup(sport, projections_dict, dk_black_list)
+    fd_lineup = get_dfs_lineup('fd', sport, projections_dict, fd_black_list)
+    dk_lineup = get_dfs_lineup('dk', sport, projections_dict, dk_black_list)
     return fd_lineup + '|' + dk_lineup
 
 

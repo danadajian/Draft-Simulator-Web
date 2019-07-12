@@ -1,6 +1,6 @@
 from .PositionCheck import *
+from .GetESPNPlayers import top300dict
 import random
-from collections import Counter
 
 
 def create_teams(team_count, user_team):
@@ -33,14 +33,14 @@ def pick_players(user_list, team_dict, draft_order, round_count):
             if team == 'user_team':  # your pick logic
                 your_pick = None
                 if user_list:
-                    while user_list and not valid_choice(user_list[0], user_team):
+                    while user_list and not valid_choice(user_list[0], top300dict, user_team):
                         user_list.remove(user_list[0])
                     if user_list:
                         your_pick = user_list[0]
                         user_list.remove(your_pick)
                 if not user_list:
                     your_threshold = threshold
-                    while not valid_choice(your_pick, user_team):
+                    while not valid_choice(your_pick, top300dict, user_team):
                         your_pick = comp_list[random.randint(0, min(len(comp_list) - 1, your_threshold))]
                         your_threshold += 1
                 if your_pick is None:
@@ -50,7 +50,7 @@ def pick_players(user_list, team_dict, draft_order, round_count):
             else:  # AI pick logic
                 comp_threshold = threshold
                 comp_pick = None
-                while not valid_choice(comp_pick, team_dict.get(team)):
+                while not valid_choice(comp_pick, top300dict, team_dict.get(team)):
                     comp_pick = comp_list[random.randint(0, min(len(comp_list) - 1, comp_threshold))]
                     comp_threshold += 1
                 team_dict.get(team).append(comp_pick)
@@ -96,13 +96,13 @@ def calculate_frequencies(drafted_teams):
 
 def get_expected_team(draft_frequencies, round_count):
     most_to_least_drafted = sorted(draft_frequencies, key=draft_frequencies.__getitem__, reverse=True)
-    print(most_to_least_drafted)
     expected_team = []
-    for player in most_to_least_drafted:
-        if len(expected_team) >= round_count:
-            break
-        elif valid_choice(player, expected_team) and player not in expected_team:
+    index = 0
+    while len(expected_team) < round_count:
+        player = most_to_least_drafted[index]
+        if valid_choice(player, top300dict, expected_team):
             expected_team.append(player)
+        index += 1
     return expected_team
 
 

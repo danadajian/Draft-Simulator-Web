@@ -1,5 +1,4 @@
 import statistics
-from src.main.GetDFSData import *
 
 
 def ignore_players(black_list, pools):
@@ -79,7 +78,7 @@ def make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total
     return data_str
 
 
-def output_lineups(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap):
+def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap):
     the_list = best_lineup(lineup_matrix, black_list, proj_dict, pos_dict)
     if the_list == 'Warning: \nNot enough positions currently available.':
         return the_list
@@ -90,45 +89,33 @@ def output_lineups(lineup_matrix, display_matrix, black_list, proj_dict, pos_dic
     total_pts = round(sum([proj_dict.get(player) for player in optimal_lineup]), 1)
     total_salary = sum([salary_dict.get(player) for player in optimal_lineup])
     result_max = sum([proj_dict.get(player) for player in the_best_lineup])
-    data = make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total_pts, total_salary, result_max)
-    return data
+    lineup = make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total_pts, total_salary, result_max)
+    return lineup
 
 
-def get_fd_lineup(sport, projections_dict, black_list):
+def get_dfs_lineup(site, sport, projections_dict, black_list):
+    lineup_matrix, display_matrix, salary_cap = None, None, None
     if sport == 'mlb':
-        fd_lineup_matrix = ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
-        fd_display_matrix = ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util']
-        fd_proj_dict = {player: float(projections_dict.get(player)[1].get('points')) for player in projections_dict.keys()}
-        fd_pos_dict = {player: projections_dict.get(player)[1].get('position') for player in projections_dict.keys()}
-        fd_salary_dict = {player: int(projections_dict.get(player)[1].get('salary')) for player in projections_dict.keys()}
-        fd_data = output_lineups(fd_lineup_matrix, fd_display_matrix, black_list, fd_proj_dict,
-                                 fd_pos_dict, fd_salary_dict, 35000)
-        return fd_data
+        lineup_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'] if site == 'dk' else ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
+        display_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'] if site == 'dk' else ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util']
+        salary_cap = 50000 if site == 'dk' else 35000
     elif sport == 'nba':
-        fd_lineup_matrix = ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
-        fd_proj_dict = nbaPointsDict.get('Fanduel')
-        fd_pos_dict = nbaPositionsDict.get('Fanduel')
-        fd_salary_dict = nbaSalaryDict.get('Fanduel')
-        fd_data = output_lineups(fd_lineup_matrix, fd_lineup_matrix, black_list, fd_proj_dict,
-                                 fd_pos_dict, fd_salary_dict, 60000)
-        return fd_data
-
-
-def get_dk_lineup(sport, projections_dict, black_list):
-    if sport == 'mlb':
-        dk_lineup_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF']
-        dk_proj_dict = {player: float(projections_dict.get(player)[0].get('points')) for player in projections_dict.keys()}
-        dk_pos_dict = {player: projections_dict.get(player)[0].get('position') for player in projections_dict.keys()}
-        dk_salary_dict = {player: int(projections_dict.get(player)[0].get('salary')) for player in projections_dict.keys()}
-        dk_data = output_lineups(dk_lineup_matrix, dk_lineup_matrix, black_list, dk_proj_dict,
-                                 dk_pos_dict, dk_salary_dict, 50000)
-        return dk_data
-    elif sport == 'nba':
-        dk_lineup_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C']
-        dk_display_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util']
-        dk_proj_dict = nbaPointsDict.get('Draftkings')
-        dk_pos_dict = nbaPositionsDict.get('Draftkings')
-        dk_salary_dict = nbaSalaryDict.get('Draftkings')
-        dk_data = output_lineups(dk_lineup_matrix, dk_display_matrix, black_list, dk_proj_dict,
-                                 dk_pos_dict, dk_salary_dict, 50000)
-        return dk_data
+        lineup_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C'] if site == 'dk' else ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
+        display_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util'] if site == 'dk' else ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
+        salary_cap = 50000 if site == 'dk' else 60000
+    site_id = 1 if site == 'dk' else 2
+    proj_points_dict = {player: float(site_projection.get('points'))
+                        for player in projections_dict.keys()
+                        for site_projection in projections_dict.get(player)
+                        if site_projection.get('siteId') == site_id}
+    pos_dict = {player: site_projection.get('position')
+                for player in projections_dict.keys()
+                for site_projection in projections_dict.get(player)
+                if site_projection.get('siteId') == site_id}
+    salary_dict = {player: int(site_projection.get('salary'))
+                   for player in projections_dict.keys()
+                   for site_projection in projections_dict.get(player)
+                   if site_projection.get('siteId') == site_id}
+    dfs_lineup = output_lineup(lineup_matrix, display_matrix, black_list, proj_points_dict, pos_dict, salary_dict,
+                               salary_cap)
+    return dfs_lineup

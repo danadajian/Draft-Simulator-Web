@@ -1,5 +1,6 @@
 import unittest
 from backend.src.main.SimulateDraft import *
+from backend.src.main.GetESPNPlayers import top300dict
 
 
 class SimulateDraftTests(unittest.TestCase):
@@ -83,7 +84,7 @@ class SimulateDraftTests(unittest.TestCase):
         sims = 1
         team = simulate_draft(players, teams, pick, rounds, sims)[0]
         pos_counts = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
-        self.assertTrue(all(position_count(team, pos) == pos_counts.get(pos) for pos in pos_counts.keys()))
+        self.assertTrue(all(position_count(team, top300dict, pos) == pos_counts.get(pos) for pos in pos_counts.keys()))
 
     def test_full_draft_position_counts_valid_many_sims(self):
         players = []
@@ -93,7 +94,7 @@ class SimulateDraftTests(unittest.TestCase):
         sims = 10
         drafted_teams = simulate_draft(players, teams, pick, rounds, sims)
         pos_counts = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
-        self.assertTrue(all(position_count(team, pos) == pos_counts.get(pos) for pos in pos_counts.keys())
+        self.assertTrue(all(position_count(team, top300dict, pos) == pos_counts.get(pos) for pos in pos_counts.keys())
                         for team in drafted_teams)
 
     def test_calculate_frequencies(self):

@@ -294,7 +294,7 @@ class App extends Component {
             fetch(window.location.origin + '/optimized-lineup/' + sport)
                 .then(response => {
                     if (response.status !== 200) {
-                        alert('Lineups could not be reset.');
+                        alert('Failed to generate lineups.');
                     } else {
                         response.text()
                             .then((lineupData) => {
