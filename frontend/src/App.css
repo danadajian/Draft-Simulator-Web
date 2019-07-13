@@ -55,6 +55,16 @@ body {
   padding: 10px 15px;
 }
 
+.Logout-button {
+  margin-top: 2%;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  background-color: dimgray;
+  color: navajowhite;
+  padding: 9px 14px;
+}
+
 .Loading-text {
   font-size: x-large;
   font-weight: bold;
