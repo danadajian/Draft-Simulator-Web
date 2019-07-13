@@ -20,8 +20,10 @@ Login
         {{ wtf.form_field(form.username) }}
         {{ wtf.form_field(form.password) }}
         {{ wtf.form_field(form.remember) }}
-        <button class="btn btn-lg btn-primary btn-block" type="submit" style="margin-top: 10%;"
-                onclick="">Log In</button>
+        {% if error %}
+          <p style="color: red">{{ error }}</p>
+        {% endif %}
+        <button class="btn btn-lg btn-primary btn-block" type="submit" style="margin-top: 10%;">Log In</button>
         <button class="btn btn-lg btn-primary btn-block" style="margin-top: 5%;"
                 onclick="window.location.pathname = '/signup'">Sign Up</button>
       </form>

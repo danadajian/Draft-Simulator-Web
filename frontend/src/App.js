@@ -351,12 +351,16 @@ class App extends Component {
                     <h1 className={'Home-header'}>Welcome to Draft Simulator!</h1>
                     <h3 className={'Dfs-header'}>To start, choose a draft site:</h3>
                     <div className={"Home-buttons"}>
-                    <button onClick={() => {window.location.href = window.location.origin + '/espn'}} className={'Site-button'}>ESPN</button>
-                    <button onClick={() => {window.location.href = window.location.origin + '/yahoo'}} className={'Site-button'}>Yahoo</button>
+                    <button onClick={() => {window.location.href = window.location.origin + '/espn'}}
+                            className={'Site-button'}>ESPN</button>
+                    <button onClick={() => {window.location.href = window.location.origin + '/yahoo'}}
+                            className={'Site-button'}>Yahoo</button>
                     </div>
                     <h3 className={'Dfs-header'}>Or, check out our DFS Optimizer:</h3>
-                    <button onClick={() => {window.location.href = window.location.origin + '/dfs-optimizer'}} className={'Dfs-button'}>DFS Optimizer</button>
-                    <div><a href={window.location.origin + '/logout'} className={'Dfs-header'}>Sign Out</a></div>
+                    <button onClick={() => {window.location.href = window.location.origin + '/dfs-optimizer'}}
+                            className={'Dfs-button'}>DFS Optimizer</button>
+                    <button onClick={() => {window.location.href = window.location.origin + '/logout'}}
+                            className={'Logout-button'}>Log Out</button>
                 </div>
             )
         }
@@ -391,6 +395,7 @@ class App extends Component {
                         <Nav className="Nav-bar">
                           <Nav.Link href="/">Home</Nav.Link>
                           <Nav.Link href="/espn">Back to Draft Simulator</Nav.Link>
+                            <Nav.Link href="/logout">Logout</Nav.Link>
                         </Nav>
                     </Navbar>
                     <h1 className={"App-header"}>DFS Optimizer</h1>
@@ -474,6 +479,7 @@ class App extends Component {
                       <Nav.Link href="#about">About</Nav.Link>
                       <Nav.Link href="#instructions">Instructions</Nav.Link>
                       <Nav.Link href="/dfs-optimizer">DFS Optimizer</Nav.Link>
+                        <Nav.Link href="/logout">Logout</Nav.Link>
                     </Nav>
                 </Navbar>
                 <div className={"Info-buttons"}>

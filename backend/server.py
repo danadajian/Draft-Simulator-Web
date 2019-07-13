@@ -3,7 +3,7 @@ from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.SimulateDraft import *
 from src.main.GetDFSData import *
 from src.main.Optimizer import *
-from flask import Flask, render_template, request, redirect, url_for
+from flask import *
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_heroku import Heroku
@@ -68,17 +68,16 @@ def landing_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    endpoint = request.args.get('next').split('/')[1].replace('-', '_') if request.args.get('next') and request.method == 'GET' else 'home'
+    error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
+    print(request.form.get('username'), request.form.get('password'), request.method)
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(
-                    url_for(request.args.get('next'))) if request.args.get('next') else redirect(url_for('/home'))
-        return '<h1>Invalid username or password</h1>' \
-               '<h2>Please <a href="login">try again</a>.</h2>'
-
-    return render_template('login.html', form=form)
+                return redirect(url_for(endpoint))
+    return render_template('login.html', form=form, error=error)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -96,6 +95,7 @@ def signup():
             return '<h1>User already exists.</h1>' \
                    '<h2>Please <a href="signup">try again</a>.</h2>'
 
+        print(request.method)
         return '<h1>Your account has been created!</h1>' \
                '<h2>Now please <a href="login">login</a>.</h2>'
 
