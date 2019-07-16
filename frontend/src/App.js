@@ -28,16 +28,6 @@ class App extends Component {
         }
     }
 
-    componentDidUpdate() {
-         if (document.getElementById("swapButton")) {
-            document.getElementById("swapButton").innerHTML =
-                (window.location.pathname.startsWith('/espn')) ? 'Switch to Yahoo' : 'Switch to ESPN';
-
-            document.getElementById("swapButton").style.backgroundColor =
-                (window.location.pathname.startsWith('/espn')) ? '#6C00B3' : '#CE0000';
-        }
-    }
-
     fetchPlayersForSimulator = (site) => {
         fetch(window.location.origin + site + '-players')
             .then(response => {
@@ -382,6 +372,26 @@ class App extends Component {
             );
         }
 
+        const dsFields = [{ name: 'Position', type: 'string' },
+                           { name: 'Player', type: 'string' },
+                           { name: 'DraftFreq', type: 'string' }];
+
+        let source1 = {datatype: 'json', datafields: dsFields, localdata: userFreqs};
+        let dataAdapter1 = new window.$.jqx.dataAdapter(source1);
+
+        let source2 = {datatype: 'json', datafields: dsFields, localdata: allFreqs};
+        let dataAdapter2 = new window.$.jqx.dataAdapter(source2);
+
+        let source3 = {datatype: 'json', datafields: dsFields, localdata: expectedTeam};
+        let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
+
+        let tabSpecs = [{ text: 'Position', datafield: 'Position', width: 95 },
+                        { text: 'Player', datafield: 'Player', width: 175 },
+                        { text: 'Draft Frequency', datafield: 'DraftFreq', width: 130 }];
+
+        const swapButtonText = window.location.pathname.startsWith('/espn') ? 'Switch to Yahoo' : 'Switch to ESPN';
+        const swapButtonColor = window.location.pathname.startsWith('/espn') ? '#6C00B3' : '#CE0000';
+
         if (window.location.pathname === '/dfs-optimizer') {
 
             const dfsColumns = [{ key: 'Position', name: 'Position', width: 75},
@@ -454,23 +464,6 @@ class App extends Component {
             )
         }
 
-        const dsFields = [{ name: 'Position', type: 'string' },
-                           { name: 'Player', type: 'string' },
-                           { name: 'DraftFreq', type: 'string' }];
-
-        let source1 = {datatype: 'json', datafields: dsFields, localdata: userFreqs};
-        let dataAdapter1 = new window.$.jqx.dataAdapter(source1);
-
-        let source2 = {datatype: 'json', datafields: dsFields, localdata: allFreqs};
-        let dataAdapter2 = new window.$.jqx.dataAdapter(source2);
-
-        let source3 = {datatype: 'json', datafields: dsFields, localdata: expectedTeam};
-        let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
-
-        let tabSpecs = [{ text: 'Position', datafield: 'Position', width: 95 },
-                        { text: 'Player', datafield: 'Player', width: 175 },
-                        { text: 'Draft Frequency', datafield: 'DraftFreq', width: 130 }];
-
         return (
             <Container fluid={true}>
                 <Navbar bg="primary" variant="dark">
@@ -524,7 +517,7 @@ class App extends Component {
                         </button>
                         <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
                         <button id='rankingButton' onClick={this.loadRankings} className={"Ranking-button"}>Load Saved Rankings</button>
-                        <button id='swapButton' onClick={this.swapRankings} className={"Swap-button"}>Swap Button</button>
+                        <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
                     </div>
                     <JqxListBox ref='userListbox' width={250} height={400}
                                 source={userPlayers} allowDrag={true}

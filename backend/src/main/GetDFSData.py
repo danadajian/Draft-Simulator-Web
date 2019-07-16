@@ -3,6 +3,7 @@ import requests
 import time
 import datetime
 import os
+
 try:
     from backend.src.main.apiCredentials import *
 except ImportError:
@@ -54,9 +55,7 @@ def get_mlb_projections():
     participants = call_api(participants_endpoint, '&season=' + str(now.year))
     player_list = participants.get('apiResults')[0].get('league').get('seasons')[0].get('players')
     player_info = {player.get('playerId'): player.get('firstName') + ' ' + player.get('lastName') for player in player_list}
-
     playerid_projections = dict(zip([list(player.keys())[0] for player in players], [list(player.values())[0] for player in players]))
-
     mlb_projections = dict(zip([player_info.get(playerId) if player_info.get(playerId) else 'TBA' for playerId in playerid_projections.keys()], playerid_projections.values()))
 
     return mlb_projections

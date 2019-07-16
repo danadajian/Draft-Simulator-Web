@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 
-
 session = requests.session()
 request = session.get('http://www.espn.com/fantasy/football/story/_/id/26692058/fantasy-football-updated-2019-non-ppr-rankings-mike-clay')
 doc = BeautifulSoup(request.content, 'html.parser')
