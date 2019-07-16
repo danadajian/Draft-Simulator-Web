@@ -1,67 +1,61 @@
 import statistics
 
 
-def ignore_players(black_list, pools):
-    for pool in pools:
+def remove_ignored_players(player_pools, black_list):
+    for pool in player_pools:
         for player in black_list:
             if player in pool:
                 pool.remove(player)
-    return pools
+    return player_pools
 
 
-def best_lineup(lineup_matrix, black_list, proj_pts_dict, pos_dict):
+def get_player_pools(lineup_matrix, black_list, proj_pts_dict, pos_dict):
     sorted_players = sorted(proj_pts_dict, key=proj_pts_dict.__getitem__, reverse=True)
-    sorted_scores = [proj_pts_dict.get(player) for player in sorted_players]
-    proj_pts_dict = dict(zip(sorted_players, sorted_scores))
-
     sorted_positions = [pos_dict.get(player) for player in sorted_players]
-    pos_dict = dict(zip(sorted_players, sorted_positions))
+    sorted_positions_dict = dict(zip(sorted_players, sorted_positions))
+    player_pools_with_ignored = [[player for player in sorted_positions_dict.keys() if sorted_positions_dict.get(player) in spot or spot in sorted_positions_dict.get(player)]
+                                 for spot in lineup_matrix]
+    player_pools = remove_ignored_players(player_pools_with_ignored, black_list)
+    return player_pools
 
-    starting_pools = [
-        [player for player in pos_dict.keys() if pos_dict.get(player) in spot or spot in pos_dict.get(player)] for spot
-        in lineup_matrix]
-    pools = ignore_players(black_list, starting_pools)
-    if any(not pool for pool in pools):
+
+def get_best_lineup(player_pools):
+    if any(not pool for pool in player_pools):
         return 'Warning: \nNot enough player data currently available.'
-    starting_lineup = []
-    while len(starting_lineup) < len(pools):
-        for pool in pools:
-            for i in range(len(pool)):
-                if pool[i] not in starting_lineup:
-                    starting_lineup.append(pool[i])
-                    break
-    return [starting_lineup, pools, proj_pts_dict]
+    best_lineup = []
+    for pool in player_pools:
+        for player in pool:
+            if player not in best_lineup:
+                best_lineup.append(player)
+                break
+    return best_lineup
 
 
-def optimize(starting_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
-    optimal_lineup = [player for player in starting_lineup]
+def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
+    optimal_lineup = [player for player in best_lineup]
     current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
-    salary_threshold = statistics.mean(list(salary_dict.values()))
+    salary_min = statistics.mean(list(salary_dict.values()))
     while current_salary > salary_cap:
-        min_cost = 100
-        downgrade_index = None
-        new_player = None
-        for i in range(len(optimal_lineup)):
-            try:
-                player_index = pools[i].index(optimal_lineup[i])
-            except ValueError:
+        current_lowest_cost, downgrade_index, new_player = None, None, None
+        for player in optimal_lineup:
+            player_pool = pools[optimal_lineup.index(player)]
+            if player in player_pool:
+                player_index = player_pool.index(player)
+            else:
                 return 'Warning: \nToo many players removed. Unable to generate new lineup.'
-            if len(pools[i]) == player_index + 1 or salary_dict.get(pools[i][player_index]) < salary_threshold or \
-                    pools[i][player_index + 1] in optimal_lineup:
+            if player_index == len(player_pool) - 1 or player_pool[player_index + 1] in optimal_lineup or salary_dict.get(player) < salary_min:
                 continue
-            current_ratio = proj_pts_dict.get(pools[i][player_index]) / salary_dict.get(pools[i][player_index])
-            downgrade_ratio = proj_pts_dict.get(pools[i][player_index + 1]) / salary_dict.get(
-                pools[i][player_index + 1])
+            current_ratio = proj_pts_dict.get(player) / salary_dict.get(player)
+            downgrade_ratio = proj_pts_dict.get(player_pool[player_index + 1]) / salary_dict.get(player_pool[player_index + 1])
             cost_to_downgrade = current_ratio - downgrade_ratio
-            if cost_to_downgrade < min_cost:
-                min_cost = cost_to_downgrade
-                downgrade_index = i
-                new_player = pools[i][player_index + 1]
+            if not current_lowest_cost or cost_to_downgrade < current_lowest_cost:
+                current_lowest_cost = cost_to_downgrade
+                downgrade_index = optimal_lineup.index(player)
+                new_player = player_pool[player_index + 1]
         if not new_player:
             return 'Warning: \nToo many players removed. Unable to generate new lineup.'
         optimal_lineup[downgrade_index] = new_player
         current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
-
     return optimal_lineup
 
 
@@ -79,16 +73,16 @@ def make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total
 
 
 def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap):
-    the_list = best_lineup(lineup_matrix, black_list, proj_dict, pos_dict)
-    if the_list == 'Warning: \nNot enough positions currently available.':
-        return the_list
-    the_best_lineup, pools, proj_dict = the_list[0], the_list[1], the_list[2]
-    optimal_lineup = optimize(the_best_lineup, pools, proj_dict, salary_dict, cap)
+    player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict)
+    best_lineup = get_best_lineup(player_pools)
+    if best_lineup == 'Warning: \nNot enough positions currently available.':
+        return best_lineup
+    optimal_lineup = optimize(best_lineup, player_pools, proj_dict, salary_dict, cap)
     if optimal_lineup == 'Warning: \nToo many players removed. Unable to generate new lineup.':
         return optimal_lineup
     total_pts = round(sum([proj_dict.get(player) for player in optimal_lineup]), 1)
     total_salary = sum([salary_dict.get(player) for player in optimal_lineup])
-    result_max = sum([proj_dict.get(player) for player in the_best_lineup])
+    result_max = sum([proj_dict.get(player) for player in best_lineup])
     lineup = make_data_nice(display_matrix, optimal_lineup, proj_dict, salary_dict, total_pts, total_salary, result_max)
     return lineup
 
@@ -116,6 +110,5 @@ def get_dfs_lineup(site, sport, projections_dict, black_list):
                    for player in projections_dict.keys()
                    for site_projection in projections_dict.get(player)
                    if site_projection.get('siteId') == site_id}
-    dfs_lineup = output_lineup(lineup_matrix, display_matrix, black_list, proj_points_dict, pos_dict, salary_dict,
-                               salary_cap)
+    dfs_lineup = output_lineup(lineup_matrix, display_matrix, black_list, proj_points_dict, pos_dict, salary_dict, salary_cap)
     return dfs_lineup
