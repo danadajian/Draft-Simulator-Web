@@ -43,10 +43,10 @@ def get_mlb_projections():
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     team_pairs = [{'homeTeam': event.get('teams')[0].get('abbreviation'), 'awayTeam': event.get('teams')[1].get('abbreviation')} for event in events]
     home_teams = [team_pair.get('homeTeam') for team_pair in team_pairs]
-    home_opps = [['v. ' + team_pair.get('homeTeam'), events[team_pairs.index(team_pair)].get('eventId')] for team_pair in team_pairs]
+    home_opps = [{'opponent': 'v. ' + team_pair.get('awayTeam'), 'eventId': events[team_pairs.index(team_pair)].get('eventId')} for team_pair in team_pairs]
     home_teams_info = dict(zip(home_teams, home_opps))
     away_teams = [team_pair.get('awayTeam') for team_pair in team_pairs]
-    away_opps = [['@ ' + team_pair.get('homeTeam'), events[team_pairs.index(team_pair)].get('eventId')] for team_pair in team_pairs]
+    away_opps = [{'opponent': '@ ' + team_pair.get('homeTeam'), 'eventId': events[team_pairs.index(team_pair)].get('eventId')} for team_pair in team_pairs]
     away_teams_info = dict(zip(away_teams, away_opps))
     team_info = dict(home_teams_info)
     team_info.update(away_teams_info)
@@ -59,6 +59,7 @@ def get_mlb_projections():
     batters = [{batter.get('playerId'): batter.get('fantasyProjections')} for team in batter_data for batter in team]
     pitchers = [{pitcher.get('playerId'): pitcher.get('fantasyProjections')} for team in pitcher_data for pitcher in team if len(pitcher.get('fantasyProjections')) > 1]
     players = batters + pitchers
+    player_ids = [list(player.keys())[0] for player in players]
 
     weather_endpoint = 'baseball/mlb/weatherforecasts/'
     call = call_api(weather_endpoint, '&date=' + date_string)
@@ -72,12 +73,23 @@ def get_mlb_projections():
     participants_endpoint = 'baseball/mlb/participants/'
     participants = call_api(participants_endpoint, '&season=' + str(now.year))
     player_list = participants.get('apiResults')[0].get('league').get('seasons')[0].get('players')
-    player_info = [{'playerId': player.get('playerId'),
-                    'name': player.get('firstName') + ' ' + player.get('lastName'),
-                    'team': player.get('team').get('abbreviation'),
-                    'opponent': team_info.get(player.get('team').get('abbreviation'))[0],
-                    'weather': weather_by_event.get(team_info.get(player.get('team').get('abbreviation'))[1])}
-                    for player in player_list]
+    player_info = []
+    for player in player_list:
+        if player.get('playerId') in player_ids:
+            player_id = player.get('playerId')
+            name = player.get('firstName') + ' ' + player.get('lastName')
+            team = player.get('team').get('abbreviation')
+            print(player_id, name, team)
+            opponent = team_info.get(team).get('opponent')
+            weather = weather_by_event.get(team_info.get(team).get('eventId'))
+            if not opponent or not weather:
+                print(player_id, name, team)
+            info = {'playerId': player_id,
+                        'name': name,
+                        'team': team,
+                        'opponent': opponent,
+                        'weather': weather}
+            player_info.append(info)
     print(player_info)
 
     return
