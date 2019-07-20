@@ -286,7 +286,7 @@ class App extends Component {
                     if (response.status !== 200) {
                         alert('Failed to generate lineups.');
                     } else {
-                        response.text()
+                        response.json()
                             .then((lineupData) => {
                                 this.ingestDfsLineup(lineupData, sport, 'none');
                             });
@@ -305,9 +305,9 @@ class App extends Component {
             if (response.status !== 200) {
                 alert('Error removing player.');
             } else {
-                response.text()
-                    .then((lineupData) => {
-                        this.ingestDfsLineup(lineupData, sport, site);
+                response.json()
+                    .then((lineupJson) => {
+                        this.ingestDfsLineup(lineupJson, sport, site);
                     });
             }
         });
@@ -315,19 +315,18 @@ class App extends Component {
         alert('You have removed ' + removedPlayer + alertString);
     };
 
-    ingestDfsLineup = (lineupData, sport, site) => {
-        const lineup = lineupData.split('|');
-        if (site === 'fd' && lineup[0].startsWith('Warning:')) {
-            alert(lineup[0]);
-        } else if (site === 'dk' && lineup[1].startsWith('Warning:')) {
-            alert(lineup[1]);
-        } else if (site === 'none' && lineup[0].startsWith('Warning:')) {
-            alert (lineup[0]);
+    ingestDfsLineup = (lineupJson, sport, site) => {
+        if (site === 'fd' && lineupJson[0].length === 1) {
+            alert(lineupJson[0][0]);
+        } else if (site === 'dk' && lineupJson[1].length === 1) {
+            alert(lineupJson[1][0]);
+        } else if (site === 'none' && lineupJson[0].length === 1) {
+            alert (lineupJson[0][0]);
             this.refs.dropDown.value = this.state.sport;
             return
         }
-        let fdLineup = (lineup[0].startsWith('Warning:')) ? this.state.fdLineup : JSON.parse(lineup[0]);
-        let dkLineup = (lineup[1].startsWith('Warning:')) ? this.state.dkLineup : JSON.parse(lineup[1]);
+        let fdLineup = (lineupJson[0].length === 1) ? this.state.fdLineup : lineupJson[0];
+        let dkLineup = (lineupJson[1].length === 1) ? this.state.dkLineup : lineupJson[1];
         this.setState({sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
     };
 
@@ -395,9 +394,12 @@ class App extends Component {
         if (window.location.pathname === '/dfs-optimizer') {
 
             const dfsColumns = [{ key: 'Position', name: 'Position', width: 75},
+                                { key: 'Team', name: 'Team', width: 50},
                                 { key: 'Player', name: 'Player', width: 175},
                                 { key: 'Projected', name: 'Projected', width: 100},
-                                { key: 'Price', name: 'Price', width: 75}];
+                                { key: 'Price', name: 'Price', width: 75},
+                                { key: 'Opp', name: 'Opp', width: 60},
+                                { key: 'Weather', name: 'Weather', width: 350}];
 
             return (
                 <Container fluid={true}>

@@ -50,7 +50,6 @@ def get_mlb_projections():
     away_teams_info = dict(zip(away_teams, away_opps))
     team_info = dict(home_teams_info)
     team_info.update(away_teams_info)
-    print(team_info)
 
     projections_endpoint = 'baseball/mlb/fantasyProjections/'
     proj_responses = [call_api(projections_endpoint + str(event.get('eventId')), '').get('apiResults')[0].get('league').get('season').get('eventType')[0].get('fantasyProjections').get('teams') for event in events]
@@ -59,45 +58,30 @@ def get_mlb_projections():
     batters = [{batter.get('playerId'): batter.get('fantasyProjections')} for team in batter_data for batter in team]
     pitchers = [{pitcher.get('playerId'): pitcher.get('fantasyProjections')} for team in pitcher_data for pitcher in team if len(pitcher.get('fantasyProjections')) > 1]
     players = batters + pitchers
+    playerid_projections = dict(zip([list(player.keys())[0] for player in players], [list(player.values())[0] for player in players]))
     player_ids = [list(player.keys())[0] for player in players]
 
     weather_endpoint = 'baseball/mlb/weatherforecasts/'
     call = call_api(weather_endpoint, '&date=' + date_string)
     weather_results_by_event = call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('weatherForecasts')
     weather_by_event = {forecast.get('eventId'):
-                       str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
-                       forecast.get('forecasts')[0].get('condition') + ', ' +
-                       str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'
-                       for forecast in weather_results_by_event}
+                        str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
+                        forecast.get('forecasts')[0].get('condition') + ', ' +
+                        str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'
+                        for forecast in weather_results_by_event}
 
     participants_endpoint = 'baseball/mlb/participants/'
     participants = call_api(participants_endpoint, '&season=' + str(now.year))
     player_list = participants.get('apiResults')[0].get('league').get('seasons')[0].get('players')
-    player_info = []
-    for player in player_list:
-        if player.get('playerId') in player_ids:
-            player_id = player.get('playerId')
-            name = player.get('firstName') + ' ' + player.get('lastName')
-            team = player.get('team').get('abbreviation')
-            print(player_id, name, team)
-            opponent = team_info.get(team).get('opponent')
-            weather = weather_by_event.get(team_info.get(team).get('eventId'))
-            if not opponent or not weather:
-                print(player_id, name, team)
-            info = {'playerId': player_id,
-                        'name': name,
-                        'team': team,
-                        'opponent': opponent,
-                        'weather': weather}
-            player_info.append(info)
-    print(player_info)
+    final_player_list = [player for player in player_list if player.get('playerId') in player_ids]
+    mlb_projections = [{
+        'name': player.get('firstName') + ' ' + player.get('lastName'),
+        'projection': playerid_projections.get(player.get('playerId')),
+        'team': player.get('team').get('abbreviation'),
+        'opponent': team_info.get(player.get('team').get('abbreviation')).get('opponent'),
+        'weather': weather_by_event.get(team_info.get(player.get('team').get('abbreviation')).get('eventId'))
+    } for player in final_player_list]
 
-    return
-    player_projections_and_info = [list(player.values())[0] for player in players]
-    playerid_projections = dict(zip([list(player.keys())[0] for player in players], player_projections_and_info))
-    available_players = [player_info.get(playerId) for playerId in playerid_projections.keys() if player_info.get(playerId)]
-    mlb_projections = dict(zip(available_players, playerid_projections.values()))
-    print(mlb_projections)
     return mlb_projections
 
 
@@ -107,6 +91,3 @@ def get_nba_projections():
 
 def get_nfl_projections():
     return 'offseason'
-
-
-print(get_mlb_projections())
