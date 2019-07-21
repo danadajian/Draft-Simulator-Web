@@ -6,7 +6,6 @@ import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
-import ReactDataGrid from "react-data-grid";
 import football from './football.ico'
 
 let startingList = [];
@@ -288,7 +287,7 @@ class App extends Component {
                     } else {
                         response.json()
                             .then((lineupData) => {
-                                this.ingestDfsLineup(lineupData, sport, 'none');
+                                this.ingestDfsLineup(lineupData, sport);
                             });
                     }
                 });
@@ -307,7 +306,7 @@ class App extends Component {
             } else {
                 response.json()
                     .then((lineupJson) => {
-                        this.ingestDfsLineup(lineupJson, sport, site);
+                        this.ingestDfsLineup(lineupJson, sport);
                     });
             }
         });
@@ -315,19 +314,37 @@ class App extends Component {
         alert('You have removed ' + removedPlayer + alertString);
     };
 
-    ingestDfsLineup = (lineupJson, sport, site) => {
-        if (site === 'fd' && lineupJson[0].length === 1) {
-            alert(lineupJson[0][0]);
-        } else if (site === 'dk' && lineupJson[1].length === 1) {
-            alert(lineupJson[1][0]);
-        } else if (site === 'none' && lineupJson[0].length === 1) {
-            alert (lineupJson[0][0]);
+    ingestDfsLineup = (lineupJson, sport) => {
+        if (lineupJson.length === 1) {
             this.refs.dropDown.value = this.state.sport;
+            alert(lineupJson[0]);
             return
         }
-        let fdLineup = (lineupJson[0].length === 1) ? this.state.fdLineup : lineupJson[0];
-        let dkLineup = (lineupJson[1].length === 1) ? this.state.dkLineup : lineupJson[1];
+        if (typeof lineupJson[0] === "string") {
+            alert(lineupJson[0]);
+        } else if (lineupJson.length === 2 && lineupJson[1] === "string") {
+            alert(lineupJson[1]);
+        }
+        let fdLineup = (lineupJson[0] === "string") ? this.state.fdLineup : lineupJson[0];
+        let dkLineup = (lineupJson[1] === "string") ? this.state.dkLineup : lineupJson[1];
         this.setState({sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
+    };
+
+    arrayifyDfsLineup = (lineup) => {
+        let arrayedLineup = [];
+        for (let i = 0; i < lineup.length; i++) {
+            const playerArray = [
+                lineup[i].Position,
+                lineup[i].Team,
+                lineup[i].Player,
+                lineup[i].Projected,
+                lineup[i].Price,
+                lineup[i].Opp,
+                lineup[i].Weather
+            ];
+            arrayedLineup.push(playerArray);
+        }
+        return arrayedLineup
     };
 
     render() {
@@ -393,14 +410,6 @@ class App extends Component {
 
         if (window.location.pathname === '/dfs-optimizer') {
 
-            const dfsColumns = [{ key: 'Position', name: 'Position', width: 75},
-                                { key: 'Team', name: 'Team', width: 50},
-                                { key: 'Player', name: 'Player', width: 175},
-                                { key: 'Projected', name: 'Projected', width: 100},
-                                { key: 'Price', name: 'Price', width: 75},
-                                { key: 'Opp', name: 'Opp', width: 60},
-                                { key: 'Weather', name: 'Weather', width: 350}];
-
             return (
                 <Container fluid={true}>
                     <Navbar bg="primary" variant="dark">
@@ -425,40 +434,50 @@ class App extends Component {
                     <div className={"Dfs-grid"}>
                         <div>
                         <h2 className={"Dfs-header"}>Fanduel</h2>
-                            <div className={"Dfs-delete-buttons-and-grid"}>
-                                <div className={"Dfs-delete-buttons"}>
-                                    {fdLineup.slice(0, fdLineup.length - 2).map((player) => (
-                                        <button style={{marginTop: '14px', marginRight: '10px'}}
-                                                onClick={() => this.removePlayerFromDfsLineup(fdLineup.indexOf(player), 'fd')}>X</button>
-                                    ))}
-                                </div>
-                                <ReactDataGrid
-                                columns={dfsColumns}
-                                rowGetter={i => fdLineup[i]}
-                                rowsCount={fdLineup.length}
-                                minWidth={459}
-                                minHeight={38.5*fdLineup.length}
-                                headerRowHeight={35}
-                                />
+                            <div className={"Dfs-player-grids"}>
+                                <div>Remove</div>
+                                <div>Position</div>
+                                <div>Team</div>
+                                <div>Player</div>
+                                <div>Projected</div>
+                                <div>Price</div>
+                                <div>Opp</div>
+                                <div>Weather</div>
+                                {this.arrayifyDfsLineup(fdLineup).map(
+                                    (player, playerIndex) => (
+                                        [''].concat(player).map((item, itemIndex) => (
+                                            <div>
+                                                {(itemIndex === 0 && playerIndex < fdLineup.length - 2) ?
+                                                    <button onClick={() => this.removePlayerFromDfsLineup(playerIndex, 'fd')}>X</button>
+                                                    : item}
+                                            </div>
+                                        ))
+                                    )
+                                )}
                             </div>
                         </div>
                         <div>
                         <h2 className={"Dfs-header"}>Draftkings</h2>
-                            <div className={"Dfs-delete-buttons-and-grid"}>
-                                <div className={"Dfs-delete-buttons"}>
-                                    {dkLineup.slice(0, dkLineup.length - 2).map((player) => (
-                                        <button style={{marginTop: '14px', marginRight: '10px'}}
-                                                onClick={() => this.removePlayerFromDfsLineup(dkLineup.indexOf(player), 'dk')}>X</button>
-                                    ))}
-                                </div>
-                                <ReactDataGrid
-                                columns={dfsColumns}
-                                rowGetter={i => dkLineup[i]}
-                                rowsCount={dkLineup.length}
-                                minWidth={459}
-                                minHeight={38.5*dkLineup.length}
-                                headerRowHeight={35}
-                                />
+                            <div className={"Dfs-player-grids"}>
+                                <div>Remove</div>
+                                <div>Position</div>
+                                <div>Team</div>
+                                <div>Player</div>
+                                <div>Projected</div>
+                                <div>Price</div>
+                                <div>Opp</div>
+                                <div>Weather</div>
+                                {this.arrayifyDfsLineup(dkLineup).map(
+                                    (player, playerIndex) => (
+                                        [''].concat(player).map((item, itemIndex) => (
+                                            <div>
+                                                {(itemIndex === 0 && playerIndex < dkLineup.length - 2) ?
+                                                    <button onClick={() => this.removePlayerFromDfsLineup(playerIndex, 'dk')}>X</button>
+                                                    : item}
+                                            </div>
+                                        ))
+                                    )
+                                )}
                             </div>
                         </div>
                     </div>
