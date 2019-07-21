@@ -258,16 +258,13 @@ a:active {
   color: navajowhite;
 }
 
-.Dfs-delete-buttons-and-grid {
-  display: flex;
-}
-
-.Dfs-delete-buttons {
-  display: flex;
-  flex-direction: column;
-  height: 38px;
-  width: 40px;
-  margin-top: 32px;
+.Dfs-player-grids {
+  display: inline-grid;
+  grid-template-columns: repeat(8, auto);
+  justify-items: center;
+  place-self: center;
+  place-content: space-around;
+  background-color: white;
 }
 
 .Dfs-sport {
