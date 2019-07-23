@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
-import { dfsGrid } from './dfsGrid.tsx';
+import { DfsGrid } from './DfsGrid.tsx';
 import football from './football.ico';
 
 export class Optimizer extends Component {
@@ -28,12 +28,9 @@ export class Optimizer extends Component {
 
     dfsSportChange = (event) => {
         let sport = event.target.value;
-        if (sport === 'none') {
-            this.refs.dropDown.value = this.state.sport;
-        } else {
+        if (sport !== 'none') {
             this.fetchOptimalLineups(sport);
         }
-        console.log('hey');
     };
 
     fetchOptimalLineups = (sport) => {
@@ -76,7 +73,6 @@ export class Optimizer extends Component {
 
     ingestDfsLineup = (lineupJson, sport) => {
         if (lineupJson.length === 1) {
-            this.refs.dropDown.value = this.state.sport;
             alert(lineupJson[0]);
             return
         }
@@ -92,7 +88,7 @@ export class Optimizer extends Component {
 
     render() {
         const {isLoading, sport, fdLineup, dkLineup} = this.state;
-        console.log(dkLineup);
+
         if (isLoading) {
             return (
                 <div className={"Loading"}>
@@ -113,7 +109,7 @@ export class Optimizer extends Component {
                     <h1 className={"App-header"}>DFS Optimizer</h1>
                     <div className={"Dfs-sport"}>
                         <h3>Choose a sport:</h3>
-                        <select ref={"dropDown"} className={"Drop-down"} onChange={this.dfsSportChange}>
+                        <select ref={"dropDown"} className={"Drop-down"} onChange={this.dfsSportChange} value={sport}>
                             <option value="none"> </option>
                             <option value="mlb">MLB</option>
                             <option value="nfl">NFL</option>
@@ -126,11 +122,11 @@ export class Optimizer extends Component {
                     <div className={"Dfs-grid"}>
                         <div>
                             <h2 className={"Dfs-header"}>Fanduel</h2>
-                            <dfsGrid dfsLineup={fdLineup} removePlayer={this.removePlayerFromDfsLineup}/>
+                            <DfsGrid dfsLineup={fdLineup} removePlayer={this.removePlayerFromDfsLineup} site={'fd'}/>
                         </div>
                         <div>
                             <h2 className={"Dfs-header"}>Draftkings</h2>
-                            <dfsGrid dfsLineup={dkLineup} removePlayer={this.removePlayerFromDfsLineup}/>
+                            <DfsGrid dfsLineup={dkLineup} removePlayer={this.removePlayerFromDfsLineup} site={'dk'}/>
                         </div>
                     </div>
                 </Container>
