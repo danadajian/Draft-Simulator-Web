@@ -259,8 +259,6 @@ a:active {
 }
 
 .Dfs-player-grids {
-  display: inline-grid;
-  grid-template-columns: repeat(8, auto);
   justify-items: center;
   place-self: center;
   place-content: space-around;
