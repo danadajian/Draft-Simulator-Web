@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
-import football from "./football.ico";
+import { dfsGrid } from './dfsGrid.tsx';
+import football from './football.ico';
 
 export class Optimizer extends Component {
 
     constructor(props) {
         super(props);
         this.state = {isLoading: true, sport: '', fdLineup: [], dkLineup: []};
+
+        this.removePlayerFromDfsLineup = this.removePlayerFromDfsLineup.bind(this);
     }
 
     componentDidMount() {
@@ -30,6 +33,7 @@ export class Optimizer extends Component {
         } else {
             this.fetchOptimalLineups(sport);
         }
+        console.log('hey');
     };
 
     fetchOptimalLineups = (sport) => {
@@ -86,26 +90,9 @@ export class Optimizer extends Component {
         this.setState({sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
     };
 
-    arrayifyDfsLineup = (lineup) => {
-        let arrayedLineup = [];
-        for (let i = 0; i < lineup.length; i++) {
-            const playerArray = [
-                lineup[i].Position,
-                lineup[i].Team,
-                lineup[i].Player,
-                lineup[i].Projected,
-                lineup[i].Price,
-                lineup[i].Opp,
-                lineup[i].Weather
-            ];
-            arrayedLineup.push(playerArray);
-        }
-        return arrayedLineup
-    };
-
     render() {
         const {isLoading, sport, fdLineup, dkLineup} = this.state;
-
+        console.log(dkLineup);
         if (isLoading) {
             return (
                 <div className={"Loading"}>
@@ -139,53 +126,11 @@ export class Optimizer extends Component {
                     <div className={"Dfs-grid"}>
                         <div>
                             <h2 className={"Dfs-header"}>Fanduel</h2>
-                            <div className={"Dfs-player-grids"}>
-                                <div>Remove</div>
-                                <div>Position</div>
-                                <div>Team</div>
-                                <div>Player</div>
-                                <div>Projected</div>
-                                <div>Price</div>
-                                <div>Opp</div>
-                                <div>Weather</div>
-                                {this.arrayifyDfsLineup(fdLineup).map(
-                                    (player, playerIndex) => (
-                                        [''].concat(player).map((item, itemIndex) => (
-                                            <div>
-                                                {(itemIndex === 0 && playerIndex < fdLineup.length - 2) ?
-                                                    <button
-                                                        onClick={() => this.removePlayerFromDfsLineup(playerIndex, 'fd')}>X</button>
-                                                    : item}
-                                            </div>
-                                        ))
-                                    )
-                                )}
-                            </div>
+                            <dfsGrid dfsLineup={fdLineup} removePlayer={this.removePlayerFromDfsLineup}/>
                         </div>
                         <div>
                             <h2 className={"Dfs-header"}>Draftkings</h2>
-                            <div className={"Dfs-player-grids"}>
-                                <div>Remove</div>
-                                <div>Position</div>
-                                <div>Team</div>
-                                <div>Player</div>
-                                <div>Projected</div>
-                                <div>Price</div>
-                                <div>Opp</div>
-                                <div>Weather</div>
-                                {this.arrayifyDfsLineup(dkLineup).map(
-                                    (player, playerIndex) => (
-                                        [''].concat(player).map((item, itemIndex) => (
-                                            <div>
-                                                {(itemIndex === 0 && playerIndex < dkLineup.length - 2) ?
-                                                    <button
-                                                        onClick={() => this.removePlayerFromDfsLineup(playerIndex, 'dk')}>X</button>
-                                                    : item}
-                                            </div>
-                                        ))
-                                    )
-                                )}
-                            </div>
+                            <dfsGrid dfsLineup={dkLineup} removePlayer={this.removePlayerFromDfsLineup}/>
                         </div>
                     </div>
                 </Container>
