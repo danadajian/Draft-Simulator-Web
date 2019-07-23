@@ -13,17 +13,25 @@ for line in text.splitlines():
 
 words = string.split('<')
 
-top300List = []
+playerList = []
 numList = list(str(range(300)))
 for word in words:
     if 'http://www.espn.com/nfl/player/_/id/' in word:
         name = word.split('>')
-        top300List.append(name[1])
+        playerList.append(name[1])
     elif 'td>' in word and '. ' in word and word.split('. ')[1]:
-        top300List.append(word.split('. ')[1])
+        playerList.append(word.split('. ')[1])
     elif 'D/ST' in word:
         dName = word.split('. ')
-        top300List.append(dName[1])
+        playerList.append(dName[1])
+
+top300List = []
+for player in playerList:
+    if player[-2:] == 'Jr':
+        newPlayer = player.replace('Jr', 'Jr.')
+        top300List.append(newPlayer)
+    else:
+        top300List.append(player)
 
 top300Positions = []
 pos_list = ['td>QB', 'td>RB', 'td>WR', 'td>TE', 'td>DST', 'td>K']

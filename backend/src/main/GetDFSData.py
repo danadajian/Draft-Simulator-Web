@@ -73,7 +73,8 @@ def get_mlb_projections():
     participants_endpoint = 'baseball/mlb/participants/'
     participants = call_api(participants_endpoint, '&season=' + str(now.year))
     player_list = participants.get('apiResults')[0].get('league').get('seasons')[0].get('players')
-    final_player_list = [player for player in player_list if player.get('playerId') in player_ids]
+    final_player_list = [player for player in player_list if player.get('playerId') in player_ids
+                         and player.get('team').get('abbreviation') in team_info.keys()]
     mlb_projections = [{
         'name': player.get('firstName') + ' ' + player.get('lastName'),
         'projection': playerid_projections.get(player.get('playerId')),
@@ -81,7 +82,6 @@ def get_mlb_projections():
         'opponent': team_info.get(player.get('team').get('abbreviation')).get('opponent'),
         'weather': weather_by_event.get(team_info.get(player.get('team').get('abbreviation')).get('eventId'))
     } for player in final_player_list]
-
     return mlb_projections
 
 

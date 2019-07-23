@@ -11,7 +11,7 @@ def is_valid_choice(player, pos_dict, team):
     if player and player not in team:
         pos_limits = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
         player_pos = pos_dict.get(player)
-        if position_count(team, pos_dict, player_pos) < pos_limits.get(player_pos):
+        if player_pos and position_count(team, pos_dict, player_pos) < pos_limits.get(player_pos):
             return True
     return False
 
@@ -72,8 +72,9 @@ def pick_players(user_list, team_dict, draft_order, round_count):
                 next_pick = None
                 if user_list:
                     next_pick = next((player for player in user_list if is_valid_choice(player, top300dict, user_team)), None)
+                if next_pick:
                     user_list.remove(next_pick)
-                if not next_pick:
+                else:
                     your_threshold = pick_threshold
                     while not is_valid_choice(next_pick, top300dict, user_team):
                         next_pick = comp_list[random.randint(0, min(len(comp_list) - 1, your_threshold))]
