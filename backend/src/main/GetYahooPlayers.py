@@ -11,6 +11,11 @@ playerTextList = textList[4:-1]
 playerAttrList = [item.split('\t')[1:-7] for item in playerTextList]
 
 playerList = [item[0] for item in playerAttrList]
+
+for player in playerList:
+    if player[-2:] == 'Jr':
+        player = player + '.'
+
 positionList = []
 for item in playerAttrList:
     if item[1].startswith('DST'):
