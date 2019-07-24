@@ -65,9 +65,9 @@ def get_mlb_projections():
     call = call_api(weather_endpoint, '&date=' + date_string)
     weather_results_by_event = call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('weatherForecasts')
     weather_by_event = {forecast.get('eventId'):
-                        str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
-                        forecast.get('forecasts')[0].get('condition') + ', ' +
-                        str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'
+                        {'forecast': forecast.get('forecasts')[0].get('condition'),
+                         'details': str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
+                          str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'}
                         for forecast in weather_results_by_event}
 
     participants_endpoint = 'baseball/mlb/participants/'
