@@ -11,7 +11,7 @@ html {
 body {
   display: table-cell;
   vertical-align: middle;
-  background-color: darkslategrey;
+  background-color: white;
 }
 
 .Home {
@@ -26,7 +26,7 @@ body {
   font-weight: bold;
   font-style: oblique;
   text-align: center;
-  color: navajowhite;
+  color: black;
   padding-bottom: 5%;
 }
 
@@ -42,7 +42,7 @@ body {
   font-weight: bold;
   text-align: center;
   background-color: red;
-  color: navajowhite;
+  color: white;
   padding: 20px 30px;
 }
 
@@ -51,7 +51,7 @@ body {
   font-weight: bold;
   text-align: center;
   background-color: darkblue;
-  color: navajowhite;
+  color: white;
   padding: 10px 15px;
 }
 
@@ -61,7 +61,7 @@ body {
   font-weight: bold;
   text-align: center;
   background-color: dimgray;
-  color: navajowhite;
+  color: white;
   padding: 9px 14px;
 }
 
@@ -70,12 +70,12 @@ body {
   font-weight: bold;
   font-style: oblique;
   text-align: center;
-  color: navajowhite;
+  color: white;
 }
 
 .Nav-bar {
   align-items: center;
-  background-color: antiquewhite;
+  background-color: lightgray;
   color: black;
   display: flex;
   flex-direction: row;
@@ -96,13 +96,14 @@ body {
 }
 
 a:link {
-  color: green;
+  color: black;
+  font-weight: bold;
   background-color: transparent;
   text-decoration: none;
 }
 
 a:visited {
-  color: green;
+  color: black;
   background-color: transparent;
   text-decoration: none;
 }
@@ -121,7 +122,7 @@ a:active {
 
 .App-header {
   text-align: center;
-  color: navajowhite;
+  color: black;
   padding-top: 30px;
 }
 
@@ -148,17 +149,23 @@ a:active {
 
 .Add-button {
   width: 80px;
+  font-weight: bold;
   background-color: green;
+  color: white;
 }
 
 .Remove-button {
   width: 80px;
+  font-weight: bold;
   background-color: red;
+  color: white;
 }
 
 .Clear-button {
   width: 80px;
+  font-weight: bold;
   background-color: yellow;
+  color: black;
 }
 
 .Swap-button {
@@ -175,6 +182,7 @@ a:active {
 .Draft-button {;
   height: 40px;
   width: 80px;
+  font-weight: bold;
   background-color: orange;
 }
 
@@ -183,11 +191,13 @@ a:active {
   flex-direction: row;
   padding: 3% 4% 3% 4%;
   justify-content: space-between;
-  color: navajowhite;
+  font-weight: bold;
+  color: black;
 }
 
 .Sliders {
   display: flex;
+  padding-bottom: 10%;
   flex-direction: column;
   text-align: center;
   justify-content: space-between;
@@ -222,7 +232,7 @@ a:active {
   font-weight: bold;
   font-style: oblique;
   text-align: center;
-  color: navajowhite;
+  color: black;
   padding-bottom: 30%;
 }
 
@@ -241,7 +251,7 @@ a:active {
   }
 }
 
-.Dfs-grid {
+.Dfs-grid-section {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -255,14 +265,34 @@ a:active {
   flex-direction: column;
   justify-content: space-between;
   text-align: center;
-  color: navajowhite;
+  font-size: 28px;
+  color: black;
 }
 
-.Dfs-player-grids {
-  justify-items: center;
-  place-self: center;
-  place-content: space-around;
-  background-color: white;
+table {
+  border-spacing: 0;
+  margin: 0 auto 0 auto;
+  border: 1px solid grey;
+  text-align: center;
+  vertical-align: middle;
+}
+
+td, th {
+  padding: 0 16px 0 16px;
+}
+
+tr:nth-child(even) {
+  background-color: lightgray;
+}
+
+tr:hover {
+  background-color: indianred;
+}
+
+th {
+  padding: 0 16px 0 16px;
+  text-align: center;
+  color: white;
 }
 
 .Dfs-sport {
@@ -271,7 +301,7 @@ a:active {
   justify-content: center;
   align-items: center;
   text-align: center;
-  color: navajowhite;
+  color: black;
 }
 
 .Drop-down {

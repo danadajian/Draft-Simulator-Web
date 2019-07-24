@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import { DfsGrid } from './DfsGrid.tsx';
-import football from './football.ico';
+import football from './icons/football.ico';
 
 export class Optimizer extends Component {
 
@@ -101,7 +101,7 @@ export class Optimizer extends Component {
                 <Container fluid={true}>
                     <Navbar bg="primary" variant="dark">
                         <Nav className="Nav-bar">
-                            <Nav.Link href="/">Home</Nav.Link>
+                            <Nav.Link href="/home">Home</Nav.Link>
                             <Nav.Link href="/espn">Back to Draft Simulator</Nav.Link>
                             <Nav.Link href="/logout">Logout</Nav.Link>
                         </Nav>
@@ -119,7 +119,7 @@ export class Optimizer extends Component {
                                 onClick={() => this.fetchOptimalLineups(sport)}>Reset
                         </button>
                     </div>
-                    <div className={"Dfs-grid"}>
+                    <div className={"Dfs-grid-section"}>
                         <div>
                             <h2 className={"Dfs-header"}>Fanduel</h2>
                             <DfsGrid dfsLineup={fdLineup} removePlayer={this.removePlayerFromDfsLineup} site={'fd'}/>

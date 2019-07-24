@@ -70,7 +70,7 @@ def login():
     form = LoginForm()
     endpoint = request.args.get('next').split('/')[1].replace('-', '_') if request.args.get('next') and request.method == 'GET' else 'home'
     error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
-    print(request.form.get('username'), request.form.get('password'), request.method)
+    # print(request.form.get('username'), request.form.get('password'), request.method)
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
         if user:

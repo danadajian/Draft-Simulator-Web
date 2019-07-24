@@ -6,7 +6,7 @@ import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
-import football from './football.ico'
+import football from './icons/football.ico'
 
 let startingList = [];
 

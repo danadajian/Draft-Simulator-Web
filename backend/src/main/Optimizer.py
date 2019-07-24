@@ -73,8 +73,8 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
     lineup_json = [{'Position': display_matrix[optimal_lineup.index(player)],
                     'Team': team_and_weather_dict.get(player).get('team'),
                     'Player': player,
-                    'Projected': proj_dict.get(player),
-                    'Price': '$' + str(salary_dict.get(player)),
+                    'Projected': round(proj_dict.get(player), 1),
+                    'Price': '$' + '{:,}'.format(salary_dict.get(player)),
                     'Opp': team_and_weather_dict.get(player).get('opponent'),
                     'Weather': team_and_weather_dict.get(player).get('weather')
                     } for player in optimal_lineup] \
@@ -82,9 +82,9 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
                       'Team': '',
                       'Player': 'Total',
                       'Projected': total_pts,
-                      'Price': '$' + str(total_salary),
+                      'Price': '$' + '{:,}'.format(total_salary),
                       'Opp': '',
-                      'Weather': ''
+                      'Weather': {'forecast': '', 'details': ''}
                       }] \
                   + [{'Position': '',
                       'Team': '',
@@ -92,7 +92,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
                       'Projected': str(round(100 * (total_pts / max_pts))) + '%',
                       'Price': '',
                       'Opp': '',
-                      'Weather': ''
+                      'Weather': {'forecast': '', 'details': ''}
                       }]
     return lineup_json
 
