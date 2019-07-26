@@ -17,8 +17,9 @@ export class Optimizer extends Component {
     }
 
     fetchPlayersForOptimizer = () => {
-        fetch(window.location.origin + '/dfs-optimizer/projections')
-                .then((response) => {
+        fetch(window.location.origin + '/dfs-optimizer/projections', {
+            method: 'POST'
+        }).then((response) => {
                     if (response.status !== 200) {
                         alert('Projections data failed to load.');
                     }
@@ -51,26 +52,6 @@ export class Optimizer extends Component {
         }
     };
 
-    removePlayerFromDfsLineup = (lineupIndex, site) => {
-        let sport = this.state.sport;
-        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
-        fetch(window.location.origin + '/optimized-lineup/' + sport, {
-            method: 'POST',
-            body: removedPlayer + '|' + site
-        }).then(response => {
-            if (response.status !== 200) {
-                alert('Error removing player.');
-            } else {
-                response.json()
-                    .then((lineupJson) => {
-                        this.ingestDfsLineup(lineupJson, sport);
-                    });
-            }
-        });
-        let alertString = (site === 'fd') ? ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
-        alert('You have removed ' + removedPlayer + alertString);
-    };
-
     ingestDfsLineup = (lineupJson, sport) => {
         if (lineupJson.length === 1) {
             alert(lineupJson[0]);
@@ -84,6 +65,27 @@ export class Optimizer extends Component {
         let fdLineup = (lineupJson[0] === "string") ? this.state.fdLineup : lineupJson[0];
         let dkLineup = (lineupJson[1] === "string") ? this.state.dkLineup : lineupJson[1];
         this.setState({sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
+    };
+
+    removePlayerFromDfsLineup = (lineupIndex, site) => {
+        let sport = this.state.sport;
+        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
+        fetch(window.location.origin + '/optimized-lineup/' + sport, {
+            method: 'POST',
+            body: removedPlayer + '|' + site
+        }).then(response => {
+            if (response.status !== 200) {
+                alert('Error removing player.');
+            } else {
+                response.json()
+                    .then((lineupJson) => {
+                        this.ingestDfsLineup(lineupJson, sport);
+                        let alertString = (site === 'fd') ?
+                            ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
+                        alert('You have removed ' + removedPlayer + alertString);
+                    });
+            }
+        });
     };
 
     render() {

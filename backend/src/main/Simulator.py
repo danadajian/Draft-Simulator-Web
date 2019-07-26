@@ -1,4 +1,3 @@
-from .GetESPNPlayers import top300dict
 import random
 
 
@@ -14,31 +13,6 @@ def is_valid_choice(player, pos_dict, team):
         if player_pos and position_count(team, pos_dict, player_pos) < pos_limits.get(player_pos):
             return True
     return False
-
-
-def order_team(team, pos_dict):
-    ordered_team = [''] * 9
-    bench = []
-    lineup_order = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'RB WR TE', 'DST', 'K']
-    for player in team:
-        pos = pos_dict.get(player)
-        first_index = next((lineup_order.index(spot) for spot in lineup_order if pos == spot or pos in spot), -1)
-        if first_index == -1:
-            bench.append(player)
-        else:
-            ordered_team[first_index] = player
-            lineup_order[first_index] = ''
-    ordered_team = [player for player in ordered_team if player]
-    return ordered_team + bench
-
-
-def make_ordered_team_nice(ordered_team, freq_dict, pos_dict):
-    ordered_team_list = [{'Position': 'FLEX' if ordered_team.index(player) == 6 else pos_dict.get(player) if ordered_team.index(player) < 9 else 'BE',
-                          'Player': player,
-                          'DraftFreq': str(freq_dict.get(player)) + '%'} for player in ordered_team]
-    ordered_team_str = str(ordered_team_list).replace("{'", '{"').replace("'}", '"}').replace("': '", '": "')\
-        .replace("',", '",').replace(", '", ', "').replace("':", '":')
-    return ordered_team_str
 
 
 def create_teams(team_count, user_team):
@@ -60,9 +34,9 @@ def set_draft_order(team_dict, pick_order):
     return draft_order
 
 
-def pick_players(user_list, team_dict, draft_order, round_count):
+def pick_players(user_list, team_dict, pos_dict, draft_order, round_count):
     user_team = team_dict.get('user_team')
-    comp_list = list(top300dict.keys())
+    comp_list = list(pos_dict.keys())
     draft_round = 0
     pick_threshold = 2
 
@@ -71,22 +45,20 @@ def pick_players(user_list, team_dict, draft_order, round_count):
             if team == 'user_team':
                 next_pick = None
                 if user_list:
-                    next_pick = next((player for player in user_list if is_valid_choice(player, top300dict, user_team)), None)
+                    next_pick = next((player for player in user_list if is_valid_choice(player, pos_dict, user_team)), None)
                 if next_pick:
                     user_list.remove(next_pick)
                 else:
                     your_threshold = pick_threshold
-                    while not is_valid_choice(next_pick, top300dict, user_team):
+                    while not is_valid_choice(next_pick, pos_dict, user_team):
                         next_pick = comp_list[random.randint(0, min(len(comp_list) - 1, your_threshold))]
                         your_threshold += 1
-                if not next_pick:
-                    return 'Draft error!'
                 user_team.append(next_pick)
                 comp_list.remove(next_pick)
             else:
                 comp_threshold = pick_threshold
                 comp_pick = None
-                while not is_valid_choice(comp_pick, top300dict, team_dict.get(team)):
+                while not is_valid_choice(comp_pick, pos_dict, team_dict.get(team)):
                     comp_pick = comp_list[random.randint(0, min(len(comp_list) - 1, comp_threshold))]
                     comp_threshold += 1
                 team_dict.get(team).append(comp_pick)
@@ -101,16 +73,14 @@ def pick_players(user_list, team_dict, draft_order, round_count):
     return user_team
 
 
-def simulate_draft(user_player_list, team_count, pick_order, round_count, simulations):
+def simulate_draft(user_player_list, pos_dict, team_count, pick_order, round_count, simulations):
     drafted_teams = []
     for _ in range(simulations):
         user_list = [player for player in user_player_list]
         user_team = []
         team_dict = create_teams(team_count, user_team)
         draft_order = set_draft_order(team_dict, pick_order)
-        drafted_team = pick_players(user_list, team_dict, draft_order, round_count)
-        if drafted_team == 'Draft error!':
-            return 'Draft error!'
+        drafted_team = pick_players(user_list, team_dict, pos_dict, draft_order, round_count)
         drafted_teams.append(drafted_team)
     return drafted_teams
 
@@ -128,24 +98,47 @@ def calculate_frequencies(drafted_teams):
     return draft_frequency
 
 
-def get_expected_team(draft_frequencies, round_count):
+def get_expected_team(draft_frequencies, pos_dict, round_count):
     most_to_least_drafted = sorted(draft_frequencies, key=draft_frequencies.__getitem__, reverse=True)
     expected_team = []
     index = 0
     while len(expected_team) < round_count:
         player = most_to_least_drafted[index]
-        if is_valid_choice(player, top300dict, expected_team):
+        if is_valid_choice(player, pos_dict, expected_team):
             expected_team.append(player)
         index += 1
     return expected_team
 
 
-def aggregate_data(freq_dict, user_player_list):
+def order_expected_team(team, pos_dict, freq_dict):
+    ordered_team = [''] * 9
+    bench = []
+    lineup_order = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'RB WR TE', 'DST', 'K']
+    for player in team:
+        pos = pos_dict.get(player)
+        first_index = next((lineup_order.index(spot) for spot in lineup_order if pos == spot or pos in spot), -1)
+        if first_index == -1:
+            bench.append(player)
+        else:
+            ordered_team[first_index] = player
+            lineup_order[first_index] = ''
+    ordered_team = [player for player in ordered_team if player]
+    full_team = ordered_team + bench
+    ordered_expected_team = [{'Position': 'FLEX' if full_team.index(player) == 6 else pos_dict.get(player) if full_team.index(player) < 9 else 'BE',
+                              'Player': player,
+                              'DraftFreq': str(freq_dict.get(player)) + '%'} for player in full_team]
+    return ordered_expected_team
+
+
+def get_freq(freq_dict, pos_dict):
     sorted_players = sorted(freq_dict, key=freq_dict.__getitem__, reverse=True)
     sorted_freq = dict(zip(sorted_players, [freq_dict.get(item) for item in sorted_players]))
-    freq_list = [{'Position': top300dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
+    freq_list = [{'Position': pos_dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
                  for player, freq in sorted_freq.items()]
+    return freq_list
 
+
+def get_user_freq(freq_dict, user_player_list, pos_dict):
     user_freq_dict = {}
     for player in user_player_list:
         if player in freq_dict.keys():
@@ -154,13 +147,19 @@ def aggregate_data(freq_dict, user_player_list):
             user_freq_dict.update({player: 0})
     sorted_user_players = sorted(user_freq_dict, key=user_freq_dict.__getitem__, reverse=True)
     sorted_user_freq = dict(zip(sorted_user_players, [user_freq_dict.get(item) for item in sorted_user_players]))
-    user_freq_list = [{'Position': top300dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
+    user_freq_list = [{'Position': pos_dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
                       for player, freq in sorted_user_freq.items()]
+    return user_freq_list
 
-    user_str = str(user_freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
-        .replace("',", '",').replace(", '", ', "')
-    total_str = str(freq_list).replace("{'", '{"').replace("'}", '"}').replace("':", '":').replace(": '", ': "') \
-        .replace("',", '",').replace(", '", ', "')
 
-    draft_frequencies = user_str + '|' + total_str
-    return draft_frequencies
+def get_draft_results(user_list, pos_dict, team_count, pick_order, round_count):
+    teams_drafted = simulate_draft(user_list, pos_dict, team_count, pick_order, round_count, 500)
+    player_draft_freq = calculate_frequencies(teams_drafted)
+    expected_team = get_expected_team(player_draft_freq, pos_dict, round_count)
+    ordered_expected_team = order_expected_team(expected_team, pos_dict, player_draft_freq)
+    all_frequencies = get_freq(player_draft_freq, pos_dict)
+    user_frequencies = get_user_freq(player_draft_freq, user_list, pos_dict)
+    draft_results = {'AllFrequencies': all_frequencies,
+                     'UserFrequencies': user_frequencies,
+                     'ExpectedTeam': ordered_expected_team}
+    return draft_results

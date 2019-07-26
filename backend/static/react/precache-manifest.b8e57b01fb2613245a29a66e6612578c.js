@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/static/react/media/football.c5005feb.ico"
   },
   {
-    "revision": "8356b19d70cb96b30d2a",
+    "revision": "85b1236c76cbe309e2d1",
     "url": "/static/react/css/main.d310f8d1.chunk.css"
   },
   {
@@ -28,8 +28,8 @@ self.__precacheManifest = [
     "url": "/static/react/media/map-saturation-overlay.b01e6120.png"
   },
   {
-    "revision": "8356b19d70cb96b30d2a",
-    "url": "/static/react/js/main.9e07f429.chunk.js"
+    "revision": "85b1236c76cbe309e2d1",
+    "url": "/static/react/js/main.a769a971.chunk.js"
   },
   {
     "revision": "340c3269b123f8a86dc7548b0db84f97",
@@ -56,7 +56,7 @@ self.__precacheManifest = [
     "url": "/static/react/css/2.fbeefa47.chunk.css"
   },
   {
-    "revision": "37dd7c99fac7e941e4c16d7ccccd3bff",
+    "revision": "afbe889d735fa45ecf604077e1926671",
     "url": "/static/react/../../templates/index.html"
   }
 ];

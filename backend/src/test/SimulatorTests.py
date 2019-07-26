@@ -1,6 +1,8 @@
 import unittest
 from backend.src.main.Simulator import *
-from backend.src.main.GetESPNPlayers import top300dict
+from backend.src.main.GetESPNPlayers import get_player_dict
+
+top300dict = get_player_dict()
 
 
 class SimulateDraftTests(unittest.TestCase):
