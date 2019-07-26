@@ -28,9 +28,8 @@ export class Simulator extends Component {
                 if (response.status !== 200) {
                     alert('Could not load players.');
                 } else {
-                    response.text()
-                        .then((data) => {
-                            const playerList = data.substring(2, data.length - 2).split(/', '|", '|', "/);
+                    response.json()
+                        .then((playerList) => {
                             this.setState({isLoading: false, players: playerList});
                             this.bindSlidersToChangeEvent();
                             for (let i = 0; i < playerList.length; i++) {
@@ -76,12 +75,11 @@ export class Simulator extends Component {
                 if (response.status !== 200) {
                     alert('Could not load user ranking data.');
                 }  else {
-                    response.text()
-                        .then((data) => {
-                            if (data === 'No ranking specified.') {
+                    response.json()
+                        .then((userRanking) => {
+                            if (userRanking === 'No ranking specified.') {
                                 alert('No ranking specified.');
                             } else {
-                                let userRanking = data.split(',');
                                 if (userPlayers) {
                                     this.clearPlayers()
                                 }
@@ -109,7 +107,7 @@ export class Simulator extends Component {
             }
             fetch(window.location.origin + '/saved-ranking', {
                 method: 'POST',
-                body: userRanking.toString()
+                body: userRanking
             }).then(response => {
                 if (response.status === 200) {
                     alert('User ranking saved successfully.');
@@ -226,7 +224,7 @@ export class Simulator extends Component {
                 if (response.status !== 200) {
                     alert('Error loading draft results.');
                 } else {
-                    response.text()
+                    response.json()
                         .then((draftResults) => {
                             this.generateDraftOutput(draftResults);
                         })
@@ -239,12 +237,11 @@ export class Simulator extends Component {
         if (draftResults === 'Draft error!') {
             alert('No players were drafted. :( \nSomething went wrong . . .');
         }
-        const output = draftResults.split('|');
         this.setState({
             isDrafting: false,
-            userFreqs: output[0].toString(),
-            allFreqs: output[1].toString(),
-            expectedTeam: output[2].toString()
+            allFreqs: draftResults.AllFrequencies,
+            userFreqs: draftResults.UserFrequencies,
+            expectedTeam: draftResults.ExpectedTeam
         });
 
         this.bindSlidersToChangeEvent();

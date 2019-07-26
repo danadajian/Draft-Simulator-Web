@@ -98,15 +98,9 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
 
 
 def get_dfs_lineup(site, sport, projections, black_list):
-    lineup_matrix, display_matrix, salary_cap = None, None, None
-    if sport == 'mlb':
-        lineup_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'] if site == 'dk' else ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF']
-        display_matrix = ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'] if site == 'dk' else ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util']
-        salary_cap = 50000 if site == 'dk' else 35000
-    elif sport == 'nba':
-        lineup_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C'] if site == 'dk' else ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
-        display_matrix = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util'] if site == 'dk' else ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C']
-        salary_cap = 50000 if site == 'dk' else 60000
+    lineup_matrix = dfs_configs.get(site).get(sport).get('lineup_matrix')
+    display_matrix = dfs_configs.get(site).get(sport).get('display_matrix')
+    salary_cap = dfs_configs.get(site).get(sport).get('salary_cap')
     site_id = 1 if site == 'dk' else 2
     proj_points_dict = {player_dict.get('name'): float(site_projection.get('points'))
                         for player_dict in projections
@@ -127,3 +121,44 @@ def get_dfs_lineup(site, sport, projections, black_list):
     dfs_lineup = output_lineup(lineup_matrix, display_matrix, black_list, proj_points_dict, pos_dict, salary_dict,
                                salary_cap, team_and_weather_dict)
     return dfs_lineup
+
+
+def get_dfs_lineups(sport, projections, fd_black_list, dk_black_list):
+    if projections == 'offseason':
+        return ['Warning: \nThis league is currently in the offseason.']
+    elif projections == 'no games':
+        return ['Warning: \nThere are no games today for this league.']
+    elif projections == 'Error obtaining projection data.':
+        return ['Warning: \nError obtaining projection data.']
+    else:
+        fd_lineup = get_dfs_lineup('fd', sport, projections, fd_black_list)
+        dk_lineup = get_dfs_lineup('dk', sport, projections, dk_black_list)
+        return [fd_lineup, dk_lineup]
+
+
+dfs_configs = {
+    'fd': {
+        'mlb': {
+            'lineup_matrix': ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF'],
+            'display_matrix': ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util'],
+            'salary_cap': 35000
+        },
+        'nba': {
+            'lineup_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
+            'display_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
+            'salary_cap': 60000
+        }
+    },
+    'dk': {
+        'mlb': {
+            'lineup_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
+            'display_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
+            'salary_cap': 50000
+        },
+        'nba': {
+            'lineup_matrix': ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C'],
+            'display_matrix': ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util'],
+            'salary_cap': 50000
+        }
+    }
+}
