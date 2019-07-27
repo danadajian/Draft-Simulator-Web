@@ -70,7 +70,7 @@ export class Simulator extends Component {
     loadRankings = () => {
         let playerList = this.state.players;
         let userPlayers = this.state.userPlayers;
-        fetch(window.location.origin + '/user-rankings')
+        fetch(window.location.origin + '/load-rankings')
             .then(response => {
                 if (response.status !== 200) {
                     alert('Could not load user ranking data.');
@@ -105,7 +105,7 @@ export class Simulator extends Component {
             for (let i = 0; i < userItems.length; i++) {
                 userRanking.push(userItems[i].label)
             }
-            fetch(window.location.origin + '/saved-ranking', {
+            fetch(window.location.origin + '/save-ranking', {
                 method: 'POST',
                 body: userRanking
             }).then(response => {
