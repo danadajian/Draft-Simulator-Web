@@ -20,6 +20,15 @@ Sign Up
     {{ wtf.form_field(form.username) }}
     {{ wtf.form_field(form.email) }}
     {{ wtf.form_field(form.password) }}
+    {% if message %}
+      <script>
+        console.log('{{message}}');
+        alert('{{message}}');
+        if ('{{message}}'.endsWith('login.')) {
+          window.location.pathname = '/login';
+        }
+      </script>
+    {% endif %}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Create Account</button>
   </form>
 

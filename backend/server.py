@@ -12,7 +12,7 @@ from flask_heroku import Heroku
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import exc
+import sqlalchemy.exc
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_caching import Cache
@@ -20,6 +20,7 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 is_production = os.environ.get('IS_HEROKU', None)
@@ -72,37 +73,39 @@ def landing_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    endpoint = request.args.get('next').split('/')[1].replace('-', '_') if request.args.get('next') and request.method == 'GET' else 'home'
+    global endpoint
+    if request.method == 'GET':
+        endpoint = request.args.get('next').split('/')[1].replace('-', '_') if request.args.get('next') else 'home'
     error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
-    # print(request.form.get('username'), request.form.get('password'), request.method)
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for(endpoint))
-    return render_template('login.html', form=form, error=error)
+    return render_template('login.html', form=form, error=error, endpoint=endpoint)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = RegisterForm()
+    message = None
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         new_user = Users(username=form.username.data, email=form.email.data, password=hashed_password,
                          draft_ranking='No ranking specified.')
-        try:
+        user_exists = Users.query.filter_by(username=form.username.data).first()
+        email_exists = Users.query.filter_by(email=form.email.data).first()
+        if user_exists:
+            message = 'Username already exists.  Please try again.'
+        elif email_exists:
+            message = 'Email has been taken.  Please try again.'
+        else:
             db.session.add(new_user)
             db.session.commit()
-        except exc.SQLAlchemyError:
-            return '<h1>User already exists.</h1>' \
-                   '<h2>Please <a href="signup">try again</a>.</h2>'
+            message = 'Your account has been created!  Now please login.'
 
-        print(request.method)
-        return '<h1>Your account has been created!</h1>' \
-               '<h2>Now please <a href="login">login</a>.</h2>'
-
-    return render_template('signup.html', form=form)
+    return render_template('signup.html', form=form, message=message)
 
 
 @app.route('/logout')
@@ -124,32 +127,28 @@ def espn():
     return render_template("index.html")
 
 
-@app.route("/user-rankings")
-@login_required
-def espn_rankings():
-    user = Users.query.filter_by(username=current_user.username).first()
-    return user.draft_ranking
-
-
 @app.route("/yahoo")
 @login_required
 def yahoo():
     return render_template("index.html")
 
 
-@app.route("/saved-ranking", methods=['GET', 'POST'])
+@app.route("/load-rankings")
+@login_required
+def espn_rankings():
+    user = Users.query.filter_by(username=current_user.username).first()
+    user_ranking = user.draft_ranking.split(',')
+    return jsonify(user_ranking)
+
+
+@app.route("/save-ranking", methods=['POST'])
 @login_required
 def save_to_db():
-    global user_ranking
-    if request.method == 'POST':
-        user_ranking = None
-        user = Users.query.filter_by(username=current_user.username).first()
-        player_list = request.get_data()
-        user.draft_ranking = jsonify(player_list)
-        db.session.commit()
-        return 'User ranking added.'
-    else:
-        return user_ranking
+    user = Users.query.filter_by(username=current_user.username).first()
+    player_list = str(request.get_data())[2:-1]
+    user.draft_ranking = player_list
+    db.session.commit()
+    return 'User ranking added.'
 
 
 @app.route("/espn-players")

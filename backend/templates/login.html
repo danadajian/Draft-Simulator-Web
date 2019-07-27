@@ -19,10 +19,16 @@ Login
     {{ form.hidden_tag() }}
     {{ wtf.form_field(form.username) }}
     {{ wtf.form_field(form.password) }}
-    {{ wtf.form_field(form.remember) }}
     {% if error %}
+      <script>
+        if ('{{endpoint}}' !== 'home') {
+          const nextPath = 'login?next=%2F' + '{{endpoint}}'.replace('_', '-');
+          window.history.pushState('', '', nextPath);
+        }
+      </script>
       <p style="color: red">{{ error }}</p>
     {% endif %}
+    {{ wtf.form_field(form.remember) }}
     <button class="btn btn-lg btn-primary btn-block" type="submit" style="margin-top: 10%;">Log In</button>
     <button class="btn btn-lg btn-primary btn-block" style="margin-top: 5%;"
             onclick="window.location.pathname = '/signup'">Sign Up</button>
