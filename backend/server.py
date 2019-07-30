@@ -81,10 +81,8 @@ def login():
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(url_for(session.get('redirect') if session.get('redirect') else 'home'))
-    print(session.get('redirect'))
-    return render_template('login.html', form=form, error=error,
-                           endpoint=session.get('redirect') if session.get('redirect') else 'home')
+                return redirect(url_for(session.get('redirect') or 'home'))
+    return render_template('login.html', form=form, error=error, endpoint=session.get('redirect') or 'home')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -203,11 +201,11 @@ def dfs_projections():
 @login_required
 def optimized_team(sport):
     global projections, fd_black_list, dk_black_list
-    projections = []
     try:
         projections = projections_dict.get(sport)
     except NameError:
-        pass
+        dfs_projections()
+        projections = projections_dict.get(sport)
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
