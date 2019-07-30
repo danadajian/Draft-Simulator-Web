@@ -1,10 +1,10 @@
 from src.main.GetESPNPlayers import get_espn_players
 from src.main.GetYahooPlayers import get_yahoo_players
-from src.main.Simulator import *
 from src.main.GetMLBData import get_mlb_projections
 from src.main.GetNBAData import get_nba_projections
 from src.main.GetNFLData import get_nfl_projections
 from src.main.Optimizer import *
+from src.main.Simulator import *
 from flask import *
 from flask_bootstrap import Bootstrap
 from flask_caching import Cache
@@ -18,7 +18,7 @@ from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret'
+app.config['SECRET_KEY'] = 'secret123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
@@ -38,7 +38,7 @@ class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(30))
     draft_ranking = db.Column(db.String(10000), unique=False)
 
 
@@ -72,20 +72,17 @@ def landing_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    global endpoint
-    if request.method == 'GET':
-        endpoint = request.args.get('next').split('/')[1].replace('-', '_') if request.args.get('next') else 'home'
+    if request.method == 'GET' and request.args.get('next'):
+        endpoint = request.args.get('next').split('/')[1].replace('-', '_')
+        session['redirect'] = endpoint
     error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                try:
-                    return redirect(url_for(endpoint))
-                except NameError:
-                    pass
-    return render_template('login.html', form=form, endpoint=endpoint, error=error)
+                return redirect(url_for(session.get('redirect') or 'home'))
+    return render_template('login.html', form=form, error=error, endpoint=session.get('redirect') or 'home')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -126,7 +123,6 @@ def home():
 @app.route("/espn")
 @login_required
 def espn():
-
     return render_template("index.html")
 
 
@@ -136,7 +132,7 @@ def yahoo():
     return render_template("index.html")
 
 
-@app.route("/load-ranking")
+@app.route("/load-rankings")
 @login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
@@ -171,6 +167,7 @@ def yahoo_players():
 @app.route("/draft-results", methods=['POST'])
 @login_required
 def run_draft():
+    global draft_results
     data = request.get_data()
     data_list = str(data)[2:-1].split('|')
     players_string, team_count, pick_order, round_count = data_list
@@ -179,7 +176,7 @@ def run_draft():
     for item in replace_list:
         players_string = players_string.replace(item, '')
     user_list = players_string.split(',')
-    draft_results = get_draft_results(user_list, get_espn_players(), team_count, pick_order, round_count)
+    draft_results = get_draft_results(user_list, get_player_dict(), team_count, pick_order, round_count)
     return jsonify(draft_results)
 
 
@@ -203,22 +200,24 @@ def dfs_projections():
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 @login_required
 def optimized_team(sport):
-    global projections, fd_black_list, dk_black_list
+    global projections
     try:
         projections = projections_dict.get(sport)
     except NameError:
-        pass
+        dfs_projections()
+        projections = projections_dict.get(sport)
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
         removed_player, site = data_tuple[0], data_tuple[1]
+        fd_black_list, dk_black_list = session.get('fd_black_list'), session.get('dk_black_list')
         if site == 'fd' and removed_player not in fd_black_list:
             fd_black_list.append(removed_player)
         elif site == 'dk' and removed_player not in dk_black_list:
             dk_black_list.append(removed_player)
     else:
-        fd_black_list = []
-        dk_black_list = []
+        fd_black_list, dk_black_list = [], []
+    session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
     dfs_lineups = get_dfs_lineups(sport, projections, fd_black_list, dk_black_list)
     return jsonify(dfs_lineups)
 
