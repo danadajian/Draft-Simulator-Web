@@ -33,6 +33,8 @@ def get_best_lineup(player_pools, salary_dict):
 
 def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
     optimal_lineup = [player for player in best_lineup]
+    print(optimal_lineup)
+    print(salary_dict)
     current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
     salary_min = statistics.mean(list(salary_dict.values()))
     while current_salary > salary_cap:
