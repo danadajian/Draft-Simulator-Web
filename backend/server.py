@@ -10,7 +10,6 @@ from flask_bootstrap import Bootstrap
 from flask_caching import Cache
 from flask_heroku import Heroku
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 import os
@@ -21,9 +20,7 @@ from wtforms.validators import InputRequired, Email, Length
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SESSION_TYPE'] = 'sqlalchemy'
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-Session(app)
 
 is_production = os.environ.get('IS_HEROKU', None)
 if not is_production:
