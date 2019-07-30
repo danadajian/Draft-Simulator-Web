@@ -204,7 +204,12 @@ def dfs_projections():
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 @login_required
 def optimized_team(sport):
-    global fd_black_list, dk_black_list
+    global projections, fd_black_list, dk_black_list
+    projections = []
+    try:
+        projections = projections_dict.get(sport)
+    except NameError:
+        pass
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
@@ -216,11 +221,7 @@ def optimized_team(sport):
     else:
         fd_black_list = []
         dk_black_list = []
-    dfs_lineups = []
-    try:
-        dfs_lineups = get_dfs_lineups(sport, projections_dict.get(sport), fd_black_list, dk_black_list)
-    except NameError:
-        pass
+    dfs_lineups = get_dfs_lineups(sport, projections, fd_black_list, dk_black_list)
     return jsonify(dfs_lineups)
 
 
