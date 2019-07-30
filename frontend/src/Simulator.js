@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
 import JqxPopover from './jqxwidgets/react_jqxpopover'
@@ -6,16 +6,15 @@ import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
+import { PlayerListBox } from "./PlayerListBox.tsx";
 import football from './icons/football.ico'
-
-let startingList = [];
 
 export class Simulator extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [], teamCount: 10, pickOrder: 5, roundCount: 16,
-            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
+        this.state = {isLoading: true, startingList: [], players: [], userPlayers: [], teamCount: 10, pickOrder: 5,
+            roundCount: 16, isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
     }
 
     componentDidMount() {
@@ -30,11 +29,15 @@ export class Simulator extends Component {
                 } else {
                     response.json()
                         .then((playerList) => {
-                            this.setState({isLoading: false, players: playerList});
-                            this.bindSlidersToChangeEvent();
+                            let startingList = [];
                             for (let i = 0; i < playerList.length; i++) {
                                 startingList.push(playerList[i]);
                             }
+                            this.setState({
+                                isLoading: false,
+                                startingList: startingList,
+                                players: playerList});
+                            this.bindSlidersToChangeEvent();
                         })
                 }
             });
@@ -138,6 +141,7 @@ export class Simulator extends Component {
 
     removePlayers = () => {
         let playerList = this.state.players;
+        let startingList = this.state.startingList;
         let selectedUserItems = this.refs.userListbox.getSelectedItems();
         let sortedItems = selectedUserItems.sort(function (a,b) {
             return startingList.indexOf(a.label) - startingList.indexOf(b.label)
@@ -164,6 +168,7 @@ export class Simulator extends Component {
 
     clearPlayers = () => {
         let playerList = this.state.players;
+        let startingList = this.state.startingList;
         let userItems = this.refs.userListbox.getItems();
         if (userItems) {
             let sortedItems = userItems.sort(function (a, b) {

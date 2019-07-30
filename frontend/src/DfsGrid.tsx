@@ -55,7 +55,7 @@ export const DfsGrid = (props: {
         dfsLineup: playerAttributes[],
         removePlayer: (playerIndex: number, site: string) => void,
         site: string}) =>
-    <table>
+    <table className={'Dfs-grid'}>
         <tr style={{backgroundColor: (props.site === 'fd') ? 'dodgerblue' : 'black'}}>
             <th>Exclude</th>
             <th>Position</th>

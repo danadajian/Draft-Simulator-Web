@@ -1,4 +1,4 @@
-from src.main.GetESPNPlayers import get_espn_players, get_player_dict
+from src.main.GetESPNPlayers import get_espn_players
 from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.Simulator import *
 from src.main.GetMLBData import get_mlb_projections
@@ -7,16 +7,15 @@ from src.main.GetNFLData import get_nfl_projections
 from src.main.Optimizer import *
 from flask import *
 from flask_bootstrap import Bootstrap
-from flask_wtf import FlaskForm
+from flask_caching import Cache
 from flask_heroku import Heroku
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
-from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy.exc
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_caching import Cache
-import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
@@ -82,8 +81,11 @@ def login():
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(url_for(endpoint))
-    return render_template('login.html', form=form, error=error, endpoint=endpoint)
+                try:
+                    return redirect(url_for(endpoint))
+                except NameError:
+                    pass
+    return render_template('login.html', form=form, endpoint=endpoint, error=error)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -124,6 +126,7 @@ def home():
 @app.route("/espn")
 @login_required
 def espn():
+
     return render_template("index.html")
 
 
@@ -133,7 +136,7 @@ def yahoo():
     return render_template("index.html")
 
 
-@app.route("/load-rankings")
+@app.route("/load-ranking")
 @login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
@@ -168,7 +171,6 @@ def yahoo_players():
 @app.route("/draft-results", methods=['POST'])
 @login_required
 def run_draft():
-    global draft_results
     data = request.get_data()
     data_list = str(data)[2:-1].split('|')
     players_string, team_count, pick_order, round_count = data_list
@@ -177,7 +179,7 @@ def run_draft():
     for item in replace_list:
         players_string = players_string.replace(item, '')
     user_list = players_string.split(',')
-    draft_results = get_draft_results(user_list, get_player_dict(), team_count, pick_order, round_count)
+    draft_results = get_draft_results(user_list, get_espn_players(), team_count, pick_order, round_count)
     return jsonify(draft_results)
 
 
