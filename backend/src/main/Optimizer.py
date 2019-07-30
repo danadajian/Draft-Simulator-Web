@@ -72,7 +72,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
     max_pts = sum([proj_dict.get(player) for player in best_lineup])
     lineup_json = [{'Position': display_matrix[optimal_lineup.index(player)],
                     'Team': team_and_weather_dict.get(player).get('team'),
-                    'Player': player,
+                    'Name': player,
                     'Projected': round(proj_dict.get(player), 1),
                     'Price': '$' + '{:,}'.format(salary_dict.get(player)),
                     'Opp': team_and_weather_dict.get(player).get('opponent'),
@@ -80,7 +80,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
                     } for player in optimal_lineup] \
                   + [{'Position': '',
                       'Team': '',
-                      'Player': 'Total',
+                      'Name': 'Total',
                       'Projected': total_pts,
                       'Price': '$' + '{:,}'.format(total_salary),
                       'Opp': '',
@@ -88,7 +88,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
                       }] \
                   + [{'Position': '',
                       'Team': '',
-                      'Player': 'Percent of Max Points',
+                      'Name': 'Percent of Max Points',
                       'Projected': str(round(100 * (total_pts / max_pts))) + '%',
                       'Price': '',
                       'Opp': '',

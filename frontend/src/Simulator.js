@@ -2,11 +2,10 @@ import React, {Component} from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
 import JqxPopover from './jqxwidgets/react_jqxpopover'
-import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
-import { PlayerListBox } from "./PlayerListBox.tsx";
+import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx";
 import football from './icons/football.ico'
 
 export class Simulator extends Component {
@@ -28,15 +27,15 @@ export class Simulator extends Component {
                     alert('Could not load players.');
                 } else {
                     response.json()
-                        .then((playerList) => {
+                        .then((players) => {
                             let startingList = [];
-                            for (let i = 0; i < playerList.length; i++) {
-                                startingList.push(playerList[i]);
+                            for (let i = 0; i < players.length; i++) {
+                                startingList.push(players[i]);
                             }
                             this.setState({
                                 isLoading: false,
                                 startingList: startingList,
-                                players: playerList});
+                                players: players});
                             this.bindSlidersToChangeEvent();
                         })
                 }
@@ -121,25 +120,19 @@ export class Simulator extends Component {
         }
     };
 
-    addPlayers = () => {
-        let playerList = this.state.players;
+    addPlayer = (playerRank) => {
+        let players = this.state.players;
         let userPlayers = this.state.userPlayers;
-        let selectedItems = this.refs.playerListbox.getSelectedItems();
-
-        for (let i = 0; i < selectedItems.length; i++) {
-            if (!userPlayers.includes(selectedItems[i].label)) {
-                this.refs.playerListbox.unselectItem(selectedItems[i].label);
-                this.refs.userListbox.addItem(selectedItems[i].label);
-                userPlayers.push(selectedItems[i].label);
-                this.refs.playerListbox.removeItem(selectedItems[i].label);
-                let playerIndex = playerList.indexOf(selectedItems[i].label);
-                playerList.splice(playerIndex, 1);
-            }
-        }
-        this.updateListsAndClearSelections(playerList, userPlayers);
+        const playerToAdd = players.find((player) => {
+            return player.Rank === playerRank;
+        });
+        let playerIndex = players.indexOf(playerToAdd);
+        players.splice(playerIndex, 1);
+        userPlayers.push(playerToAdd);
+        this.setState({players: players, userPlayers: userPlayers});
     };
 
-    removePlayers = () => {
+    removePlayer = () => {
         let playerList = this.state.players;
         let startingList = this.state.startingList;
         let selectedUserItems = this.refs.userListbox.getSelectedItems();
@@ -224,7 +217,7 @@ export class Simulator extends Component {
             });
             fetch(window.location.origin + '/draft-results', {
                 method: 'POST',
-                body: reorderedPlayers.toString() + '|' + teamCount + '|' + pickOrder + '|' + roundCount
+                body: [reorderedPlayers.toString(), teamCount, pickOrder, roundCount, window.location.pathname]
             }).then(response => {
                 if (response.status !== 200) {
                     alert('Error loading draft results.');
@@ -340,10 +333,7 @@ export class Simulator extends Component {
                     </div>
                     <h1 className={"App-header"}>Draft Simulator</h1>
                     <div className={"Buttons-and-boxes"}>
-                        <JqxListBox ref='playerListbox'
-                                    width={250} height={400}
-                                    source={players} filterable={true} searchMode={"containsignorecase"}
-                                    multiple={true} className={"Player-list-box"}/>
+                        <PlayerListBox playerList={players} addPlayer={this.addPlayer} className={"Player-list-box"}/>
                         <div className={"Player-buttons"}>
                             <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
                             <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
@@ -352,9 +342,7 @@ export class Simulator extends Component {
                             <button id='rankingButton' onClick={this.loadRankings} className={"Ranking-button"}>Load Saved Rankings</button>
                             <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
                         </div>
-                        <JqxListBox ref='userListbox' width={250} height={400}
-                                    source={userPlayers} allowDrag={true}
-                                    allowDrop={true} multiple={true} className={"Player-list-box"}/>
+                        <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} className={"Player-list-box"}/>
                         <div className={"Draft-buttons"}>
                             <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
                             <button onClick={() => this.simulateDrafts(false)} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>

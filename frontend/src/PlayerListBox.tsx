@@ -1,19 +1,43 @@
-import JqxListBox from './jqxwidgets/react_jqxlistbox';
 import * as React from 'react';
 
-interface playerInfo {
+interface playerAttributes {
     Rank: number,
-    Player: string
+    Name: string,
     Position: string,
-    Team: string
+    Team: string,
 }
 
-export const PlayerListBox = (props: { playerList: playerInfo[] }) => {
+interface playerProps {
+    player: playerAttributes,
+    onChange: () => void
+}
 
-    return (
-    <JqxListBox ref={playerListBox}
-        width={250} height={400} mySelections={this.getSelectedItems()}
-        source={props.playerList} filterable={true} searchMode={"containsignorecase"}
-        multiple={true} className={"Player-list-box"}/>
-    );
-};
+const Player = (props: playerProps) =>
+    <tr>
+        <td>{props.player.Rank}</td>
+        <td>
+            <tr style={{fontWeight: 'bold'}}>{props.player.Name}</tr>
+            <tr>{props.player.Team} {props.player.Position}</tr>
+        </td>
+        <td>
+            <button onClick={props.onChange}>Add</button>
+        </td>
+    </tr>;
+
+export const PlayerListBox = (props: { playerList: playerAttributes[], addPlayer: (index: number) => void }) =>
+    <table className={'Dfs-grid'}>
+        {props.playerList.map(
+            (player) => (
+                <Player player={player} onChange={() => props.addPlayer(player.Rank)}/>
+            )
+        )}
+    </table>;
+
+export const UserListBox = (props: { playerList: playerAttributes[], removePlayer: (index: number) => void }) =>
+<table className={'Dfs-grid'}>
+    {props.playerList.map(
+        (player, index) => (
+            <Player player={player} onChange={() => props.removePlayer(index)}/>
+        )
+    )}
+</table>;

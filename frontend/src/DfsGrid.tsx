@@ -3,7 +3,7 @@ import * as React from 'react';
 interface playerAttributes {
     Position: string,
     Team: string,
-    Player: string,
+    Name: string,
     Projected: number,
     Price: string,
     Opp: string,
@@ -39,7 +39,7 @@ const Player = (props: playerProps) => {
             </td>
             <td>{props.player.Position}</td>
             <td>{props.player.Team}</td>
-            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Player}</td>
+            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Name}</td>
             <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Projected}</td>
             <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Price}</td>
             <td>{props.player.Opp}</td>
