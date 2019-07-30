@@ -76,7 +76,6 @@ def login():
     global endpoint
     if request.method == 'GET' and request.args.get('next'):
         endpoint = request.args.get('next').split('/')[1].replace('-', '_')
-        print(endpoint)
     error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
@@ -84,6 +83,8 @@ def login():
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for(endpoint if 'endpoint' in vars() else 'home'))
+    if 'endpoint' in vars():
+        print(endpoint)
     return render_template('login.html', form=form, error=error, endpoint=endpoint if 'endpoint' in vars() else 'home')
 
 
