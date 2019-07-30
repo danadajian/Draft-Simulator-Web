@@ -13,47 +13,45 @@ def get_espn_html():
 
 def parse_html(text):
     string = [line for line in text.splitlines() if 'Non-PPR Top 300 for 2019' in line][0]
-    words = string.split('<')
-    return words
-
-
-def get_player_dict():
-    text = get_espn_html()
-    if text == 'HTTP request failed.':
-        return 'HTTP request failed.'
-    words = parse_html(text)
-    player_list = []
-    num_list = list(str(range(300)))
-    for word in words:
-        if 'http://www.espn.com/nfl/player/_/id/' in word:
-            name = word.split('>')
-            player_list.append(name[1])
-        elif 'td>' in word and '. ' in word and word.split('. ')[1]:
-            player_list.append(word.split('. ')[1])
-        elif 'D/ST' in word:
-            d_name = word.split('. ')
-            player_list.append(d_name[1])
-
-    top_300_list = []
-    for player in player_list:
-        if player[-2:] == 'Jr':
-            new_player = player.replace('Jr', 'Jr.')
-            top_300_list.append(new_player)
-        else:
-            top_300_list.append(player)
-
-    top_300_positions = []
-    pos_list = ['td>QB', 'td>RB', 'td>WR', 'td>TE', 'td>DST', 'td>K']
-    for word in words:
-        if any(pos == word for pos in pos_list) and all(num not in word for num in num_list):
-            position = word.split('>')
-            top_300_positions.append(position[1])
-
-    top300dict = dict(zip(top_300_list, top_300_positions))
-    return top300dict
+    player_strings = []
+    for i in range(299):
+        left_index = string.find('<td>' + str(i + 1) + '.')
+        right_index = string.find('<td>' + str(i + 2) + '.')
+        player_strings.append(string[left_index: right_index])
+    text_list = [player_string.split('>') for player_string in player_strings]
+    return text_list
 
 
 def get_espn_players():
-    top300dict = get_player_dict()
-    final_player_list = [player + '    (' + pos + ')' for player, pos in top300dict.items()]
-    return final_player_list
+    text = get_espn_html()
+    if text == 'HTTP request failed.':
+        return 'HTTP request failed.'
+    text_list = parse_html(text)
+
+    player_list, pos_list, team_list = [], [], []
+    for string in text_list:
+        if '<a href=' in string[1]:
+            player_item = string[2]
+            player = player_item.replace('</a', '')
+            player_list.append(player)
+
+            pos = string[5].replace('</td', '')
+            pos_list.append(pos)
+
+            team = string[7].replace('</td', '')
+            team_list.append(team)
+        else:
+            player_item = string[1].replace('</td', '')
+            start_index = player_item.find('. ') + 2
+            player = player_item[start_index:]
+            player_list.append(player)
+
+            pos = string[3].replace('</td', '')
+            pos_list.append(pos)
+
+            team = string[5].replace('</td', '')
+            team_list.append(team)
+
+    top300dict = [{'Rank': i + 1, 'Player': player_list[i], 'Position': pos_list[i], 'Team': team_list[i]}
+                  for i in range(len(player_list))]
+    return top300dict
