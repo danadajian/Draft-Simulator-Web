@@ -1,4 +1,4 @@
-from src.main.GetESPNPlayers import get_espn_players, get_player_dict
+from src.main.GetESPNPlayers import get_espn_players
 from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.Simulator import *
 from src.main.GetMLBData import get_mlb_projections
@@ -7,21 +7,23 @@ from src.main.GetNFLData import get_nfl_projections
 from src.main.Optimizer import *
 from flask import *
 from flask_bootstrap import Bootstrap
-from flask_wtf import FlaskForm
+from flask_caching import Cache
 from flask_heroku import Heroku
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_session import Session
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
-from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy.exc
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_caching import Cache
-import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret'
+app.config['SECRET_KEY'] = 'secret123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_TYPE'] = 'sqlalchemy'
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+Session(app)
 
 is_production = os.environ.get('IS_HEROKU', None)
 if not is_production:
@@ -39,7 +41,7 @@ class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(30))
     draft_ranking = db.Column(db.String(10000), unique=False)
 
 
@@ -73,19 +75,19 @@ def landing_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    global endpoint
     if request.method == 'GET' and request.args.get('next'):
         endpoint = request.args.get('next').split('/')[1].replace('-', '_')
+        session['redirect'] = endpoint
     error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(url_for(endpoint if 'endpoint' in vars() else 'home'))
-    if 'endpoint' in vars():
-        print(endpoint)
-    return render_template('login.html', form=form, error=error, endpoint=endpoint if 'endpoint' in vars() else 'home')
+                return redirect(url_for(session.get('redirect') if session.get('redirect') else 'home'))
+    print(session.get('redirect'))
+    return render_template('login.html', form=form, error=error,
+                           endpoint=session.get('redirect') if session.get('redirect') else 'home')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
