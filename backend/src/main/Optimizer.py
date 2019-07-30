@@ -19,13 +19,13 @@ def get_player_pools(lineup_matrix, black_list, proj_pts_dict, pos_dict):
     return player_pools
 
 
-def get_best_lineup(player_pools):
+def get_best_lineup(player_pools, salary_dict):
     if any(not pool for pool in player_pools):
         return ['Warning: \nNot enough player data currently available.']
     best_lineup = []
     for pool in player_pools:
         for player in pool:
-            if player not in best_lineup:
+            if player not in best_lineup and player in salary_dict.keys():
                 best_lineup.append(player)
                 break
     return best_lineup
@@ -61,7 +61,7 @@ def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
 
 def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap, team_and_weather_dict):
     player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict)
-    best_lineup = get_best_lineup(player_pools)
+    best_lineup = get_best_lineup(player_pools, salary_dict)
     if best_lineup == 'Warning: \nNot enough positions currently available.':
         return ['Warning: \nNot enough positions currently available.']
     optimal_lineup = optimize(best_lineup, player_pools, proj_dict, salary_dict, cap)
