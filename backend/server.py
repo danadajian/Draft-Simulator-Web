@@ -82,7 +82,10 @@ def login():
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(url_for(endpoint))
+                try:
+                    return redirect(url_for(endpoint))
+                except NameError:
+                    pass
     return render_template('login.html', form=form, error=error, endpoint=endpoint)
 
 
