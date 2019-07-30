@@ -1,4 +1,4 @@
-from src.main.GetESPNPlayers import get_espn_players
+from src.main.GetESPNPlayers import get_espn_players, get_player_dict
 from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.Simulator import *
 from src.main.GetMLBData import get_mlb_projections
