@@ -74,8 +74,9 @@ def landing_page():
 def login():
     form = LoginForm()
     global endpoint
-    if request.method == 'GET':
-        endpoint = request.args.get('next').split('/')[1].replace('-', '_') if request.args.get('next') else 'home'
+    if request.method == 'GET' and request.args.get('next'):
+        endpoint = request.args.get('next').split('/')[1].replace('-', '_')
+        print(endpoint)
     error = 'Incorrect username or password.' if request.form.get('username') and request.form.get('password') else None
     if form.validate_on_submit():
         user = Users.query.filter_by(username=form.username.data).first()
