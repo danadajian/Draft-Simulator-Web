@@ -200,7 +200,7 @@ def dfs_projections():
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 @login_required
 def optimized_team(sport):
-    global projections, fd_black_list, dk_black_list
+    global projections
     try:
         projections = projections_dict.get(sport)
     except NameError:
@@ -210,13 +210,14 @@ def optimized_team(sport):
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
         removed_player, site = data_tuple[0], data_tuple[1]
+        fd_black_list, dk_black_list = session.get('fd_black_list'), session.get('dk_black_list')
         if site == 'fd' and removed_player not in fd_black_list:
             fd_black_list.append(removed_player)
         elif site == 'dk' and removed_player not in dk_black_list:
             dk_black_list.append(removed_player)
     else:
-        fd_black_list = []
-        dk_black_list = []
+        fd_black_list, dk_black_list = [], []
+    session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
     dfs_lineups = get_dfs_lineups(sport, projections, fd_black_list, dk_black_list)
     return jsonify(dfs_lineups)
 
