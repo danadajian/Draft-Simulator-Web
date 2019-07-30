@@ -21,7 +21,7 @@ def get_player_pools(lineup_matrix, black_list, proj_pts_dict, pos_dict):
 
 def get_best_lineup(player_pools, salary_dict):
     if any(not pool for pool in player_pools):
-        return ['Warning: \nNot enough player data currently available.']
+        return 'Warning: \nNot enough player data currently available.'
     best_lineup = []
     for pool in player_pools:
         for player in pool:
@@ -33,8 +33,6 @@ def get_best_lineup(player_pools, salary_dict):
 
 def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
     optimal_lineup = [player for player in best_lineup]
-    print(optimal_lineup)
-    print(salary_dict)
     current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
     salary_min = statistics.mean(list(salary_dict.values()))
     while current_salary > salary_cap:
@@ -64,7 +62,7 @@ def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
 def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap, team_and_weather_dict):
     player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict)
     best_lineup = get_best_lineup(player_pools, salary_dict)
-    if best_lineup == 'Warning: \nNot enough positions currently available.':
+    if best_lineup == 'Warning: \nNot enough player data currently available.':
         return ['Warning: \nNot enough positions currently available.']
     optimal_lineup = optimize(best_lineup, player_pools, proj_dict, salary_dict, cap)
     if optimal_lineup == 'Warning: \nToo many players removed. Unable to generate new lineup.':
@@ -73,12 +71,12 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
     total_salary = sum([salary_dict.get(player) for player in optimal_lineup])
     max_pts = sum([proj_dict.get(player) for player in best_lineup])
     lineup_json = [{'Position': display_matrix[optimal_lineup.index(player)],
-                    'Team': team_and_weather_dict.get(player).get('team'),
+                    'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
                     'Player': player,
                     'Projected': round(proj_dict.get(player), 1),
                     'Price': '$' + '{:,}'.format(salary_dict.get(player)),
-                    'Opp': team_and_weather_dict.get(player).get('opponent'),
-                    'Weather': team_and_weather_dict.get(player).get('weather')
+                    'Opp': team_and_weather_dict.get(player).get('opponent') or 'unavailable',
+                    'Weather': team_and_weather_dict.get(player).get('weather') or 'unavailable'
                     } for player in optimal_lineup] \
                   + [{'Position': '',
                       'Team': '',
