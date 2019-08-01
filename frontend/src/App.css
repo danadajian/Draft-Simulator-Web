@@ -136,6 +136,8 @@ a:active {
 }
 
 .Player-list-box {
+  display: flex;
+  flex-direction: column;
   height: 50vmin;
   overflow: auto;
 }
