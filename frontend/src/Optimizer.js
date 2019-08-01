@@ -69,7 +69,7 @@ export class Optimizer extends Component {
 
     removePlayerFromDfsLineup = (lineupIndex, site) => {
         let sport = this.state.sport;
-        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Player : this.state.dkLineup[lineupIndex].Player;
+        let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Name : this.state.dkLineup[lineupIndex].Name;
         fetch(window.location.origin + '/optimized-lineup/' + sport, {
             method: 'POST',
             body: removedPlayer + '|' + site

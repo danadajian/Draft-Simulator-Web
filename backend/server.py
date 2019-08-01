@@ -108,39 +108,39 @@ def signup():
 
 
 @app.route('/logout')
-# @login_required
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
 
 @app.route("/home")
-# @login_required
+@login_required
 def home():
     return render_template("index.html")
 
 
 @app.route("/espn")
-# @login_required
+@login_required
 def espn():
     return render_template("index.html")
 
 
 @app.route("/yahoo")
-# @login_required
+@login_required
 def yahoo():
     return render_template("index.html")
 
 
 @app.route("/load-ranking")
-# @login_required
+@login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
     return jsonify(user.draft_ranking)
 
 
 @app.route("/save-ranking", methods=['POST'])
-# @login_required
+@login_required
 def save_to_db():
     player_list = str(request.get_data())[2:-1]
     user = Users.query.filter_by(username=current_user.username).first()
@@ -150,21 +150,21 @@ def save_to_db():
 
 
 @app.route("/espn-players")
-# @login_required
+@login_required
 @cache.cached(timeout=86400)
 def espn_players():
     return jsonify(get_espn_players())
 
 
 @app.route("/yahoo-players")
-# @login_required
+@login_required
 @cache.cached(timeout=86400)
 def yahoo_players():
     return jsonify(get_yahoo_players())
 
 
 @app.route("/draft-results", methods=['POST'])
-# @login_required
+@login_required
 def run_draft():
     data = request.get_data()
     data_list = str(data)[2:-1].split('|')
@@ -178,13 +178,13 @@ def run_draft():
 
 
 @app.route("/dfs-optimizer")
-# @login_required
+@login_required
 def dfs_optimizer():
     return render_template("index.html")
 
 
 @app.route("/dfs-optimizer/projections", methods=['GET', 'POST'])
-# @login_required
+@login_required
 @cache.cached(timeout=3600)
 def dfs_projections():
     global projections_dict
@@ -195,7 +195,7 @@ def dfs_projections():
 
 
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def optimized_team(sport):
     global projections
     try:

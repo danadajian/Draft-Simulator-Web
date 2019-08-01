@@ -284,16 +284,17 @@ export class Simulator extends Component {
                     </div>
                     <h1 className={"App-header"}>Draft Simulator</h1>
                     <div className={"Buttons-and-boxes"}>
-                        <PlayerListBox playerList={players} addPlayer={this.addPlayer} className={"Player-list-box"}/>
+                        <div className={"Player-list-box"}>
+                            <PlayerListBox playerList={players} addPlayer={this.addPlayer}/>
+                        </div>
                         <div className={"Player-buttons"}>
-                            <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
-                            <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
-                            </button>
                             <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
                             <button id='rankingButton' onClick={this.loadRankings} className={"Ranking-button"}>Load Saved Rankings</button>
                             <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
                         </div>
-                        <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} className={"Player-list-box"}/>
+                        <div className={"Player-list-box"}>
+                            <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} className={"Player-list-box"}/>
+                        </div>
                         <div className={"Draft-buttons"}>
                             <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
                             <button onClick={() => this.simulateDrafts(false)} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
