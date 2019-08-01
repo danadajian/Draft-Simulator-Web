@@ -1,10 +1,10 @@
-from src.main.GetESPNPlayers import get_espn_players, get_player_dict
+from src.main.GetESPNPlayers import get_espn_players
 from src.main.GetYahooPlayers import get_yahoo_players
-from src.main.Simulator import *
 from src.main.GetMLBData import get_mlb_projections
 from src.main.GetNBAData import get_nba_projections
 from src.main.GetNFLData import get_nfl_projections
 from src.main.Optimizer import *
+from src.main.Simulator import *
 from flask import *
 from flask_bootstrap import Bootstrap
 from flask_caching import Cache
@@ -132,19 +132,18 @@ def yahoo():
     return render_template("index.html")
 
 
-@app.route("/load-rankings")
+@app.route("/load-ranking")
 @login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
-    user_ranking = user.draft_ranking.split(',')
-    return jsonify(user_ranking)
+    return jsonify(user.draft_ranking)
 
 
 @app.route("/save-ranking", methods=['POST'])
 @login_required
 def save_to_db():
-    user = Users.query.filter_by(username=current_user.username).first()
     player_list = str(request.get_data())[2:-1]
+    user = Users.query.filter_by(username=current_user.username).first()
     user.draft_ranking = player_list
     db.session.commit()
     return 'User ranking added.'
@@ -167,16 +166,14 @@ def yahoo_players():
 @app.route("/draft-results", methods=['POST'])
 @login_required
 def run_draft():
-    global draft_results
     data = request.get_data()
     data_list = str(data)[2:-1].split('|')
-    players_string, team_count, pick_order, round_count = data_list
+    players_string, team_count, pick_order, round_count, site = data_list
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
-    replace_list = ['(QB)', '(RB)', '(WR)', '(TE)', '(K)', '(DST)', '    ']
-    for item in replace_list:
-        players_string = players_string.replace(item, '')
     user_list = players_string.split(',')
-    draft_results = get_draft_results(user_list, get_player_dict(), team_count, pick_order, round_count)
+    player_dict = get_espn_players() if site == '/espn' else get_yahoo_players()
+    pos_dict = {player.get('Name'): player.get('Position') for player in player_dict}
+    draft_results = get_draft_results(user_list, pos_dict, team_count, pick_order, round_count)
     return jsonify(draft_results)
 
 
