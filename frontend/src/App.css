@@ -136,7 +136,8 @@ a:active {
 }
 
 .Player-list-box {
-  background-color: lightblue;
+  height: 50vmin;
+  overflow: auto;
 }
 
 .Player-buttons {
@@ -144,7 +145,7 @@ a:active {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  height: 200px;
+  height: 15vmin;
 }
 
 .Add-button {
@@ -269,10 +270,23 @@ a:active {
   color: black;
 }
 
+.Draft-grid table, td {
+  border: 1px solid black;
+  margin: 0 auto 0 auto;
+  vertical-align: middle;
+}
+
+.Draft-grid td {
+  padding: 0 16px 0 16px;
+}
+
+.Draft-grid tr:hover {
+  background-color: indianred;
+}
+
 .Dfs-grid table {
   border-spacing: 0;
   margin: 0 auto 0 auto;
-  border: 1px solid grey;
   text-align: center;
   vertical-align: middle;
 }
