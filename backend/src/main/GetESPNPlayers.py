@@ -52,6 +52,6 @@ def get_espn_players():
             team = string[5].replace('</td', '')
             team_list.append(team)
 
-    top300dict = [{'Rank': i + 1, 'Player': player_list[i], 'Position': pos_list[i], 'Team': team_list[i]}
+    top300dict = [{'Rank': i + 1, 'Name': player_list[i], 'Position': pos_list[i], 'Team': team_list[i]}
                   for i in range(len(player_list))]
     return top300dict

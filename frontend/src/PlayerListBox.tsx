@@ -9,6 +9,7 @@ interface playerAttributes {
 
 interface playerProps {
     player: playerAttributes,
+    isAdd: boolean,
     onChange: () => void
 }
 
@@ -16,19 +17,21 @@ const Player = (props: playerProps) =>
     <tr>
         <td>{props.player.Rank}</td>
         <td>
-            <tr style={{fontWeight: 'bold'}}>{props.player.Name}</tr>
-            <tr>{props.player.Team} {props.player.Position}</tr>
+            <table>
+                <tr style={{fontWeight: 'bold'}}>{props.player.Name}</tr>
+                <tr>{props.player.Team} {props.player.Position}</tr>
+            </table>
         </td>
         <td>
-            <button onClick={props.onChange}>Add</button>
+            <button onClick={props.onChange}>{(props.isAdd) ? 'Add' : 'Remove'}</button>
         </td>
     </tr>;
 
 export const PlayerListBox = (props: { playerList: playerAttributes[], addPlayer: (index: number) => void }) =>
     <table className={'Dfs-grid'}>
         {props.playerList.map(
-            (player) => (
-                <Player player={player} onChange={() => props.addPlayer(player.Rank)}/>
+            (player, index) => (
+                <Player player={player} isAdd={true} onChange={() => props.addPlayer(index)}/>
             )
         )}
     </table>;
@@ -37,7 +40,7 @@ export const UserListBox = (props: { playerList: playerAttributes[], removePlaye
 <table className={'Dfs-grid'}>
     {props.playerList.map(
         (player, index) => (
-            <Player player={player} onChange={() => props.removePlayer(index)}/>
+            <Player player={player} isAdd={false} onChange={() => props.removePlayer(index)}/>
         )
     )}
 </table>;
