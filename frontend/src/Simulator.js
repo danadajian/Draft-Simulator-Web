@@ -1,14 +1,12 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
 import JqxPopover from './jqxwidgets/react_jqxpopover'
-import JqxListBox from './jqxwidgets/react_jqxlistbox'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
+import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx";
 import football from './icons/football.ico'
-
-let startingList = [];
 
 export class Simulator extends Component {
 
@@ -29,12 +27,11 @@ export class Simulator extends Component {
                     alert('Could not load players.');
                 } else {
                     response.json()
-                        .then((playerList) => {
-                            this.setState({isLoading: false, players: playerList});
+                        .then((players) => {
+                            this.setState({
+                                isLoading: false,
+                                players: players});
                             this.bindSlidersToChangeEvent();
-                            for (let i = 0; i < playerList.length; i++) {
-                                startingList.push(playerList[i]);
-                            }
                         })
                 }
             });
@@ -68,9 +65,8 @@ export class Simulator extends Component {
     };
 
     loadRankings = () => {
-        let playerList = this.state.players;
-        let userPlayers = this.state.userPlayers;
-        fetch(window.location.origin + '/load-rankings')
+        let players = this.state.players;
+        fetch(window.location.origin + '/load-ranking')
             .then(response => {
                 if (response.status !== 200) {
                     alert('Could not load user ranking data.');
@@ -80,16 +76,12 @@ export class Simulator extends Component {
                             if (userRanking === 'No ranking specified.') {
                                 alert('No ranking specified.');
                             } else {
-                                if (userPlayers) {
-                                    this.clearPlayers()
-                                }
                                 for (let i = 0; i < userRanking.length; i++) {
-                                    this.refs.userListbox.addItem(userRanking[i]);
-                                    this.refs.playerListbox.removeItem(userRanking[i]);
-                                    let playerIndex = playerList.indexOf(userRanking[i]);
-                                    playerList.splice(playerIndex, 1);
+                                    let userPlayerRank = userRanking[i].Rank;
+                                    let playerIndex = players.findIndex((player) => {player.Rank = userPlayerRank});
+                                    players.splice(playerIndex, 1);
                                 }
-                                this.updateListsAndClearSelections(playerList, userRanking);
+                                this.setState({players: players, userPlayers: userRanking})
                             }
                         })
                 }
@@ -97,17 +89,13 @@ export class Simulator extends Component {
     };
 
     saveRankings = () => {
-        let userItems = this.refs.userListbox.getItems();
-        if (!userItems) {
+        let userPlayers = this.state.userPlayers;
+        if (userPlayers.length === 0) {
             alert('Please rank at least one player before saving.');
         } else {
-            let userRanking = [];
-            for (let i = 0; i < userItems.length; i++) {
-                userRanking.push(userItems[i].label)
-            }
             fetch(window.location.origin + '/save-ranking', {
                 method: 'POST',
-                body: userRanking
+                body: JSON.stringify(userPlayers)
             }).then(response => {
                 if (response.status === 200) {
                     alert('User ranking saved successfully.');
@@ -118,75 +106,42 @@ export class Simulator extends Component {
         }
     };
 
-    addPlayers = () => {
-        let playerList = this.state.players;
+    addPlayer = (playerIndex) => {
+        let players = this.state.players;
         let userPlayers = this.state.userPlayers;
-        let selectedItems = this.refs.playerListbox.getSelectedItems();
-
-        for (let i = 0; i < selectedItems.length; i++) {
-            if (!userPlayers.includes(selectedItems[i].label)) {
-                this.refs.playerListbox.unselectItem(selectedItems[i].label);
-                this.refs.userListbox.addItem(selectedItems[i].label);
-                userPlayers.push(selectedItems[i].label);
-                this.refs.playerListbox.removeItem(selectedItems[i].label);
-                let playerIndex = playerList.indexOf(selectedItems[i].label);
-                playerList.splice(playerIndex, 1);
-            }
-        }
-        this.updateListsAndClearSelections(playerList, userPlayers);
+        let playerToAdd = players[playerIndex];
+        players.splice(playerIndex, 1);
+        userPlayers.push(playerToAdd);
+        this.setState({
+            players: players,
+            userPlayers: userPlayers
+        });
     };
 
-    removePlayers = () => {
-        let playerList = this.state.players;
-        let selectedUserItems = this.refs.userListbox.getSelectedItems();
-        let sortedItems = selectedUserItems.sort(function (a,b) {
-            return startingList.indexOf(a.label) - startingList.indexOf(b.label)
+    removePlayer = (removedPlayerIndex) => {
+        let players = this.state.players;
+        let userPlayers = this.state.userPlayers;
+        let removedPlayer = userPlayers[removedPlayerIndex];
+        let removedPlayerRank = removedPlayer.Rank;
+        const originalPlayerNeighbor = players.find((player) => {
+            return player.Rank > removedPlayerRank;
         });
-
-        for (let i = 0; i < sortedItems.length; i++) {
-            if (!playerList.includes(sortedItems[i].label)) {
-                this.refs.userListbox.removeItem(sortedItems[i].label);
-                let playerIndex = startingList.indexOf(sortedItems[i].label);
-                this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
-                playerList.splice(playerIndex, 0, sortedItems[i].label);
-            }
-        }
-
-        let remainingPlayers = [];
-        let userItems = this.refs.userListbox.getItems();
-        if (userItems) {
-            for (let i = 0; i < userItems.length; i++) {
-                remainingPlayers.push(userItems[i].label);
-            }
-        }
-        this.updateListsAndClearSelections(playerList, remainingPlayers);
+        players.splice(players.indexOf(originalPlayerNeighbor), 0, removedPlayer);
+        userPlayers.splice(removedPlayerIndex, 1);
+        this.setState({
+            players: players,
+            userPlayers: userPlayers
+        });
     };
 
     clearPlayers = () => {
-        let playerList = this.state.players;
-        let userItems = this.refs.userListbox.getItems();
-        if (userItems) {
-            let sortedItems = userItems.sort(function (a, b) {
-                return startingList.indexOf(a.label) - startingList.indexOf(b.label)
-            });
-
-            this.refs.userListbox.clear();
-            for (let i = 0; i < sortedItems.length; i++) {
-                if (!playerList.includes(sortedItems[i].label)) {
-                    let playerIndex = startingList.indexOf(sortedItems[i].label);
-                    this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
-                    playerList.splice(playerIndex, 0, sortedItems[i].label);
-                }
-            }
-            this.updateListsAndClearSelections(playerList, []);
-        }
-    };
-
-    updateListsAndClearSelections = (playerList, userPlayers) => {
-        this.setState({players: playerList, userPlayers: userPlayers});
-        this.refs.playerListbox.clearFilter();
-        this.refs.playerListbox.clearSelection();
-        this.refs.userListbox.clearSelection();
+        let players = this.state.players;
+        let userPlayers = this.state.userPlayers;
+        let allPlayers = players.concat(userPlayers);
+        this.setState({
+            players: allPlayers.sort((a, b) => a.Rank - b.Rank),
+            userPlayers: []
+        });
     };
 
     determineIfRandom = (event) => {
@@ -198,28 +153,24 @@ export class Simulator extends Component {
             this.setState({isDrafting: false});
             return
         }
-        let userPlayers = this.refs.userListbox.getItems();
-        if (!userPlayers || userPlayers.length === 0) {
+        let userPlayers = this.state.userPlayers;
+        if (userPlayers.length === 0) {
             alert('Please select at least one player to draft.');
         } else {
-            let reorderedPlayers = [];
-            for (let i = 0; i < userPlayers.length; i++) {
-                reorderedPlayers.push(userPlayers[i].label);
-            }
+            let playerNames = userPlayers.map((player) => player.Name);
             let teamCount = this.refs.teamCountSlider.getValue();
             let roundCount = this.refs.roundCountSlider.getValue();
             let userPick = this.refs.pickOrderSlider.getValue();
             let pickOrder = (this.state.isRandom) ? 0: userPick;
             this.setState({
                 isDrafting: true,
-                userPlayers: reorderedPlayers,
                 teamCount: teamCount,
                 pickOrder: userPick,
                 roundCount: roundCount
             });
             fetch(window.location.origin + '/draft-results', {
                 method: 'POST',
-                body: reorderedPlayers.toString() + '|' + teamCount + '|' + pickOrder + '|' + roundCount
+                body: playerNames.toString() + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + window.location.pathname
             }).then(response => {
                 if (response.status !== 200) {
                     alert('Error loading draft results.');
@@ -245,8 +196,6 @@ export class Simulator extends Component {
         });
 
         this.bindSlidersToChangeEvent();
-        this.refs.playerListbox.clearSelection();
-        this.refs.userListbox.clearSelection();
     };
 
     render() {
@@ -335,21 +284,17 @@ export class Simulator extends Component {
                     </div>
                     <h1 className={"App-header"}>Draft Simulator</h1>
                     <div className={"Buttons-and-boxes"}>
-                        <JqxListBox ref='playerListbox'
-                                    width={250} height={400}
-                                    source={players} filterable={true} searchMode={"containsignorecase"}
-                                    multiple={true} className={"Player-list-box"}/>
+                        <div className={"Player-list-box"}>
+                            <PlayerListBox playerList={players} addPlayer={this.addPlayer}/>
+                        </div>
                         <div className={"Player-buttons"}>
-                            <button onClick={this.addPlayers} style={{fontSize: 16}} className={"Add-button"}>Add</button>
-                            <button onClick={this.removePlayers} style={{fontSize: 16}} className={"Remove-button"}>Remove
-                            </button>
                             <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
                             <button id='rankingButton' onClick={this.loadRankings} className={"Ranking-button"}>Load Saved Rankings</button>
                             <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
                         </div>
-                        <JqxListBox ref='userListbox' width={250} height={400}
-                                    source={userPlayers} allowDrag={true}
-                                    allowDrop={true} multiple={true} className={"Player-list-box"}/>
+                        <div className={"Player-list-box"}>
+                            <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} className={"Player-list-box"}/>
+                        </div>
                         <div className={"Draft-buttons"}>
                             <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
                             <button onClick={() => this.simulateDrafts(false)} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
