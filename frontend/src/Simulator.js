@@ -12,8 +12,8 @@ export class Simulator extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, startingList: [], players: [], userPlayers: [], teamCount: 10, pickOrder: 5,
-            roundCount: 16, isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
+        this.state = {isLoading: true, players: [], userPlayers: [], teamCount: 10, pickOrder: 5, roundCount: 16,
+            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
     }
 
     componentDidMount() {
@@ -28,13 +28,8 @@ export class Simulator extends Component {
                 } else {
                     response.json()
                         .then((players) => {
-                            let startingList = [];
-                            for (let i = 0; i < players.length; i++) {
-                                startingList.push(players[i]);
-                            }
                             this.setState({
                                 isLoading: false,
-                                startingList: startingList,
                                 players: players});
                             this.bindSlidersToChangeEvent();
                         })
@@ -70,9 +65,8 @@ export class Simulator extends Component {
     };
 
     loadRankings = () => {
-        let playerList = this.state.players;
-        let userPlayers = this.state.userPlayers;
-        fetch(window.location.origin + '/load-rankings')
+        let players = this.state.players;
+        fetch(window.location.origin + '/load-ranking')
             .then(response => {
                 if (response.status !== 200) {
                     alert('Could not load user ranking data.');
@@ -82,16 +76,12 @@ export class Simulator extends Component {
                             if (userRanking === 'No ranking specified.') {
                                 alert('No ranking specified.');
                             } else {
-                                if (userPlayers) {
-                                    this.clearPlayers()
-                                }
                                 for (let i = 0; i < userRanking.length; i++) {
-                                    this.refs.userListbox.addItem(userRanking[i]);
-                                    this.refs.playerListbox.removeItem(userRanking[i]);
-                                    let playerIndex = playerList.indexOf(userRanking[i]);
-                                    playerList.splice(playerIndex, 1);
+                                    let userPlayerRank = userRanking[i].Rank;
+                                    let playerIndex = players.findIndex((player) => {player.Rank = userPlayerRank});
+                                    players.splice(playerIndex, 1);
                                 }
-                                this.updateListsAndClearSelections(playerList, userRanking);
+                                this.setState({players: players, userPlayers: userRanking})
                             }
                         })
                 }
@@ -99,17 +89,13 @@ export class Simulator extends Component {
     };
 
     saveRankings = () => {
-        let userItems = this.refs.userListbox.getItems();
-        if (!userItems) {
+        let userPlayers = this.state.userPlayers;
+        if (userPlayers.length === 0) {
             alert('Please rank at least one player before saving.');
         } else {
-            let userRanking = [];
-            for (let i = 0; i < userItems.length; i++) {
-                userRanking.push(userItems[i].label)
-            }
             fetch(window.location.origin + '/save-ranking', {
                 method: 'POST',
-                body: userRanking
+                body: JSON.stringify(userPlayers)
             }).then(response => {
                 if (response.status === 200) {
                     alert('User ranking saved successfully.');
@@ -120,71 +106,42 @@ export class Simulator extends Component {
         }
     };
 
-    addPlayer = (playerRank) => {
+    addPlayer = (playerIndex) => {
         let players = this.state.players;
         let userPlayers = this.state.userPlayers;
-        const playerToAdd = players.find((player) => {
-            return player.Rank === playerRank;
-        });
-        let playerIndex = players.indexOf(playerToAdd);
+        let playerToAdd = players[playerIndex];
         players.splice(playerIndex, 1);
         userPlayers.push(playerToAdd);
-        this.setState({players: players, userPlayers: userPlayers});
+        this.setState({
+            players: players,
+            userPlayers: userPlayers
+        });
     };
 
-    removePlayer = () => {
-        let playerList = this.state.players;
-        let startingList = this.state.startingList;
-        let selectedUserItems = this.refs.userListbox.getSelectedItems();
-        let sortedItems = selectedUserItems.sort(function (a,b) {
-            return startingList.indexOf(a.label) - startingList.indexOf(b.label)
+    removePlayer = (removedPlayerIndex) => {
+        let players = this.state.players;
+        let userPlayers = this.state.userPlayers;
+        let removedPlayer = userPlayers[removedPlayerIndex];
+        let removedPlayerRank = removedPlayer.Rank;
+        const originalPlayerNeighbor = players.find((player) => {
+            return player.Rank > removedPlayerRank;
         });
-
-        for (let i = 0; i < sortedItems.length; i++) {
-            if (!playerList.includes(sortedItems[i].label)) {
-                this.refs.userListbox.removeItem(sortedItems[i].label);
-                let playerIndex = startingList.indexOf(sortedItems[i].label);
-                this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
-                playerList.splice(playerIndex, 0, sortedItems[i].label);
-            }
-        }
-
-        let remainingPlayers = [];
-        let userItems = this.refs.userListbox.getItems();
-        if (userItems) {
-            for (let i = 0; i < userItems.length; i++) {
-                remainingPlayers.push(userItems[i].label);
-            }
-        }
-        this.updateListsAndClearSelections(playerList, remainingPlayers);
+        players.splice(players.indexOf(originalPlayerNeighbor), 0, removedPlayer);
+        userPlayers.splice(removedPlayerIndex, 1);
+        this.setState({
+            players: players,
+            userPlayers: userPlayers
+        });
     };
 
     clearPlayers = () => {
-        let playerList = this.state.players;
-        let startingList = this.state.startingList;
-        let userItems = this.refs.userListbox.getItems();
-        if (userItems) {
-            let sortedItems = userItems.sort(function (a, b) {
-                return startingList.indexOf(a.label) - startingList.indexOf(b.label)
-            });
-
-            this.refs.userListbox.clear();
-            for (let i = 0; i < sortedItems.length; i++) {
-                if (!playerList.includes(sortedItems[i].label)) {
-                    let playerIndex = startingList.indexOf(sortedItems[i].label);
-                    this.refs.playerListbox.insertAt(sortedItems[i].label, playerIndex);
-                    playerList.splice(playerIndex, 0, sortedItems[i].label);
-                }
-            }
-            this.updateListsAndClearSelections(playerList, []);
-        }
-    };
-
-    updateListsAndClearSelections = (playerList, userPlayers) => {
-        this.setState({players: playerList, userPlayers: userPlayers});
-        this.refs.playerListbox.clearFilter();
-        this.refs.playerListbox.clearSelection();
-        this.refs.userListbox.clearSelection();
+        let players = this.state.players;
+        let userPlayers = this.state.userPlayers;
+        let allPlayers = players.concat(userPlayers);
+        this.setState({
+            players: allPlayers.sort((a, b) => a.Rank - b.Rank),
+            userPlayers: []
+        });
     };
 
     determineIfRandom = (event) => {
@@ -196,28 +153,24 @@ export class Simulator extends Component {
             this.setState({isDrafting: false});
             return
         }
-        let userPlayers = this.refs.userListbox.getItems();
-        if (!userPlayers || userPlayers.length === 0) {
+        let userPlayers = this.state.userPlayers;
+        if (userPlayers.length === 0) {
             alert('Please select at least one player to draft.');
         } else {
-            let reorderedPlayers = [];
-            for (let i = 0; i < userPlayers.length; i++) {
-                reorderedPlayers.push(userPlayers[i].label);
-            }
+            let playerNames = userPlayers.map((player) => player.Name);
             let teamCount = this.refs.teamCountSlider.getValue();
             let roundCount = this.refs.roundCountSlider.getValue();
             let userPick = this.refs.pickOrderSlider.getValue();
             let pickOrder = (this.state.isRandom) ? 0: userPick;
             this.setState({
                 isDrafting: true,
-                userPlayers: reorderedPlayers,
                 teamCount: teamCount,
                 pickOrder: userPick,
                 roundCount: roundCount
             });
             fetch(window.location.origin + '/draft-results', {
                 method: 'POST',
-                body: [reorderedPlayers.toString(), teamCount, pickOrder, roundCount, window.location.pathname]
+                body: playerNames.toString() + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + window.location.pathname
             }).then(response => {
                 if (response.status !== 200) {
                     alert('Error loading draft results.');
@@ -243,8 +196,6 @@ export class Simulator extends Component {
         });
 
         this.bindSlidersToChangeEvent();
-        this.refs.playerListbox.clearSelection();
-        this.refs.userListbox.clearSelection();
     };
 
     render() {

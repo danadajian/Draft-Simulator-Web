@@ -16,6 +16,6 @@ def get_yahoo_players():
             player[0] = player[0] + '.'
         player[1] = ''.join([letter for letter in player[1] if not letter.isdigit()])
 
-    top300dict = [{'Rank': i + 1, 'Player': player_list[i][0], 'Position': player_list[i][1], 'Team': player_list[i][2]}
+    top300dict = [{'Rank': i + 1, 'Name': player_list[i][0], 'Position': player_list[i][1], 'Team': player_list[i][2]}
                   for i in range(len(player_list))]
     return top300dict
