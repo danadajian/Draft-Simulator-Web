@@ -4,8 +4,8 @@ self.__precacheManifest = [
     "url": "/static/react/media/cloudy.340c3269.ico"
   },
   {
-    "revision": "9d9fce58c487ebc7fa0e",
-    "url": "/static/react/css/main.2d6f7faf.chunk.css"
+    "revision": "6bc15b3314b0935e4365",
+    "url": "/static/react/css/main.a9f932f7.chunk.css"
   },
   {
     "revision": "53eac5d40d2daff628d2",
@@ -32,8 +32,8 @@ self.__precacheManifest = [
     "url": "/static/react/media/map-saturation-overlay.b01e6120.png"
   },
   {
-    "revision": "9d9fce58c487ebc7fa0e",
-    "url": "/static/react/js/main.9604f8ba.chunk.js"
+    "revision": "6bc15b3314b0935e4365",
+    "url": "/static/react/js/main.ed05b551.chunk.js"
   },
   {
     "revision": "a5e528949ccfcd9317e772977b2dd07f",
@@ -64,7 +64,7 @@ self.__precacheManifest = [
     "url": "/static/react/css/2.fbeefa47.chunk.css"
   },
   {
-    "revision": "2bf7b574dc6037a171336c2c24875532",
+    "revision": "0898c939c0659794114b2c812005cf6f",
     "url": "/static/react/../../templates/index.html"
   }
 ];

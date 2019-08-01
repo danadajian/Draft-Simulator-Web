@@ -285,6 +285,7 @@ export class Simulator extends Component {
                     <h1 className={"App-header"}>Draft Simulator</h1>
                     <div className={"Buttons-and-boxes"}>
                         <div className={"Player-list-box"}>
+                            <input type="text" onChange={(text) => console.log(text.target.value)}>{null}</input>
                             <PlayerListBox playerList={players} addPlayer={this.addPlayer}/>
                         </div>
                         <div className={"Player-buttons"}>
