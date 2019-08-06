@@ -2,10 +2,9 @@ import React, {Component} from 'react'
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
 import JqxPopover from './jqxwidgets/react_jqxpopover'
-import JqxTabs from './jqxwidgets/react_jqxtabs'
-import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
 import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx"
+import { DraftResultsTable } from "./DraftResultsTable.tsx";
 import football from './icons/football.ico'
 import search from './icons/search.ico'
 
@@ -13,8 +12,9 @@ export class Simulator extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], filteredPlayers: null, userPlayers: [], teamCount: 10, pickOrder: 5, roundCount: 16,
-            isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
+        this.state = {isLoading: true, players: [], searchText: '', filteredPlayers: null, userPlayers: [],
+            teamCount: 10, pickOrder: 5, roundCount: 16, isDrafting: false, isRandom: false,
+            allFreqs: [], userFreqs: [], expectedTeam: [], frequencyData: []};
     }
 
     componentDidMount() {
@@ -79,7 +79,7 @@ export class Simulator extends Component {
                             } else {
                                 for (let i = 0; i < userRanking.length; i++) {
                                     let userPlayerRank = userRanking[i].Rank;
-                                    let playerIndex = players.findIndex((player) => {player.Rank = userPlayerRank});
+                                    let playerIndex = players.findIndex((player) => player.Rank === userPlayerRank);
                                     players.splice(playerIndex, 1);
                                 }
                                 this.setState({players: players, userPlayers: userRanking})
@@ -107,8 +107,8 @@ export class Simulator extends Component {
         }
     };
 
-    filterPlayers = (inputText) => {
-        let text = inputText.target.value.toLowerCase();
+    filterPlayers = (event) => {
+        let text = event.target.value.toLowerCase();
         let players = this.state.players;
         let filteredPlayers = players.filter(
             (player) =>
@@ -116,7 +116,9 @@ export class Simulator extends Component {
                 || player.Position.toLowerCase().includes(text)
                 || player.Team.toLowerCase().includes(text)
         );
-        this.setState({filteredPlayers: filteredPlayers});
+        this.setState({
+            searchText: text,
+            filteredPlayers: filteredPlayers});
     };
 
     addPlayer = (playerIndex) => {
@@ -128,7 +130,8 @@ export class Simulator extends Component {
         this.setState({
             players: players,
             userPlayers: userPlayers,
-            filteredPlayers: null
+            filteredPlayers: null,
+            searchText: ''
         });
     };
 
@@ -212,17 +215,22 @@ export class Simulator extends Component {
         }
         this.setState({
             isDrafting: false,
-            allFreqs: draftResults.AllFrequencies,
             userFreqs: draftResults.UserFrequencies,
-            expectedTeam: draftResults.ExpectedTeam
+            allFreqs: draftResults.AllFrequencies,
+            expectedTeam: draftResults.ExpectedTeam,
+            frequencyData: draftResults.UserFrequencies
         });
 
         this.bindSlidersToChangeEvent();
     };
 
+    toggleFrequencyData = (frequencyData) => {
+        this.setState({frequencyData: frequencyData});
+    };
+
     render() {
         const {isLoading, players, filteredPlayers, userPlayers, teamCount, pickOrder, roundCount, isDrafting, isRandom,
-            allFreqs, userFreqs, expectedTeam} = this.state;
+            userFreqs, allFreqs, expectedTeam, frequencyData} = this.state;
 
         if (isLoading) {
             return (
@@ -243,23 +251,6 @@ export class Simulator extends Component {
                 </div>
             );
         } else {
-            const dsFields = [{ name: 'Position', type: 'string' },
-                           { name: 'Player', type: 'string' },
-                           { name: 'DraftFreq', type: 'string' }];
-
-            let source1 = {datatype: 'json', datafields: dsFields, localdata: userFreqs};
-            let dataAdapter1 = new window.$.jqx.dataAdapter(source1);
-
-            let source2 = {datatype: 'json', datafields: dsFields, localdata: allFreqs};
-            let dataAdapter2 = new window.$.jqx.dataAdapter(source2);
-
-            let source3 = {datatype: 'json', datafields: dsFields, localdata: expectedTeam};
-            let dataAdapter3 = new window.$.jqx.dataAdapter(source3);
-
-            let tabSpecs = [{ text: 'Position', datafield: 'Position', width: 95 },
-                            { text: 'Player', datafield: 'Player', width: 175 },
-                            { text: 'Draft Frequency', datafield: 'DraftFreq', width: 130 }];
-
             const swapButtonText = window.location.pathname.startsWith('/espn') ? 'Switch to Yahoo' : 'Switch to ESPN';
             const swapButtonColor = window.location.pathname.startsWith('/espn') ? '#6C00B3' : '#CE0000';
 
@@ -310,8 +301,9 @@ export class Simulator extends Component {
                             <div>
                                 {!filteredPlayers && <img src={search} style={{height: '3vmin', position: 'absolute'}} alt="search"/>}
                                 <input type="text" style={{height: '25px', width: '90%'}}
-                                       onClick={(inputText) => this.filterPlayers(inputText)}
-                                       onChange={(inputText) => this.filterPlayers(inputText)}>{null}</input>
+                                       value={this.state.searchText}
+                                       onClick={this.filterPlayers}
+                                       onChange={this.filterPlayers}>{null}</input>
                             </div>
                             <PlayerListBox playerList={players} filterList={filteredPlayers} addPlayer={this.addPlayer}/>
                         </div>
@@ -327,25 +319,20 @@ export class Simulator extends Component {
                             <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
                             <button onClick={() => this.simulateDrafts(false)} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
                         </div>
-                        <JqxTabs width={400} height={400}>
-                            <ul>
-                                <li style={{ marginLeft: 15 }}>Draft Frequency</li>
-                                <li>All Players</li>
-                                <li>Expected Team</li>
-                            </ul>
-                            <div style={{ overflow: 'hidden' }}>
-                                <JqxGrid style={{ border: 'none' }}
-                                    width={'100%'} height={'100%'} source={dataAdapter1} columns={tabSpecs}/>
-                            </div>
-                            <div style={{ overflow: 'hidden' }}>
-                                <JqxGrid style={{ border: 'none' }}
-                                    width={'100%'} height={'100%'} source={dataAdapter2} columns={tabSpecs}/>
-                            </div>
-                            <div style={{ overflow: 'hidden' }}>
-                                <JqxGrid style={{ border: 'none' }}
-                                    width={'100%'} height={'100%'} source={dataAdapter3} columns={tabSpecs}/>
-                            </div>
-                        </JqxTabs>
+                        <div className={"Player-list-box"}>
+                            <tr>
+                                <button
+                                    onClick={() => this.toggleFrequencyData(userFreqs)}
+                                    style={{borderStyle: (frequencyData === userFreqs) ? 'inset' : 'outset'}}>Your Players</button>
+                                <button
+                                    onClick={() => this.toggleFrequencyData(allFreqs)}
+                                    style={{borderStyle: (frequencyData === allFreqs) ? 'inset' : 'outset'}}>All Players</button>
+                                <button
+                                    onClick={() => this.toggleFrequencyData(expectedTeam)}
+                                    style={{borderStyle: (frequencyData === expectedTeam) ? 'inset' : 'outset'}}>Expected Team</button>
+                            </tr>
+                            <DraftResultsTable frequencyData={frequencyData}/>
+                        </div>
                     </div>
                     <div className={"Slider-row"}>
                         <div className={"Sliders"}>

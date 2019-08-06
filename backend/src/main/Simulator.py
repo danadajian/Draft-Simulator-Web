@@ -110,7 +110,7 @@ def get_expected_team(draft_frequencies, pos_dict, round_count):
     return expected_team
 
 
-def order_expected_team(team, pos_dict, freq_dict):
+def order_expected_team(team, pos_dict, team_dict, freq_dict):
     ordered_team = [''] * 9
     bench = []
     lineup_order = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'RB WR TE', 'DST', 'K']
@@ -124,21 +124,26 @@ def order_expected_team(team, pos_dict, freq_dict):
             lineup_order[first_index] = ''
     ordered_team = [player for player in ordered_team if player]
     full_team = ordered_team + bench
-    ordered_expected_team = [{'Position': 'FLEX' if full_team.index(player) == 6 else pos_dict.get(player) if full_team.index(player) < 9 else 'BE',
-                              'Player': player,
-                              'DraftFreq': str(freq_dict.get(player)) + '%'} for player in full_team]
+    ordered_expected_team = [{'Name': player,
+                              'Position': 'FLEX' if full_team.index(player) == 6 else pos_dict.get(player) if full_team.index(player) < 9 else 'BE',
+                              'Team': team_dict.get(player),
+                              'Frequency': str(freq_dict.get(player)) + '%'}
+                             for player in full_team]
     return ordered_expected_team
 
 
-def get_freq(freq_dict, pos_dict):
+def get_all_freq(freq_dict, pos_dict, team_dict):
     sorted_players = sorted(freq_dict, key=freq_dict.__getitem__, reverse=True)
     sorted_freq = dict(zip(sorted_players, [freq_dict.get(item) for item in sorted_players]))
-    freq_list = [{'Position': pos_dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
+    freq_list = [{'Name': player,
+                  'Position': pos_dict.get(player),
+                  'Team': team_dict.get(player),
+                  'Frequency': str(freq) + '%'}
                  for player, freq in sorted_freq.items()]
     return freq_list
 
 
-def get_user_freq(freq_dict, user_player_list, pos_dict):
+def get_user_freq(freq_dict, user_player_list, pos_dict, team_dict):
     user_freq_dict = {}
     for player in user_player_list:
         if player in freq_dict.keys():
@@ -147,19 +152,24 @@ def get_user_freq(freq_dict, user_player_list, pos_dict):
             user_freq_dict.update({player: 0})
     sorted_user_players = sorted(user_freq_dict, key=user_freq_dict.__getitem__, reverse=True)
     sorted_user_freq = dict(zip(sorted_user_players, [user_freq_dict.get(item) for item in sorted_user_players]))
-    user_freq_list = [{'Position': pos_dict.get(player), 'Player': player, 'DraftFreq': str(freq) + '%'}
+    user_freq_list = [{'Name': player,
+                       'Position': pos_dict.get(player),
+                       'Team': team_dict.get(player),
+                       'Frequency': str(freq) + '%'}
                       for player, freq in sorted_user_freq.items()]
     return user_freq_list
 
 
-def get_draft_results(user_list, pos_dict, team_count, pick_order, round_count):
+def get_draft_results(user_list, player_dict, team_count, pick_order, round_count):
+    pos_dict = {player.get('Name'): player.get('Position') for player in player_dict}
+    team_dict = {player.get('Name'): player.get('Team') for player in player_dict}
     teams_drafted = simulate_draft(user_list, pos_dict, team_count, pick_order, round_count, 500)
     player_draft_freq = calculate_frequencies(teams_drafted)
+    user_frequencies = get_user_freq(player_draft_freq, user_list, pos_dict, team_dict)
+    all_frequencies = get_all_freq(player_draft_freq, pos_dict, team_dict)
     expected_team = get_expected_team(player_draft_freq, pos_dict, round_count)
-    ordered_expected_team = order_expected_team(expected_team, pos_dict, player_draft_freq)
-    all_frequencies = get_freq(player_draft_freq, pos_dict)
-    user_frequencies = get_user_freq(player_draft_freq, user_list, pos_dict)
-    draft_results = {'AllFrequencies': all_frequencies,
-                     'UserFrequencies': user_frequencies,
+    ordered_expected_team = order_expected_team(expected_team, pos_dict, team_dict, player_draft_freq)
+    draft_results = {'UserFrequencies': user_frequencies,
+                     'AllFrequencies': all_frequencies,
                      'ExpectedTeam': ordered_expected_team}
     return draft_results
