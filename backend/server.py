@@ -172,8 +172,7 @@ def run_draft():
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
     user_list = players_string.split(',')
     player_dict = get_espn_players() if site == '/espn' else get_yahoo_players()
-    pos_dict = {player.get('Name'): player.get('Position') for player in player_dict}
-    draft_results = get_draft_results(user_list, pos_dict, team_count, pick_order, round_count)
+    draft_results = get_draft_results(user_list, player_dict, team_count, pick_order, round_count)
     return jsonify(draft_results)
 
 
