@@ -1,18 +1,19 @@
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
 import JqxPopover from './jqxwidgets/react_jqxpopover'
 import JqxTabs from './jqxwidgets/react_jqxtabs'
 import JqxGrid from './jqxwidgets/react_jqxgrid'
 import JqxSlider from './jqxwidgets/react_jqxslider'
-import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx";
+import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx"
 import football from './icons/football.ico'
+import search from './icons/search.ico'
 
 export class Simulator extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], userPlayers: [], teamCount: 10, pickOrder: 5, roundCount: 16,
+        this.state = {isLoading: true, players: [], filteredPlayers: null, userPlayers: [], teamCount: 10, pickOrder: 5, roundCount: 16,
             isDrafting: false, isRandom: false, allFreqs: '', userFreqs: '', expectedTeam: ''};
     }
 
@@ -106,6 +107,18 @@ export class Simulator extends Component {
         }
     };
 
+    filterPlayers = (inputText) => {
+        let text = inputText.target.value.toLowerCase();
+        let players = this.state.players;
+        let filteredPlayers = players.filter(
+            (player) =>
+                player.Name.toLowerCase().includes(text)
+                || player.Position.toLowerCase().includes(text)
+                || player.Team.toLowerCase().includes(text)
+        );
+        this.setState({filteredPlayers: filteredPlayers});
+    };
+
     addPlayer = (playerIndex) => {
         let players = this.state.players;
         let userPlayers = this.state.userPlayers;
@@ -114,7 +127,8 @@ export class Simulator extends Component {
         userPlayers.push(playerToAdd);
         this.setState({
             players: players,
-            userPlayers: userPlayers
+            userPlayers: userPlayers,
+            filteredPlayers: null
         });
     };
 
@@ -123,9 +137,7 @@ export class Simulator extends Component {
         let userPlayers = this.state.userPlayers;
         let removedPlayer = userPlayers[removedPlayerIndex];
         let removedPlayerRank = removedPlayer.Rank;
-        const originalPlayerNeighbor = players.find((player) => {
-            return player.Rank > removedPlayerRank;
-        });
+        const originalPlayerNeighbor = players.find((player) => player.Rank > removedPlayerRank);
         players.splice(players.indexOf(originalPlayerNeighbor), 0, removedPlayer);
         userPlayers.splice(removedPlayerIndex, 1);
         this.setState({
@@ -140,8 +152,18 @@ export class Simulator extends Component {
         let allPlayers = players.concat(userPlayers);
         this.setState({
             players: allPlayers.sort((a, b) => a.Rank - b.Rank),
-            userPlayers: []
+            userPlayers: [],
+            filteredPlayers: null
         });
+    };
+
+    movePlayer = (playerIndex, direction) => {
+        let userPlayers = this.state.userPlayers;
+        let player = userPlayers[playerIndex];
+        userPlayers.splice(playerIndex, 1);
+        let insertIndex = (direction === 'up') ? ((playerIndex > 0) ? playerIndex - 1 : 0) : playerIndex + 1;
+        userPlayers.splice(insertIndex, 0, player);
+        this.setState({userPlayers: userPlayers});
     };
 
     determineIfRandom = (event) => {
@@ -199,7 +221,7 @@ export class Simulator extends Component {
     };
 
     render() {
-        const {isLoading, players, userPlayers, teamCount, pickOrder, roundCount, isDrafting, isRandom,
+        const {isLoading, players, filteredPlayers, userPlayers, teamCount, pickOrder, roundCount, isDrafting, isRandom,
             allFreqs, userFreqs, expectedTeam} = this.state;
 
         if (isLoading) {
@@ -285,8 +307,13 @@ export class Simulator extends Component {
                     <h1 className={"App-header"}>Draft Simulator</h1>
                     <div className={"Buttons-and-boxes"}>
                         <div className={"Player-list-box"}>
-                            <input type="text" onChange={(text) => console.log(text.target.value)}>{null}</input>
-                            <PlayerListBox playerList={players} addPlayer={this.addPlayer}/>
+                            <div>
+                                {!filteredPlayers && <img src={search} style={{height: '3vmin', position: 'absolute'}} alt="search"/>}
+                                <input type="text" style={{height: '25px', width: '90%'}}
+                                       onClick={(inputText) => this.filterPlayers(inputText)}
+                                       onChange={(inputText) => this.filterPlayers(inputText)}>{null}</input>
+                            </div>
+                            <PlayerListBox playerList={players} filterList={filteredPlayers} addPlayer={this.addPlayer}/>
                         </div>
                         <div className={"Player-buttons"}>
                             <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
@@ -294,7 +321,7 @@ export class Simulator extends Component {
                             <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
                         </div>
                         <div className={"Player-list-box"}>
-                            <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} className={"Player-list-box"}/>
+                            <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} movePlayer={this.movePlayer} className={"Player-list-box"}/>
                         </div>
                         <div className={"Draft-buttons"}>
                             <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
