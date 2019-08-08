@@ -12,7 +12,8 @@ export class Simulator extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], searchText: '', filteredPlayers: null, userPlayers: [],
+        this.state = {isLoading: true, players: [], searchText: '', filteredPlayers: null,
+            userPlayers: [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
             teamCount: 10, pickOrder: 5, roundCount: 16, isDrafting: false, isRandom: false,
             allFreqs: [], userFreqs: [], expectedTeam: [], frequencyData: []};
     }
@@ -31,7 +32,8 @@ export class Simulator extends Component {
                         .then((players) => {
                             this.setState({
                                 isLoading: false,
-                                players: players});
+                                players: players,
+                            });
                             this.bindSlidersToChangeEvent();
                         })
                 }
@@ -126,7 +128,7 @@ export class Simulator extends Component {
         let userPlayers = this.state.userPlayers;
         let playerToAdd = players[playerIndex];
         players.splice(playerIndex, 1);
-        userPlayers.push(playerToAdd);
+        userPlayers[0].push(playerToAdd);
         this.setState({
             players: players,
             userPlayers: userPlayers,
@@ -135,14 +137,15 @@ export class Simulator extends Component {
         });
     };
 
-    removePlayer = (removedPlayerIndex) => {
+    removePlayer = (roundIndex, playerIndex) => {
         let players = this.state.players;
         let userPlayers = this.state.userPlayers;
-        let removedPlayer = userPlayers[removedPlayerIndex];
+        let roundList = userPlayers[roundIndex];
+        let removedPlayer = roundList[playerIndex];
         let removedPlayerRank = removedPlayer.Rank;
         const originalPlayerNeighbor = players.find((player) => player.Rank > removedPlayerRank);
         players.splice(players.indexOf(originalPlayerNeighbor), 0, removedPlayer);
-        userPlayers.splice(removedPlayerIndex, 1);
+        roundList.splice(playerIndex, 1);
         this.setState({
             players: players,
             userPlayers: userPlayers
@@ -152,20 +155,37 @@ export class Simulator extends Component {
     clearPlayers = () => {
         let players = this.state.players;
         let userPlayers = this.state.userPlayers;
-        let allPlayers = players.concat(userPlayers);
+        let allUserPlayers = userPlayers.flat();
+        let allPlayers = players.concat(allUserPlayers);
         this.setState({
             players: allPlayers.sort((a, b) => a.Rank - b.Rank),
-            userPlayers: [],
+            userPlayers: [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
             filteredPlayers: null
         });
     };
 
-    movePlayer = (playerIndex, direction) => {
+    movePlayer = (roundIndex, playerIndex, direction) => {
         let userPlayers = this.state.userPlayers;
-        let player = userPlayers[playerIndex];
-        userPlayers.splice(playerIndex, 1);
-        let insertIndex = (direction === 'up') ? ((playerIndex > 0) ? playerIndex - 1 : 0) : playerIndex + 1;
-        userPlayers.splice(insertIndex, 0, player);
+        let roundList = userPlayers[roundIndex];
+        let player = roundList[playerIndex];
+        userPlayers[roundIndex].splice(playerIndex, 1);
+        if (direction === 'up') {
+            if (playerIndex > 0) {
+                userPlayers[roundIndex].splice(playerIndex - 1, 0, player);
+            } else if (roundIndex > 0) {
+                userPlayers[roundIndex - 1].push(player);
+            } else {
+                userPlayers[roundIndex].splice(playerIndex, 0, player);
+            }
+        } else if (direction === 'down') {
+            if (playerIndex < roundList.length) {
+                roundList.splice(playerIndex + 1, 0, player);
+            } else if (roundIndex < userPlayers.length - 1) {
+                userPlayers[roundIndex + 1].splice(0, 0, player);
+            } else {
+                userPlayers[roundIndex].splice(playerIndex, 0, player);
+            }
+        }
         this.setState({userPlayers: userPlayers});
     };
 
@@ -179,10 +199,10 @@ export class Simulator extends Component {
             return
         }
         let userPlayers = this.state.userPlayers;
-        if (userPlayers.length === 0) {
+        if (userPlayers.every((roundList) => roundList.length === 0)) {
             alert('Please select at least one player to draft.');
         } else {
-            let playerNames = userPlayers.map((player) => player.Name);
+            let playerNames = userPlayers.map((roundList) => roundList.map((player) => player.Name));
             let teamCount = this.refs.teamCountSlider.getValue();
             let roundCount = this.refs.roundCountSlider.getValue();
             let userPick = this.refs.pickOrderSlider.getValue();
@@ -195,7 +215,7 @@ export class Simulator extends Component {
             });
             fetch(window.location.origin + '/draft-results', {
                 method: 'POST',
-                body: playerNames.toString() + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + window.location.pathname
+                body: JSON.stringify(playerNames) + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + window.location.pathname
             }).then(response => {
                 if (response.status !== 200) {
                     alert('Error loading draft results.');
@@ -313,7 +333,7 @@ export class Simulator extends Component {
                             <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
                         </div>
                         <div className={"Player-list-box"}>
-                            <UserListBox playerList={userPlayers} removePlayer={this.removePlayer} movePlayer={this.movePlayer} className={"Player-list-box"}/>
+                            <UserListBox userRoundList={userPlayers} removePlayer={this.removePlayer} movePlayer={this.movePlayer} className={"Player-list-box"}/>
                         </div>
                         <div className={"Draft-buttons"}>
                             <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
