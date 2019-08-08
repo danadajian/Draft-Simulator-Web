@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/static/react/media/partlycloudy.a5e52894.ico"
   },
   {
-    "revision": "70b0af77dcff70a572b2",
+    "revision": "5acd2202ea309bf3f5ef",
     "url": "/static/react/css/main.20978e58.chunk.css"
   },
   {
@@ -40,8 +40,8 @@ self.__precacheManifest = [
     "url": "/static/react/media/cloudy.340c3269.ico"
   },
   {
-    "revision": "70b0af77dcff70a572b2",
-    "url": "/static/react/js/main.8ea07a46.chunk.js"
+    "revision": "5acd2202ea309bf3f5ef",
+    "url": "/static/react/js/main.c9742d19.chunk.js"
   },
   {
     "revision": "dda0cf390d26e427a9dd145a90c46b07",
@@ -76,7 +76,7 @@ self.__precacheManifest = [
     "url": "/static/react/css/2.9796c495.chunk.css"
   },
   {
-    "revision": "a143cdab7ff5798cb848e72fbfbe4c52",
+    "revision": "02ec6a71c88a7e4a11ced47fa17bf196",
     "url": "/static/react/../../templates/index.html"
   }
 ];

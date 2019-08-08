@@ -4,6 +4,7 @@ interface playerAttributes {
     Name: string,
     Position: string,
     Team: string,
+    Round: number,
     Frequency: string
 }
 
@@ -12,6 +13,7 @@ export const DraftResultsTable = (props: {
     <table>
         <tr>
             <th>Player</th>
+            <th>Round</th>
             <th>Draft Frequency</th>
         </tr>
         {props.frequencyData.map(
@@ -21,6 +23,7 @@ export const DraftResultsTable = (props: {
                         <tr style={{fontWeight: 'bold'}}>{player.Name}</tr>
                         <tr>{player.Team} {player.Position}</tr>
                     </td>
+                    <td>{player.Round}</td>
                     <td>{player.Frequency}</td>
                 </tr>
             )

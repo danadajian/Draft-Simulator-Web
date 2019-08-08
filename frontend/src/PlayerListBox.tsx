@@ -59,17 +59,23 @@ export const PlayerListBox = (props: {
         </table>;
 
 export const UserListBox = (props: {
-    playerList: playerAttributes[],
-    removePlayer: (index: number) => void,
-    movePlayer: (index: number, direction: string) => void}) =>
-        <table style={{borderCollapse: 'collapse'}} className={'Draft-grid'}>
-            {props.playerList.map(
-                (player, index) => (
-                    <Player player={player}
-                            isUserPlayer={true}
-                            onChange={() => props.removePlayer(index)}
-                            onMove={(direction) => props.movePlayer(index, direction)}
-                    />
+    userRoundList: [playerAttributes[]],
+    removePlayer: (roundIndex: number, index: number) => void,
+    movePlayer: (roundIndex: number, index: number, direction: string) => void}) =>
+        props.userRoundList.map(
+            (playerList, roundIndex) => {
+                return (
+                    <table style={{borderCollapse: 'collapse', marginBottom: '5vmin'}} className={'Draft-grid'}>
+                        <th colSpan={4} style={{textAlign: 'center'}}>{'Round ' + (roundIndex + 1)}</th>
+                        {playerList.map(
+                            (player, index) => (
+                                <Player player={player}
+                                        isUserPlayer={true}
+                                        onChange={() => props.removePlayer(roundIndex, index)}
+                                        onMove={(direction) => props.movePlayer(roundIndex, index, direction)}
+                                />
+                            )
+                        )}
+                    </table>
                 )
-            )}
-        </table>;
+            });
