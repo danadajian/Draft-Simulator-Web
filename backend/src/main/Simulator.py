@@ -37,11 +37,11 @@ def set_draft_order(team_dict, pick_order):
 def pick_players(user_list, team_dict, pos_dict, draft_order, round_count):
     user_team = team_dict.get('user_team')
     comp_list = list(pos_dict.keys())
-    draft_round = 0
+    round_index = 0
     pick_threshold = 2
 
     while any([len(team) < round_count for team in team_dict.values()]):
-        user_round_list = user_list[draft_round] if draft_round < len(user_list) else None
+        user_round_list = user_list[round_index] if round_index < len(user_list) else None
         for team in draft_order:
             if team == 'user_team':
                 next_pick = None
@@ -64,14 +64,14 @@ def pick_players(user_list, team_dict, pos_dict, draft_order, round_count):
                     comp_pick = comp_list[random.randint(0, min(len(comp_list) - 1, comp_threshold))]
                     comp_threshold += 1
                 team_dict.get(team).append(comp_pick)
-                for user_round_list in user_list:
-                    if comp_pick in user_round_list:
-                        user_round_list.remove(comp_pick)
+                for round_list in user_list:
+                    if comp_pick in round_list:
+                        round_list.remove(comp_pick)
                 comp_list.remove(comp_pick)
         draft_order = draft_order[::-1]
-        if draft_round % 2 == 0:
+        if round_index % 2 == 0:
             pick_threshold += 1
-        draft_round += 1
+        round_index += 1
     return user_team
 
 
@@ -86,39 +86,68 @@ def simulate_draft(user_player_list, pos_dict, team_count, pick_order, round_cou
     return drafted_teams
 
 
-def get_player_round_dict(user_list):
-    player_round_dict = {player: user_list.index(round_list) + 1 for round_list in user_list for player in round_list}
+def get_player_round_dict(drafted_teams):
+    player_round_dict = {player: team.index(player) + 1 for team in drafted_teams for player in team}
     return player_round_dict
 
 
-def calculate_frequencies(drafted_teams):
-    all_draft_picks = [j for i in drafted_teams for j in i]
-    draft_frequency = {}
-    for player in all_draft_picks:
-        if player in draft_frequency.keys():
-            draft_frequency[player] += 1
+def get_user_round_dict(user_list):
+    user_round_dict = {player: user_list.index(round_list) + 1 for round_list in user_list for player in round_list}
+    return user_round_dict
+
+
+def calculate_frequencies(player_list):
+    frequencies = {}
+    for player in player_list:
+        if player in frequencies.keys():
+            frequencies[player] += 1
         else:
-            draft_frequency[player] = 1
-    for key, value in draft_frequency.items():
-        draft_frequency[key] = 100 * value / len(drafted_teams)
-    return draft_frequency
+            frequencies[player] = 1
+    for key, value in frequencies.items():
+        frequencies[key] = 100 * value / len(player_list)
+    return frequencies
+
+
+def get_frequencies(drafted_teams, user_round_dict, round_count):
+    picks_by_round = []
+    round_index = 0
+    while round_index < round_count:
+        picks_this_round = [team[round_index] for team in drafted_teams]
+        picks_by_round.append(picks_this_round)
+        round_index += 1
+    players, draft_frequencies = [], []
+    matched_players = []
+    for round_picks in picks_by_round:
+        frequencies = calculate_frequencies(round_picks)
+        for player in frequencies.keys():
+            if user_round_dict.get(player) == picks_by_round.index(round_picks) + 1:
+                matched_players.append(player)
+        players = players + list(frequencies.keys())
+        draft_frequencies = draft_frequencies + list(frequencies.values())
+    all_draft_frequencies = dict(zip(players, draft_frequencies))
+    for player in players:
+        if player not in matched_players and user_round_dict.get(player):
+            all_draft_frequencies[player] = 0
+    return all_draft_frequencies
+
+
+def get_sorted_players(freq_dict, round_dict):
+    sorted_players = sorted(freq_dict, key=lambda player: (round_dict.get(player), -freq_dict.get(player)))
+    return sorted_players
 
 
 def get_expected_team(draft_frequencies, pos_dict, round_dict, round_count):
     expected_team = []
-    index = 0
-    while len(expected_team) < round_count:
-        freq_this_round = {player: draft_frequencies.get(player) for player, round in round_dict.items()
-                           if round == index + 1}
-        if freq_this_round:
-            most_to_least_drafted = sorted(freq_this_round, key=freq_this_round.__getitem__, reverse=True)
-            player = most_to_least_drafted[0]
-        else:
-            most_to_least_drafted = sorted(draft_frequencies, key=draft_frequencies.__getitem__, reverse=True)
-            player = most_to_least_drafted[index]
-        if is_valid_choice(player, pos_dict, expected_team):
+    current_round = 1
+    while current_round <= round_count:
+        freq_this_round = {player: draft_frequencies.get(player) for player, draft_round in round_dict.items()
+                           if draft_round == current_round}
+        most_to_least_drafted_this_round = sorted(freq_this_round, key=freq_this_round.__getitem__, reverse=True)
+        player = next((player for player in most_to_least_drafted_this_round
+                      if is_valid_choice(player, pos_dict, expected_team)), None)
+        if player:
             expected_team.append(player)
-        index += 1
+        current_round += 1
     return expected_team
 
 
@@ -139,6 +168,16 @@ def order_expected_team(team, pos_dict):
     return full_team
 
 
+def jsonify_frequencies(sorted_list, pos_dict, team_dict, round_dict, freq_dict):
+    freq_list = [{'Name': player,
+                  'Position': pos_dict.get(player),
+                  'Team': team_dict.get(player),
+                  'Round': round_dict.get(player),
+                  'Frequency': str(freq_dict.get(player)) + '%'}
+                 for player in sorted_list]
+    return freq_list
+
+
 def jsonify_expected_team(team, pos_dict, team_dict, round_dict, freq_dict):
     jsonified_expected_team = [{'Name': player,
                                 'Position': 'FLEX' if team.index(player) == 6 else pos_dict.get(player) if team.index(player) < 9 else 'BE',
@@ -149,45 +188,22 @@ def jsonify_expected_team(team, pos_dict, team_dict, round_dict, freq_dict):
     return jsonified_expected_team
 
 
-def get_all_freq(freq_dict, pos_dict, team_dict, round_dict):
-    sorted_players = sorted(freq_dict, key=freq_dict.__getitem__, reverse=True)
-    sorted_freq = dict(zip(sorted_players, [freq_dict.get(item) for item in sorted_players]))
-    freq_list = [{'Name': player,
-                  'Position': pos_dict.get(player),
-                  'Team': team_dict.get(player),
-                  'Round': round_dict.get(player),
-                  'Frequency': str(freq) + '%'}
-                 for player, freq in sorted_freq.items()]
-    return freq_list
-
-
-def get_user_freq(freq_dict, user_list, pos_dict, team_dict, round_dict):
-    user_freq_dict = {player: freq_dict.get(player) if player in freq_dict.keys() else 0
-                      for round_list in user_list for player in round_list}
-    sorted_user_players = sorted(user_freq_dict, key=user_freq_dict.__getitem__, reverse=True)
-    sorted_user_freq = dict(zip(sorted_user_players, [user_freq_dict.get(item) for item in sorted_user_players]))
-    user_freq_list = [{'Name': player,
-                       'Position': pos_dict.get(player),
-                       'Team': team_dict.get(player),
-                       'Round': round_dict.get(player),
-                       'Frequency': str(freq) + '%'}
-                      for player, freq in sorted_user_freq.items()]
-    return user_freq_list
-
-
 def get_draft_results(user_list, player_dict, team_count, pick_order, round_count):
     pos_dict = {player.get('Name'): player.get('Position') for player in player_dict}
     team_dict = {player.get('Name'): player.get('Team') for player in player_dict}
     teams_drafted = simulate_draft(user_list, pos_dict, team_count, pick_order, round_count, 500)
-    round_dict = get_player_round_dict(user_list)
-    player_draft_freq = calculate_frequencies(teams_drafted)
-    user_frequencies = get_user_freq(player_draft_freq, user_list, pos_dict, team_dict, round_dict)
-    all_frequencies = get_all_freq(player_draft_freq, pos_dict, team_dict, round_dict)
-    expected_team = get_expected_team(player_draft_freq, pos_dict, round_dict, round_count)
+    user_round_dict = get_user_round_dict(user_list)
+    actual_round_dict = get_player_round_dict(teams_drafted)
+    freq_dict = get_frequencies(teams_drafted, user_round_dict, round_count)
+    user_freq_dict = {player: freq_dict.get(player) for round_list in user_list for player in round_list}
+    user_frequencies = get_sorted_players(user_freq_dict, user_round_dict)
+    all_frequencies = get_sorted_players(freq_dict, actual_round_dict)
+    expected_team = get_expected_team(freq_dict, pos_dict, actual_round_dict, round_count)
     ordered_expected_team = order_expected_team(expected_team, pos_dict)
-    jsonified_expected_team = jsonify_expected_team(ordered_expected_team, pos_dict, team_dict, round_dict,
-                                                    player_draft_freq)
-    draft_results = {'UserFrequencies': user_frequencies,
-                     'AllFrequencies': all_frequencies,
+    jsonified_user_frequencies = jsonify_frequencies(user_frequencies, pos_dict, team_dict, user_round_dict, freq_dict)
+    jsonified_frequencies = jsonify_frequencies(all_frequencies, pos_dict, team_dict, actual_round_dict, freq_dict)
+    jsonified_expected_team = jsonify_expected_team(ordered_expected_team, pos_dict, team_dict, actual_round_dict, freq_dict)
+    draft_results = {'UserFrequencies': jsonified_user_frequencies,
+                     'AllFrequencies': jsonified_frequencies,
                      'ExpectedTeam': jsonified_expected_team}
     return draft_results
