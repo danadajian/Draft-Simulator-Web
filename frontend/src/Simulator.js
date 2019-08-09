@@ -67,33 +67,9 @@ export class Simulator extends Component {
         }
     };
 
-    loadRankings = () => {
-        let players = this.state.players;
-        fetch(window.location.origin + '/load-ranking')
-            .then(response => {
-                if (response.status !== 200) {
-                    alert('Could not load user ranking data.');
-                }  else {
-                    response.json()
-                        .then((userRanking) => {
-                            if (userRanking === 'No ranking specified.') {
-                                alert('No ranking specified.');
-                            } else {
-                                for (let i = 0; i < userRanking.length; i++) {
-                                    let userPlayerRank = userRanking[i].Rank;
-                                    let playerIndex = players.findIndex((player) => player.Rank === userPlayerRank);
-                                    players.splice(playerIndex, 1);
-                                }
-                                this.setState({players: players, userPlayers: userRanking})
-                            }
-                        })
-                }
-            });
-    };
-
     saveRankings = () => {
         let userPlayers = this.state.userPlayers;
-        if (userPlayers.length === 0) {
+        if (userPlayers.every((roundList) => roundList.length === 0)) {
             alert('Please rank at least one player before saving.');
         } else {
             fetch(window.location.origin + '/save-ranking', {
@@ -107,6 +83,32 @@ export class Simulator extends Component {
                 }
             });
         }
+    };
+
+    loadRankings = () => {
+        let players = this.state.players;
+        fetch(window.location.origin + '/load-ranking')
+            .then(response => {
+                if (response.status !== 200) {
+                    alert('Could not load user ranking data.');
+                }  else {
+                    response.json()
+                        .then((userRanking) => {
+                            if (userRanking === 'No ranking specified.') {
+                                alert('No ranking specified.');
+                            } else {
+                                this.clearPlayers();
+                                let allUserPlayers = userRanking.flat();
+                                for (let i = 0; i < allUserPlayers.length; i++) {
+                                    let userPlayerRank = allUserPlayers[i].Rank;
+                                    let playerIndex = players.findIndex((player) => player.Rank === userPlayerRank);
+                                    players.splice(playerIndex, 1);
+                                }
+                                this.setState({players: players, userPlayers: userRanking})
+                            }
+                        })
+                }
+            });
     };
 
     filterPlayers = (event) => {

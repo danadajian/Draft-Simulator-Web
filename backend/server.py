@@ -136,15 +136,15 @@ def yahoo():
 @login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
-    return jsonify(user.draft_ranking)
+    return jsonify(eval(user.draft_ranking))
 
 
 @app.route("/save-ranking", methods=['POST'])
 @login_required
 def save_to_db():
-    player_list = str(request.get_data())[2:-1]
+    player_list_string = str(request.get_data())[2:-1].replace('\\', '')
     user = Users.query.filter_by(username=current_user.username).first()
-    user.draft_ranking = player_list
+    user.draft_ranking = player_list_string
     db.session.commit()
     return 'User ranking added.'
 
