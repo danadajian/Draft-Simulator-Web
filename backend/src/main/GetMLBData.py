@@ -82,10 +82,10 @@ def get_mlb_projections():
         weather_by_event = get_weather(date_string)
         mlb_projections = [{
             'name': player.get('firstName') + ' ' + player.get('lastName'),
-            'projection': playerid_projections.get(player.get('playerId')),
-            'team': player.get('team').get('abbreviation'),
-            'opponent': team_info.get(player.get('team').get('abbreviation')).get('opponent'),
-            'weather': weather_by_event.get(team_info.get(player.get('team').get('abbreviation')).get('eventId'))
+            'projection': playerid_projections.get(player.get('playerId')) or 'unavailable',
+            'team': player.get('team').get('abbreviation') or 'unavailable',
+            'opponent': team_info.get(player.get('team').get('abbreviation')).get('opponent') or 'unavailable',
+            'weather': weather_by_event.get(team_info.get(player.get('team').get('abbreviation')).get('eventId')) or 'unavailable'
         } for player in final_player_list]
         return mlb_projections
     except ConnectionError:
