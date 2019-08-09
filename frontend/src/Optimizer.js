@@ -45,25 +45,27 @@ export class Optimizer extends Component {
                     } else {
                         response.json()
                             .then((lineupData) => {
-                                this.ingestDfsLineup(lineupData, sport);
+                                this.ingestDfsLineup(lineupData, sport, false);
                             });
                     }
                 });
         }
     };
 
-    ingestDfsLineup = (lineupJson, sport) => {
-        if (lineupJson.length === 1) {
-            alert(lineupJson[0]);
-            return
+    ingestDfsLineup = (lineupJson, sport, remove) => {
+        if (!remove) {
+            if (lineupJson.length === 1) {
+                alert(lineupJson[0]);
+                return
+            }
+            if (typeof lineupJson[0] === "string") {
+                alert(lineupJson[0]);
+            } else if (lineupJson.length === 2 && lineupJson[1] === "string") {
+                alert(lineupJson[1]);
+            }
         }
-        if (typeof lineupJson[0] === "string") {
-            alert(lineupJson[0]);
-        } else if (lineupJson.length === 2 && lineupJson[1] === "string") {
-            alert(lineupJson[1]);
-        }
-        let fdLineup = (lineupJson[0] === "string") ? this.state.fdLineup : lineupJson[0];
-        let dkLineup = (lineupJson[1] === "string") ? this.state.dkLineup : lineupJson[1];
+        let fdLineup = (typeof lineupJson[0] === "string") ? this.state.fdLineup : lineupJson[0];
+        let dkLineup = (typeof lineupJson[1] === "string") ? this.state.dkLineup : lineupJson[1];
         this.setState({sport: sport, fdLineup: fdLineup, dkLineup: dkLineup});
     };
 
@@ -79,7 +81,7 @@ export class Optimizer extends Component {
             } else {
                 response.json()
                     .then((lineupJson) => {
-                        this.ingestDfsLineup(lineupJson, sport);
+                        this.ingestDfsLineup(lineupJson, sport, true);
                         let alertString = (site === 'fd') ?
                             ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
                         alert('You have removed ' + removedPlayer + alertString);

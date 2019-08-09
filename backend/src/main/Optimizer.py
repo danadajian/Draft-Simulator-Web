@@ -9,23 +9,26 @@ def remove_ignored_players(player_pools, black_list):
     return player_pools
 
 
-def get_player_pools(lineup_matrix, black_list, proj_pts_dict, pos_dict):
-    sorted_players = sorted(proj_pts_dict, key=proj_pts_dict.__getitem__, reverse=True)
+def get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict):
+    sorted_players = sorted(proj_dict, key=proj_dict.__getitem__, reverse=True)
     sorted_positions = [pos_dict.get(player) for player in sorted_players]
     sorted_positions_dict = dict(zip(sorted_players, sorted_positions))
-    player_pools_with_ignored = [[player for player in sorted_positions_dict.keys() if sorted_positions_dict.get(player) in spot or spot in sorted_positions_dict.get(player)]
+    player_pools_with_ignored = [[player for player in sorted_positions_dict.keys()
+                                  if (sorted_positions_dict.get(player) in spot
+                                  or spot in sorted_positions_dict.get(player))
+                                  and player in salary_dict.keys()]
                                  for spot in lineup_matrix]
     player_pools = remove_ignored_players(player_pools_with_ignored, black_list)
     return player_pools
 
 
-def get_best_lineup(player_pools, salary_dict):
+def get_best_lineup(player_pools):
     if any(not pool for pool in player_pools):
-        return 'Warning: \nNot enough player data currently available.'
+        return None
     best_lineup = []
     for pool in player_pools:
         for player in pool:
-            if player not in best_lineup and player in salary_dict.keys():
+            if player not in best_lineup:
                 best_lineup.append(player)
                 break
     return best_lineup
@@ -42,7 +45,7 @@ def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
             if player in player_pool:
                 player_index = player_pool.index(player)
             else:
-                return 'Warning: \nToo many players removed. Unable to generate new lineup.'
+                return None
             if player_index == len(player_pool) - 1 or player_pool[player_index + 1] in optimal_lineup or salary_dict.get(player) < salary_min:
                 continue
             current_ratio = proj_pts_dict.get(player) / salary_dict.get(player)
@@ -53,20 +56,20 @@ def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
                 downgrade_index = optimal_lineup.index(player)
                 new_player = player_pool[player_index + 1]
         if not new_player:
-            return 'Warning: \nToo many players removed. Unable to generate new lineup.'
+            return None
         optimal_lineup[downgrade_index] = new_player
         current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
     return optimal_lineup
 
 
 def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap, team_and_weather_dict):
-    player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict)
-    best_lineup = get_best_lineup(player_pools, salary_dict)
-    if best_lineup == 'Warning: \nNot enough player data currently available.':
-        return ['Warning: \nNot enough positions currently available.']
+    player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict)
+    best_lineup = get_best_lineup(player_pools)
+    if not best_lineup:
+        return 'Warning: \nNot enough data available to generate lineup.'
     optimal_lineup = optimize(best_lineup, player_pools, proj_dict, salary_dict, cap)
-    if optimal_lineup == 'Warning: \nToo many players removed. Unable to generate new lineup.':
-        return ['Warning: \nToo many players removed. Unable to generate new lineup.']
+    if not optimal_lineup:
+        return 'Warning: \nNot enough data available to generate lineup.'
     total_pts = round(sum([proj_dict.get(player) for player in optimal_lineup]), 1)
     total_salary = sum([salary_dict.get(player) for player in optimal_lineup])
     max_pts = sum([proj_dict.get(player) for player in best_lineup])
