@@ -136,7 +136,7 @@ def yahoo():
 @login_required
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
-    return jsonify(eval(user.draft_ranking))
+    return jsonify(eval(user.draft_ranking)) if type(user.draft_ranking) != 'str' else user.draft_ranking
 
 
 @app.route("/save-ranking", methods=['POST'])
