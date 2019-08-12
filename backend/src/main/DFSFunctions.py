@@ -7,7 +7,7 @@ import os
 try:
     from backend.src.main.apiCredentials import *
 except ImportError:
-    print()
+    pass
 
 is_production = os.environ.get('IS_HEROKU', None)
 if is_production:
