@@ -119,6 +119,33 @@ class SimulateDraftTests(unittest.TestCase):
         self.assertTrue(order1 != order2 or order1 != order3 or order2 != order3)
         self.assertTrue(set_draft_order(teams, pick) != teams)
 
+    def test_select_user_pick_valid(self):
+        user_team = ['Ezekiel Elliott', 'Tyreek Hill']
+        user_round_list = ['Saquon Barkley', 'Eli Manning', 'Odell Beckham Jr']
+        self.assertEqual('Saquon Barkley', select_next_pick(user_round_list, self.pos_dict, user_team, 1))
+
+    def test_select_user_pick_invalid(self):
+        user_team = ['Ezekiel Elliott', 'Todd Gurley II', 'Melvin Gordon', 'David Johnson', 'Derrick Henry']
+        user_round_list = ['Saquon Barkley']
+        self.assertEqual(None, select_next_pick(user_round_list, self.pos_dict, user_team, 1))
+
+    def test_select_comp_pick_all_valid(self):
+        comp_team = ['Ezekiel Elliott', 'Tyreek Hill']
+        player_list = ['Saquon Barkley', 'Eli Manning', 'Odell Beckham Jr']
+        self.assertTrue(select_next_pick(player_list, self.pos_dict, comp_team, 3) in player_list)
+
+    def test_select_user_pick_some_invalid(self):
+        comp_team = ['Ezekiel Elliott', 'Todd Gurley II', 'Melvin Gordon', 'David Johnson', 'Derrick Henry',
+                     'Aaron Rodgers', 'Carson Wentz']
+        player_list = ['Saquon Barkley', 'Eli Manning', 'Odell Beckham Jr']
+        self.assertEqual('Odell Beckham Jr', select_next_pick(player_list, self.pos_dict, comp_team, 3))
+
+    def test_select_user_pick_all_invalid(self):
+        comp_team = ['Ezekiel Elliott', 'Todd Gurley II', 'Melvin Gordon', 'David Johnson', 'Derrick Henry',
+                     'Packers D/ST', 'Ravens D/ST', 'Greg Zuerlein', 'Harrison Butker']
+        player_list = ['Saquon Barkley', 'Bears D/ST', 'Aldrick Rosas']
+        self.assertEqual(None, select_next_pick(player_list, self.pos_dict, comp_team, 3))
+
     def test_pick_players_first_round(self):
         players = [['Saquon Barkley']]
         teams = {'team_2': [], 'team_3': [], 'team_4': [], 'team_5': [], 'team_6': [], 'team_7': [], 'team_8': [],
@@ -145,7 +172,16 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 1
         order = set_draft_order(teams, pick)
         rounds = 2
-        self.assertTrue(pick_players(players, teams, self.pos_dict, order, rounds)[0] == 'Saquon Barkley')
+        results = pick_players(players, teams, self.pos_dict, order, rounds)
+        self.assertTrue(results[0] == 'Saquon Barkley')
+
+    def test_pick_players_team_length_equals_rounds(self):
+        players = [['Saquon Barkley'], []]
+        teams = {'team_2': [], 'team_3': [], 'team_4': [], 'team_5': [], 'team_6': [], 'team_7': [], 'team_8': [],
+                 'team_9': [], 'team_10': [], 'user_team': []}
+        pick = 1
+        order = set_draft_order(teams, pick)
+        rounds = 16
         self.assertTrue(len(pick_players(players, teams, self.pos_dict, order, rounds)) == rounds)
 
     def test_pick_players_missing_round(self):
@@ -156,11 +192,12 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 5
         order = set_draft_order(teams, pick)
         rounds = 16
-        first_round_pick = pick_players(players, teams, self.pos_dict, order, rounds)[0]
-        fourth_round_pick = pick_players(players, teams, self.pos_dict, order, rounds)[3]
+        results = pick_players(players, teams, self.pos_dict, order, rounds)
+        first_round_pick = results[0]
+        fourth_round_pick = results[3]
         self.assertTrue(first_round_pick in ['Ezekiel Elliot', 'Alvin Kamara', 'DeAndre Hopkins', 'Odell Beckham Jr'])
         self.assertTrue(fourth_round_pick not in ['Julio Jones'])
-        self.assertTrue(len(pick_players(players, teams, self.pos_dict, order, rounds)) == rounds)
+        self.assertTrue(len(results) == rounds)
 
     def test_pick_players_too_many_rounds_chosen(self):
         players = [['Saquon Barkley'], [], [], [], []]
@@ -169,8 +206,9 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 1
         order = set_draft_order(teams, pick)
         rounds = 2
-        self.assertTrue(pick_players(players, teams, self.pos_dict, order, rounds)[0] == 'Saquon Barkley')
-        self.assertTrue(len(pick_players(players, teams, self.pos_dict, order, rounds)) == rounds)
+        results = pick_players(players, teams, self.pos_dict, order, rounds)
+        self.assertTrue(results[0] == 'Saquon Barkley')
+        self.assertTrue(len(results) == rounds)
 
     def test_drafted_teams_has_correct_form(self):
         players = [['Saquon Barkley'], ['Eli Manning'], [], [], []]
@@ -178,9 +216,9 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 1
         rounds = 5
         sims = 10
-        self.assertTrue(len(simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)) == sims)
-        self.assertTrue(
-            all(len(team) == rounds for team in simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)))
+        results = simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)
+        self.assertTrue(len(results) == sims)
+        self.assertTrue(all(len(team) == rounds for team in results))
 
     def test_get_top_pick_one_sim(self):
         players = [['Saquon Barkley']]
@@ -188,16 +226,17 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 1
         rounds = 1
         sims = 1
-        self.assertTrue(simulate_draft(players, self.pos_dict, teams, pick, rounds, sims) == [['Saquon Barkley']])
+        results = simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)
+        self.assertTrue(results == [['Saquon Barkley']])
 
     def test_get_top_pick_many_sims(self):
         players = [['Saquon Barkley']]
         teams = 10
         pick = 1
         rounds = 1
-        sims = 10
-        self.assertTrue(
-            all(team == ['Saquon Barkley'] for team in simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)))
+        sims = 100
+        results = simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)
+        self.assertTrue(all(team == ['Saquon Barkley'] for team in results))
 
     def test_dont_get_top_pick_many_sims(self):
         players = [['Saquon Barkley']]
@@ -205,8 +244,8 @@ class SimulateDraftTests(unittest.TestCase):
         pick = 10
         rounds = 1
         sims = 100
-        self.assertTrue(not all(
-            team == ['Saquon Barkley'] for team in simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)))
+        results = simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)
+        self.assertTrue(not all(team == ['Saquon Barkley'] for team in results))
 
     def test_full_draft_position_counts_valid_one_sim(self):
         players = [['Saquon Barkley']]
@@ -216,7 +255,8 @@ class SimulateDraftTests(unittest.TestCase):
         sims = 1
         team = simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)[0]
         pos_counts = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
-        self.assertTrue(all(position_count(team, self.pos_dict, pos) == pos_counts.get(pos) for pos in pos_counts.keys()))
+        self.assertTrue(all(position_count(team, self.pos_dict, pos) == pos_counts.get(pos)
+                            for pos in pos_counts.keys()))
 
     def test_full_draft_position_counts_valid_many_sims(self):
         players = [['Saquon Barkley']]
@@ -226,8 +266,8 @@ class SimulateDraftTests(unittest.TestCase):
         sims = 10
         drafted_teams = simulate_draft(players, self.pos_dict, teams, pick, rounds, sims)
         pos_counts = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
-        self.assertTrue(all(position_count(team, self.pos_dict, pos) == pos_counts.get(pos) for pos in pos_counts.keys())
-                        for team in drafted_teams)
+        self.assertTrue(all(position_count(team, self.pos_dict, pos) == pos_counts.get(pos)
+                            for pos in pos_counts.keys()) for team in drafted_teams)
 
     def test_get_player_round_dict(self):
         drafted_teams = [['Saquon', 'Odell'], ['Kelce', 'Gronk'], ['Mahomes', 'Rodgers']]

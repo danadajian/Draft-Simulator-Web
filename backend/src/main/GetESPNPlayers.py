@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 def get_espn_html():
     session = requests.session()
-    request = session.get('http://www.espn.com/fantasy/football/story/_/id/26692058/fantasy-football-updated-2019-non-ppr-rankings-mike-clay')
+    request = session.get('https://www.espn.com/fantasy/football/story/_/id/26415022/fantasy-football-updated-2019-ppr-rankings-mike-clay')
     if request.status_code != 200:
         return 'HTTP request failed.'
     doc = BeautifulSoup(request.content, 'html.parser')
@@ -12,9 +12,9 @@ def get_espn_html():
 
 
 def parse_html(text):
-    string = [line for line in text.splitlines() if 'Non-PPR Top 300 for 2019' in line][0]
+    string = [line for line in text.splitlines() if 'PPR Top 300 for 2019' in line][0]
     player_strings = []
-    for i in range(299):
+    for i in range(300):
         left_index = string.find('<td>' + str(i + 1) + '.')
         right_index = string.find('<td>' + str(i + 2) + '.')
         player_strings.append(string[left_index: right_index])
