@@ -1,4 +1,4 @@
-import random
+from random import *
 
 
 def position_count(player_list, pos_dict, pos):
@@ -27,52 +27,45 @@ def create_teams(team_count):
 def set_draft_order(team_dict, pick_order):
     draft_order = [team for team in team_dict.keys()]
     if pick_order == 0:
-        random.shuffle(draft_order)
+        shuffle(draft_order)
     else:
         user_index = draft_order.index('user_team')
         draft_order[user_index], draft_order[pick_order - 1] = draft_order[pick_order - 1], draft_order[user_index]
     return draft_order
 
 
-def pick_players(user_list, team_dict, pos_dict, draft_order, round_count):
-    user_team = team_dict.get('user_team')
-    comp_list = list(pos_dict.keys())
-    round_index = 0
-    pick_threshold = 2
+def select_next_pick(player_list, pos_dict, team, pick_range):
+    pick_choices = []
+    for _ in range(pick_range):
+        pick = next((player for player in player_list
+                     if is_valid_choice(player, pos_dict, team) and player not in pick_choices), None)
+        if not pick and not pick_choices:
+            return None
+        elif pick:
+            pick_choices.append(pick)
+    return choice(pick_choices)
 
-    while any([len(team) < round_count for team in team_dict.values()]):
+
+def pick_players(user_list, team_dict, pos_dict, draft_order, round_count):
+    player_list = list(pos_dict.keys())
+    round_index = 0
+    while round_index < round_count:
         user_round_list = user_list[round_index] if round_index < len(user_list) else None
         for team in draft_order:
-            if team == 'user_team':
-                next_pick = None
-                if user_round_list:
-                    next_pick = next((player for player in user_round_list
-                                      if is_valid_choice(player, pos_dict, user_team)), None)
-                if next_pick:
-                    user_round_list.remove(next_pick)
-                else:
-                    your_threshold = pick_threshold
-                    while not is_valid_choice(next_pick, pos_dict, user_team):
-                        next_pick = comp_list[random.randint(0, min(len(comp_list) - 1, your_threshold))]
-                        your_threshold += 1
-                user_team.append(next_pick)
-                comp_list.remove(next_pick)
+            if team == 'user_team' and user_round_list:
+                next_pick = select_next_pick(user_round_list, pos_dict, team_dict.get(team), 1)
             else:
-                comp_threshold = pick_threshold
-                comp_pick = None
-                while not is_valid_choice(comp_pick, pos_dict, team_dict.get(team)):
-                    comp_pick = comp_list[random.randint(0, min(len(comp_list) - 1, comp_threshold))]
-                    comp_threshold += 1
-                team_dict.get(team).append(comp_pick)
-                for round_list in user_list:
-                    if comp_pick in round_list:
-                        round_list.remove(comp_pick)
-                comp_list.remove(comp_pick)
+                next_pick = select_next_pick(player_list, pos_dict, team_dict.get(team), 3)
+            if not next_pick:
+                raise RuntimeError
+            team_dict.get(team).append(next_pick)
+            player_list.remove(next_pick)
+            for round_list in user_list:
+                if next_pick in round_list:
+                    round_list.remove(next_pick)
         draft_order = draft_order[::-1]
-        if round_index % 2 == 0:
-            pick_threshold += 1
         round_index += 1
-    return user_team
+    return team_dict.get('user_team')
 
 
 def simulate_draft(user_player_list, pos_dict, team_count, pick_order, round_count, simulations):

@@ -172,7 +172,10 @@ def run_draft():
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
     user_list = eval(players_string.replace('\\', ''))
     player_dict = get_espn_players() if site == '/espn' else get_yahoo_players()
-    draft_results = get_draft_results(user_list, player_dict, team_count, pick_order, round_count)
+    try:
+        draft_results = get_draft_results(user_list, player_dict, team_count, pick_order, round_count)
+    except RuntimeError:
+        draft_results = ['Too few players available to draft.\nPlease select a lower round count.']
     return jsonify(draft_results)
 
 

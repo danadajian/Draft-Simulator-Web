@@ -97,14 +97,22 @@ export class Simulator extends Component {
                             if (userRanking === 'No ranking specified.') {
                                 alert('No ranking specified.');
                             } else {
-                                this.clearPlayers();
-                                let allUserPlayers = userRanking.flat();
-                                for (let i = 0; i < allUserPlayers.length; i++) {
-                                    let userPlayerRank = allUserPlayers[i].Rank;
-                                    let playerIndex = players.findIndex((player) => player.Rank === userPlayerRank);
+                                let players = this.state.players;
+                                let userPlayers = this.state.userPlayers;
+                                let allPlayers = players.concat(userPlayers.flat());
+                                players = allPlayers.sort((a, b) => a.Rank - b.Rank);
+                                let allLoadedPlayers = userRanking.flat();
+                                for (let i = 0; i < allLoadedPlayers.length; i++) {
+                                    let userPlayerRank = allLoadedPlayers[i].Rank;
+                                    let playerIndex = players.findIndex(
+                                        (player) => player.Rank === userPlayerRank);
                                     players.splice(playerIndex, 1);
                                 }
-                                this.setState({players: players, userPlayers: userRanking})
+                                this.setState({
+                                    players: players,
+                                    userPlayers: userRanking,
+                                    filteredPlayers: null
+                                })
                             }
                         })
                 }
@@ -224,7 +232,11 @@ export class Simulator extends Component {
                 } else {
                     response.json()
                         .then((draftResults) => {
-                            this.generateDraftOutput(draftResults);
+                            if (typeof draftResults[0] == "string") {
+                                alert(draftResults[0]);
+                            } else {
+                                this.generateDraftOutput(draftResults);
+                            }
                         })
                 }
             });
