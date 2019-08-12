@@ -11,9 +11,9 @@ from flask_caching import Cache
 from flask_heroku import Heroku
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_utils import database_exists
 from flask_wtf import FlaskForm
 import os
-from sys import platform
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
@@ -22,18 +22,23 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-
-is_production = os.environ.get('IS_HEROKU', None)
-if not is_production:
-    if platform == 'darwin':  # <-- this means Mac OS X
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
-
 heroku = Heroku(app)
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+is_production = True if os.environ.get('IS_HEROKU') else False
+postgres_configured = True
+if not is_production:
+    try:
+        database_exists('postgresql://localhost/accounts')
+    except Exception as e:
+        postgres_configured = False
+        print(e.args, '=> WARNING: Postgres is not configured, so login functionality cannot be tested.')
+        pass
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
 
 class Users(UserMixin, db.Model):
@@ -109,40 +114,48 @@ def signup():
     return render_template('signup.html', form=form, message=message)
 
 
+def might_need_to_login(login_decorator, boolean):
+    def decorator(func):
+        if not boolean:
+            return func
+        return login_decorator(func)
+    return decorator
+
+
 @app.route('/logout')
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
 
 @app.route("/home")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def home():
     return render_template("index.html")
 
 
 @app.route("/espn")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def espn():
     return render_template("index.html")
 
 
 @app.route("/yahoo")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def yahoo():
     return render_template("index.html")
 
 
 @app.route("/load-ranking")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def espn_rankings():
     user = Users.query.filter_by(username=current_user.username).first()
     return jsonify(eval(user.draft_ranking)) if type(user.draft_ranking) != 'str' else user.draft_ranking
 
 
 @app.route("/save-ranking", methods=['POST'])
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def save_to_db():
     player_list_string = str(request.get_data())[2:-1].replace('\\', '')
     user = Users.query.filter_by(username=current_user.username).first()
@@ -152,21 +165,21 @@ def save_to_db():
 
 
 @app.route("/espn-players")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=86400)
 def espn_players():
     return jsonify(get_espn_players())
 
 
 @app.route("/yahoo-players")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=86400)
 def yahoo_players():
     return jsonify(get_yahoo_players())
 
 
 @app.route("/draft-results", methods=['POST'])
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def run_draft():
     data = request.get_data()
     data_list = str(data)[2:-1].split('|')
@@ -182,13 +195,13 @@ def run_draft():
 
 
 @app.route("/dfs-optimizer")
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def dfs_optimizer():
     return render_template("index.html")
 
 
 @app.route("/dfs-optimizer/projections", methods=['GET', 'POST'])
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=3600)
 def dfs_projections():
     global projections_dict
@@ -199,7 +212,7 @@ def dfs_projections():
 
 
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
-@login_required
+@might_need_to_login(login_required, is_production or postgres_configured)
 def optimized_team(sport):
     global projections
     try:
