@@ -13,6 +13,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 import os
+from sys import platform
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
@@ -24,7 +25,8 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 is_production = os.environ.get('IS_HEROKU', None)
 if not is_production:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+    if platform == 'darwin':  # <-- this means Mac OS X
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
 heroku = Heroku(app)
 bootstrap = Bootstrap(app)
