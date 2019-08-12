@@ -30,7 +30,9 @@ def get_espn_players():
 
     player_list, pos_list, team_list = [], [], []
     for string in text_list:
-        if '<a href=' in string[1]:
+        if len(string) < 2:
+            continue
+        elif '<a href=' in string[1]:
             player_item = string[2]
             player = player_item.replace('</a', '')
             player_list.append(player)
