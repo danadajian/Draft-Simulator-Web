@@ -7,15 +7,11 @@ import os
 try:
     from backend.src.main.apiCredentials import *
 except ImportError:
+    api_key_from_credentials, api_secret_from_credentials = None, None
     pass
 
-is_production = os.environ.get('IS_HEROKU', None)
-if is_production:
-    api_key = os.environ.get('API_KEY')
-    api_secret = os.environ.get('API_SECRET')
-else:
-    api_key = api_key_from_credentials
-    api_secret = api_secret_from_credentials
+api_key = os.environ.get('API_KEY') if os.environ.get('API_KEY') else api_key_from_credentials
+api_secret = os.environ.get('API_SECRET') if os.environ.get('API_SECRET') else api_secret_from_credentials
 
 
 def call_api(endpoint, extra_params):
@@ -39,10 +35,11 @@ def is_offseason(league):
     try:
         event_types = season_structure.get('apiResults')[0].get('league').get('seasons')[0].get('eventType')
         date_ranges = [
-            [
-                datetime.datetime(event_type.get('startDate').get('year'), event_type.get('startDate').get('month'), event_type.get('startDate').get('date')),
-                datetime.datetime(event_type.get('endDate').get('year'), event_type.get('endDate').get('month'), event_type.get('endDate').get('date'))
-            ]
+            [datetime.datetime(event_type.get('startDate').get('year'),
+                               event_type.get('startDate').get('month'),
+                               event_type.get('startDate').get('date')),
+                               datetime.datetime(event_type.get('endDate').get('year'),
+                               event_type.get('endDate').get('month'), event_type.get('endDate').get('date'))]
             for event_type in event_types]
         dates = [date for date_range in date_ranges for date in date_range]
         now = datetime.datetime.now()

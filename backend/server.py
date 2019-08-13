@@ -46,7 +46,8 @@ class Users(UserMixin, db.Model):
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(30))
-    draft_ranking = db.Column(db.String(10000), unique=False)
+    user_espn_ranking = db.Column(db.String(10000), unique=False)
+    user_yahoo_ranking = db.Column(db.String(10000), unique=False)
 
 
 @login_manager.user_loader
@@ -99,7 +100,7 @@ def signup():
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         new_user = Users(username=form.username.data, email=form.email.data, password=hashed_password,
-                         draft_ranking='No ranking specified.')
+                         user_espn_ranking='No ranking specified.', user_yahoo_ranking='No ranking specified.')
         user_exists = Users.query.filter_by(username=form.username.data).first()
         email_exists = Users.query.filter_by(email=form.email.data).first()
         if user_exists:
@@ -147,21 +148,25 @@ def yahoo():
     return render_template("index.html")
 
 
-@app.route("/load-ranking")
+@app.route("/load-ranking/<site>")
 @might_need_to_login(login_required, is_production or postgres_configured)
-def espn_rankings():
+def load_ranking(site):
     user = Users.query.filter_by(username=current_user.username).first()
-    return jsonify(eval(user.draft_ranking)) if type(user.draft_ranking) != 'str' else user.draft_ranking
+    ranking = user.user_espn_ranking if site == 'espn' else user.user_yahoo_ranking
+    return jsonify([ranking]) if ranking == 'No ranking specified.' else jsonify(eval(ranking))
 
 
-@app.route("/save-ranking", methods=['POST'])
+@app.route("/save-ranking/<site>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
-def save_to_db():
+def save_ranking(site):
     player_list_string = str(request.get_data())[2:-1].replace('\\', '')
     user = Users.query.filter_by(username=current_user.username).first()
-    user.draft_ranking = player_list_string
+    if site == 'espn':
+        user.user_espn_ranking = player_list_string
+    else:
+        user.user_yahoo_ranking = player_list_string
     db.session.commit()
-    return 'User ranking added.'
+    return 'User ranking saved.'
 
 
 @app.route("/espn-players")
@@ -181,8 +186,7 @@ def yahoo_players():
 @app.route("/draft-results", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def run_draft():
-    data = request.get_data()
-    data_list = str(data)[2:-1].split('|')
+    data_list = str(request.get_data())[2:-1].split('|')
     players_string, team_count, pick_order, round_count, site = data_list
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
     user_list = eval(players_string.replace('\\', ''))

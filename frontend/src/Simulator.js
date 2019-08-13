@@ -69,10 +69,11 @@ export class Simulator extends Component {
 
     saveRankings = () => {
         let userPlayers = this.state.userPlayers;
+        let site = window.location.pathname;
         if (userPlayers.every((roundList) => roundList.length === 0)) {
             alert('Please rank at least one player before saving.');
         } else {
-            fetch(window.location.origin + '/save-ranking', {
+            fetch(window.location.origin + '/save-ranking' + site, {
                 method: 'POST',
                 body: JSON.stringify(userPlayers)
             }).then(response => {
@@ -86,16 +87,16 @@ export class Simulator extends Component {
     };
 
     loadRankings = () => {
-        let players = this.state.players;
-        fetch(window.location.origin + '/load-ranking')
+        let site = window.location.pathname;
+        fetch(window.location.origin + '/load-ranking' + site)
             .then(response => {
                 if (response.status !== 200) {
                     alert('Could not load user ranking data.');
                 }  else {
                     response.json()
                         .then((userRanking) => {
-                            if (userRanking === 'No ranking specified.') {
-                                alert('No ranking specified.');
+                            if (userRanking[0] === 'No ranking specified.') {
+                                alert(userRanking[0]);
                             } else {
                                 let players = this.state.players;
                                 let userPlayers = this.state.userPlayers;
