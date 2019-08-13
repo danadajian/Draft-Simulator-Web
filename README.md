@@ -6,6 +6,7 @@ Languages/services used:
 * Backend: Python
 * Frontend: Javascript, React
 * Frontend testing: Cypress
+* Database: PostgreSQL
 * Web hosting: Heroku
 * Deployment pipeline: Concourse, Docker
 
@@ -15,7 +16,10 @@ Heroku CLI deploy command:
     * ``git push heroku `git subtree split --prefix backend master`:master --force``
 
 Heroku Postgres commands:
-* `heroku pg:push accounts DATABASE_URL -a draft-simulator`
+* Push local db:
+    * `heroku pg:push accounts DATABASE_URL -a draft-simulator`
+* Run SQL in heroku db:
+    * `heroku pg:psql -a draft-simulator`
 
 Cypress commands:
 * `cd frontend`
@@ -38,6 +42,7 @@ Skills Learned and/or Developed:
 * Python backend development
 * Javascript frontend development
 * backend/frontend communication
+* Database connection, creation, and management
 * Web hosting
 * Web design (CSS layout)
 * Frontend testing (Cypress)
