@@ -1,6 +1,54 @@
 from backend.src.main.DFSFunctions import *
 
 
+def call_weekly_projections(week, year):
+    endpoint = 'stats/football/nfl/fantasyProjections/weekly/' + str(week)
+    result = call_api(endpoint, '&season=' + str(year))
+    projections = result.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('fantasyProjections')
+    return projections
+
+
+def get_offense_projections(projections):
+    offense_list = projections.get('offensiveProjections')
+    offense_projections = {
+        player.get('player').get('firstName') + ' ' + player.get('player').get('lastName'):
+        {
+            'dkProjections': float(player.get('fantasyProjections')[0].get('points')),
+            'fdProjections': float(player.get('fantasyProjections')[1].get('points')),
+            'statsPPRProjections': float(player.get('fantasyProjections')[4].get('points'))
+        }
+        for player in offense_list
+    }
+    return offense_projections
+
+
+def get_defense_projections(projections):
+    defense_list = projections.get('defensiveProjections')
+    defense_projections = {
+        team.get('team').get('nickname') + ' D/ST':
+        {
+            'dkProjections': float(team.get('fantasyProjections')[0].get('points')),
+            'fdProjections': float(team.get('fantasyProjections')[1].get('points')),
+            'statsPPRProjections': float(team.get('fantasyProjections')[4].get('points'))
+        }
+        for team in defense_list
+    }
+    return defense_projections
+
+
+def get_weekly_projections(year):
+    weekly_projections_dict = {}
+    for weekIndex in range(16):
+        week = weekIndex + 1
+        this_week_projections = call_weekly_projections(week, year)
+        all_projections = {}
+        all_projections.update(get_offense_projections(this_week_projections))
+        all_projections.update(get_defense_projections(this_week_projections))
+        print('Compiling Week ' + str(week) + ' projections...')
+        weekly_projections_dict.update({'Week ' + str(week): all_projections})
+    return weekly_projections_dict
+
+
 def get_game_data(event_id):
     events_endpoint = 'stats/football/nfl/events/' + str(event_id)
     events_call = call_api(events_endpoint, '&box=true')
@@ -157,34 +205,56 @@ def calculate_fd_offense_score(rushyds, rushtds, passyds, passtds, passints,
     return score
 
 
-def calculate_fd_defense_score(sacks, fumbrec, deftds, safeties, blockedkicks, ints, ptsallowed):
+def calculate_dk_offense_score(rushyds, rushtds, passyds, passtds, passints,
+                               recyds, rectds, recs, returntds, fumblost, twopoint):
+    score = 0.1*rushyds + 6*rushtds + 0.04*passyds + 4*passtds - 2*passints + 0.1*recyds + 6*rectds + 0.5*recs + \
+            6*returntds - 2*fumblost + 2*twopoint
+    score = score + 3 if rushyds >= 100 else score
+    score = score + 3 if passyds >= 300 else score
+    score = score + 3 if recyds >= 100 else score
+    return score
+
+
+def calculate_stats_offense_score(rushyds, rushtds, passyds, passtds, passints,
+                               recyds, rectds, recs, returntds, fumblost, twopoint):
+    score = 0.1*rushyds + 6*rushtds + 0.04*passyds + 4*passtds - 2*passints \
+            + 0.1*recyds + 6*rectds + recs + 6*returntds - 2*fumblost + 2*twopoint
+    return score
+
+
+def calculate_defense_score(sacks, fumbrec, deftds, safeties, blockedkicks, ints, ptsallowed):
     pts_allowed_score = 10 if ptsallowed == 0 else 7 if ptsallowed < 7 else 4 if ptsallowed < 14 else \
         1 if ptsallowed < 21 else 0 if ptsallowed < 28 else -1 if ptsallowed < 35 else -4
     score = sacks + 2*fumbrec + 6*deftds + 2*safeties + 2*blockedkicks + 2*ints + pts_allowed_score
     return score
 
 
-def get_offense_scores(stats, site):
+def get_offense_scores(stats):
     offense_score_dict = {
         player:
-        round(calculate_fd_offense_score(stats.get(player).get('rushyds'), stats.get(player).get('rushtds'),
-                                         stats.get(player).get('passyds'), stats.get(player).get('passtds'),
-                                         stats.get(player).get('passints'), stats.get(player).get('recyds'),
-                                         stats.get(player).get('rectds'), stats.get(player).get('recs'),
-                                         stats.get(player).get('returntds'), stats.get(player).get('fumblost'),
-                                         stats.get(player).get('twopoint')), 1) if site == 'fd' else
-        round(calculate_dk_offense_score(stats.get(player).get('rushyds'), stats.get(player).get('rushtds'),
-                                         stats.get(player).get('passyds'), stats.get(player).get('passtds'),
-                                         stats.get(player).get('passints'), stats.get(player).get('recyds'),
-                                         stats.get(player).get('rectds'), stats.get(player).get('recs'),
-                                         stats.get(player).get('returntds'), stats.get(player).get('fumblost'),
-                                         stats.get(player).get('twopoint')), 1) if site == 'dk' else
-        round(calculate_stats_offense_score(stats.get(player).get('rushyds'), stats.get(player).get('rushtds'),
-                                            stats.get(player).get('passyds'), stats.get(player).get('passtds'),
-                                            stats.get(player).get('passints'), stats.get(player).get('recyds'),
-                                            stats.get(player).get('rectds'), stats.get(player).get('recs'),
-                                            stats.get(player).get('returntds'), stats.get(player).get('fumblost'),
-                                            stats.get(player).get('twopoint')), 1)
+        {
+            'fd':
+                round(calculate_fd_offense_score(stats.get(player).get('rushyds'), stats.get(player).get('rushtds'),
+                                                 stats.get(player).get('passyds'), stats.get(player).get('passtds'),
+                                                 stats.get(player).get('passints'), stats.get(player).get('recyds'),
+                                                 stats.get(player).get('rectds'), stats.get(player).get('recs'),
+                                                 stats.get(player).get('returntds'), stats.get(player).get('fumblost'),
+                                                 stats.get(player).get('twopoint')), 1),
+            'dk':
+                round(calculate_dk_offense_score(stats.get(player).get('rushyds'), stats.get(player).get('rushtds'),
+                                                 stats.get(player).get('passyds'), stats.get(player).get('passtds'),
+                                                 stats.get(player).get('passints'), stats.get(player).get('recyds'),
+                                                 stats.get(player).get('rectds'), stats.get(player).get('recs'),
+                                                 stats.get(player).get('returntds'), stats.get(player).get('fumblost'),
+                                                 stats.get(player).get('twopoint')), 1),
+            'stats':
+                round(calculate_stats_offense_score(stats.get(player).get('rushyds'), stats.get(player).get('rushtds'),
+                                                    stats.get(player).get('passyds'), stats.get(player).get('passtds'),
+                                                    stats.get(player).get('passints'), stats.get(player).get('recyds'),
+                                                    stats.get(player).get('rectds'), stats.get(player).get('recs'),
+                                                    stats.get(player).get('returntds'), stats.get(player).get('fumblost'),
+                                                    stats.get(player).get('twopoint')), 1)
+        }
         for player in stats.keys()
     }
     return offense_score_dict
@@ -193,7 +263,7 @@ def get_offense_scores(stats, site):
 def get_defense_scores(stats):
     defense_score_dict = {
         team:
-        calculate_fd_defense_score(stats.get(team).get('sacks'), stats.get(team).get('fumbrec'),
+        calculate_defense_score(stats.get(team).get('sacks'), stats.get(team).get('fumbrec'),
                                    stats.get(team).get('deftds'), stats.get(team).get('safeties'),
                                    stats.get(team).get('blockedkicks'), stats.get(team).get('ints'),
                                    stats.get(team).get('ptsallowed'))
@@ -209,7 +279,9 @@ def get_all_scores(event):
     all_scores = {}
     all_scores.update(get_offense_scores(offense_stats))
     all_scores.update(get_defense_scores(defense_stats))
-    print(all_scores)
+    if any(score is None for player, scores in list(all_scores.items()) if not player.endswith('D/ST') for score in list(scores.values())):
+        print(all_scores)
+        raise Exception
     return all_scores
 
 
@@ -228,6 +300,7 @@ def get_weekly_scores(year):
     events_dict = get_weekly_events(year)
     weekly_scores = {}
     for week, events in events_dict.items():
+        print('Compiling ' + week + ' scores ...')
         this_week_scores = {}
         for event in events:
             this_event_scores = get_all_scores(event)
@@ -236,59 +309,25 @@ def get_weekly_scores(year):
     return weekly_scores
 
 
-def call_weekly_projections(week, year):
-    endpoint = 'stats/football/nfl/fantasyProjections/weekly/' + str(week)
-    result = call_api(endpoint, '&season=' + str(year))
-    projections = result.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('fantasyProjections')
-    return projections
-
-
-def get_offense_projections(projections):
-    offense_list = projections.get('offensiveProjections')
-    offense_projections = {
-        player.get('player').get('firstName') + ' ' + player.get('player').get('lastName'):
-        {
-            'dkProjections': float(player.get('fantasyProjections')[0].get('points')),
-            'fdProjections': float(player.get('fantasyProjections')[1].get('points')),
-            'statsPPRProjections': float(player.get('fantasyProjections')[4].get('points'))
-        }
-        for player in offense_list
-    }
-    return offense_projections
-
-
-def get_defense_projections(projections):
-    defense_list = projections.get('defensiveProjections')
-    defense_projections = {
-        team.get('team').get('nickname') + ' D/ST':
-        {
-            'dkProjections': float(team.get('fantasyProjections')[0].get('points')),
-            'fdProjections': float(team.get('fantasyProjections')[1].get('points')),
-            'statsPPRProjections': float(team.get('fantasyProjections')[4].get('points'))
-        }
-        for team in defense_list
-    }
-    return defense_projections
-
-
-def get_weekly_projections(year):
-    weekly_projections_dict = {}
-    for weekIndex in range(16):
-        week = weekIndex + 1
-        this_week_projections = call_weekly_projections(week, year)
-        all_projections = {}
-        all_projections.update(get_offense_projections(this_week_projections))
-        all_projections.update(get_defense_projections(this_week_projections))
-        print(all_projections)
-        weekly_projections_dict.update({'Week ' + str(week): all_projections})
-    return weekly_projections_dict
-
-
-# print(get_weekly_scores(2018))
-# print(get_weekly_projections(2018))
-
-def compare_scores_to_projections(year):
+def get_avg_diff_scores_to_projections(year):
     scores = get_weekly_scores(year)
     projections = get_weekly_projections(year)
+    fd_diffs, dk_diffs, stats_diffs = [], [], []
+    for week, players_and_scores in scores.items():
+        for player, scores in players_and_scores.items():
+            if projections.get(week).get(player):
+                fd_diffs.append(abs(scores if player.endswith('D/ST') else scores.get('fd') -
+                                    projections.get(week).get(player).get('fdProjections')))
+                dk_diffs.append(abs(scores if player.endswith('D/ST') else scores.get('dk') -
+                                    projections.get(week).get(player).get('dkProjections')))
+                stats_diffs.append(abs(scores if player.endswith('D/ST') else scores.get('stats') -
+                                       projections.get(week).get(player).get('statsPPRProjections')))
+    results = {
+        'fd_avg_diff': sum(fd_diffs) / len(fd_diffs),
+        'dk_avg_diff': sum(dk_diffs) / len(dk_diffs),
+        'stats_avg_diff': sum(stats_diffs) / len(stats_diffs)
+    }
+    return results
 
 
+print(get_avg_diff_scores_to_projections(2018))
