@@ -1,9 +1,10 @@
-from backend.src.main.DFSFunctions import *
+from backend.src.main.DFSFunctions import call_api
+from backend.src.main.Optimizer import *
 
 
-def call_weekly_projections(week, year):
+def call_weekly_projections(week):
     endpoint = 'stats/football/nfl/fantasyProjections/weekly/' + str(week)
-    result = call_api(endpoint, '&season=' + str(year))
+    result = call_api(endpoint, '&season=2018')
     projections = result.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('fantasyProjections')
     return projections
 
@@ -13,11 +14,14 @@ def get_offense_projections(projections):
     offense_projections = {
         player.get('player').get('firstName') + ' ' + player.get('player').get('lastName'):
         {
+            'position': player.get('position'),
             'dkProjections': float(player.get('fantasyProjections')[0].get('points')),
             'fdProjections': float(player.get('fantasyProjections')[1].get('points')),
-            'statsPPRProjections': float(player.get('fantasyProjections')[4].get('points'))
+            'statsPPRProjections': float(player.get('fantasyProjections')[4].get('points')),
+            'dkSalary': int(player.get('fantasyProjections')[0].get('salary')),
+            'fdSalary': int(player.get('fantasyProjections')[1].get('salary'))
         }
-        for player in offense_list
+        for player in offense_list if player.get('position') != 'K'
     }
     return offense_projections
 
@@ -27,26 +31,32 @@ def get_defense_projections(projections):
     defense_projections = {
         team.get('team').get('nickname') + ' D/ST':
         {
+            'position': 'DST',
             'dkProjections': float(team.get('fantasyProjections')[0].get('points')),
             'fdProjections': float(team.get('fantasyProjections')[1].get('points')),
-            'statsPPRProjections': float(team.get('fantasyProjections')[4].get('points'))
+            'statsPPRProjections': float(team.get('fantasyProjections')[4].get('points')),
+            'dkSalary': int(team.get('fantasyProjections')[0].get('salary')),
+            'fdSalary': int(team.get('fantasyProjections')[1].get('salary'))
         }
         for team in defense_list
     }
     return defense_projections
 
 
-def get_weekly_projections(year):
-    weekly_projections_dict = {}
-    for weekIndex in range(16):
-        week = weekIndex + 1
-        this_week_projections = call_weekly_projections(week, year)
-        all_projections = {}
-        all_projections.update(get_offense_projections(this_week_projections))
-        all_projections.update(get_defense_projections(this_week_projections))
-        print('Compiling Week ' + str(week) + ' projections...')
-        weekly_projections_dict.update({'Week ' + str(week): all_projections})
-    return weekly_projections_dict
+def get_projections_from_week(week):
+    projections_data = call_weekly_projections(week)
+    projections_from_week = {}
+    projections_from_week.update(get_offense_projections(projections_data))
+    projections_from_week.update(get_defense_projections(projections_data))
+    return projections_from_week
+
+
+def get_this_week_events(week):
+    events_endpoint = 'stats/football/nfl/events/'
+    events_call = call_api(events_endpoint, '&week=' + str(week) + '&season=2018')
+    event_data_list = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
+    events = [event.get('eventId') for event in event_data_list]
+    return events
 
 
 def get_game_data(event_id):
@@ -282,49 +292,61 @@ def get_all_scores(event):
     return all_scores
 
 
-def get_weekly_events(year):
-    events_endpoint = 'stats/football/nfl/events/'
-    events_call = call_api(events_endpoint, '&eventTypeId=1&season=' + str(year))
-    event_data_list = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
-    events = {
-        'Week %s' % str(i + 1): [event.get('eventId') for event in event_data_list if event.get('week') == i + 1]
-        for i in range(16)
-    }
-    return events
+def get_scores_from_week(week):
+    scores_from_week = {}
+    for event in get_this_week_events(week):
+        this_event_scores = get_all_scores(event)
+        scores_from_week.update(this_event_scores)
+    return scores_from_week
 
 
-def get_weekly_scores(year):
-    events_dict = get_weekly_events(year)
-    weekly_scores = {}
-    for week, events in events_dict.items():
-        print('Compiling ' + week + ' scores ...')
-        this_week_scores = {}
-        for event in events:
-            this_event_scores = get_all_scores(event)
-            this_week_scores.update(this_event_scores)
-        weekly_scores.update({week: this_week_scores})
-    return weekly_scores
-
-
-def get_avg_diff_scores_to_projections(year):
-    scores = get_weekly_scores(year)
-    projections = get_weekly_projections(year)
+def get_avg_diff(week):
+    scores_dict = get_scores_from_week(week)
+    projections = get_projections_from_week(week)
     fd_diffs, dk_diffs, stats_diffs = [], [], []
-    for week, players_and_scores in scores.items():
-        for player, scores in players_and_scores.items():
-            if projections.get(week).get(player):
-                fd_diffs.append(abs(scores if player.endswith('D/ST') else scores.get('fd') -
-                                    projections.get(week).get(player).get('fdProjections')))
-                dk_diffs.append(abs(scores if player.endswith('D/ST') else scores.get('dk') -
-                                    projections.get(week).get(player).get('dkProjections')))
-                stats_diffs.append(abs(scores if player.endswith('D/ST') else scores.get('stats') -
-                                       projections.get(week).get(player).get('statsPPRProjections')))
+    for player, scores in scores_dict.items():
+        if projections.get(player):
+            fd_projected = projections.get(player).get('fdProjections')
+            fd_actual = scores if player.endswith('D/ST') else scores.get('fd')
+            dk_projected = projections.get(player).get('dkProjections')
+            dk_actual = scores if player.endswith('D/ST') else scores.get('dk')
+            stats_projected = projections.get(player).get('statsPPRProjections')
+            stats_actual = scores if player.endswith('D/ST') else scores.get('stats')
+            fd_diffs.append(abs(fd_projected - fd_actual))
+            dk_diffs.append(abs(dk_projected - dk_actual))
+            stats_diffs.append(abs(stats_projected - stats_actual))
     results = {
-        'fd_avg_diff': sum(fd_diffs) / len(fd_diffs),
-        'dk_avg_diff': sum(dk_diffs) / len(dk_diffs),
-        'stats_avg_diff': sum(stats_diffs) / len(stats_diffs)
+        'fd avg diff': sum(fd_diffs) / len(fd_diffs),
+        'dk avg diff': sum(dk_diffs) / len(dk_diffs),
+        'stats avg diff': sum(stats_diffs) / len(stats_diffs)
     }
     return results
 
 
-print(get_avg_diff_scores_to_projections(2018))
+scores = get_scores_from_week(6)
+projections = get_projections_from_week(6)
+pos_dict = {player: info.get('position') for player, info in projections.items()}
+scores_dict = {player: info if player.endswith('D/ST') else info.get('fd') for player, info in scores.items()}
+fd_salary_dict = {player: info.get('fdSalary') for player, info in projections.items()}
+sorted_players = sorted(scores_dict, key=scores_dict.__getitem__, reverse=True)
+sorted_positions_dict = {player: pos_dict.get(player) for player in sorted_players}
+fd_lineup_matrix = dfs_configs.get('fd').get('nfl').get('lineup_matrix')
+fd_cap = dfs_configs.get('fd').get('nfl').get('salary_cap')
+player_pools = [[player for player in sorted_players
+                 if ((pos_dict.get(player) or '') in spot or spot in (pos_dict.get(player) or ''))
+                 and player in fd_salary_dict.keys()]
+                for spot in fd_lineup_matrix]
+best_lineup = get_best_lineup(player_pools)
+optimized_lineup = optimize(best_lineup, player_pools, scores_dict, fd_salary_dict, fd_cap)
+print(optimized_lineup)
+optimized_lineup_detail = {
+    player:
+        {
+            'score': scores_dict.get(player),
+            'salary': fd_salary_dict.get(player)
+        }
+    for player in optimized_lineup
+}
+print(optimized_lineup_detail)
+print(sum([info.get('score') for info in optimized_lineup_detail.values()]))
+print(sum([info.get('salary') for info in optimized_lineup_detail.values()]))
