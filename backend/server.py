@@ -194,7 +194,7 @@ def run_draft():
     try:
         draft_results = get_draft_results(user_list, player_dict, team_count, pick_order, round_count)
     except RuntimeError:
-        draft_results = ['Too few players available to draft.\nPlease select a lower round count.']
+        draft_results = ['Draft error!']
     return jsonify(draft_results)
 
 
