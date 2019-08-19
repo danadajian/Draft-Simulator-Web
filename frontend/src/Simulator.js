@@ -245,7 +245,7 @@ export class Simulator extends Component {
     };
 
     generateDraftOutput = (draftResults) => {
-        if (draftResults === 'Draft error!') {
+        if (draftResults === ['Draft error!']) {
             alert('No players were drafted. :( \nSomething went wrong . . .');
         }
         this.setState({
