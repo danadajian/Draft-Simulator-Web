@@ -129,8 +129,8 @@ def get_dfs_lineup(site, sport, projections, black_list):
 def get_dfs_lineups(sport, projections, fd_black_list, dk_black_list):
     if projections == 'offseason':
         return ['Warning: \nThis league is currently in the offseason.']
-    elif projections == 'no games':
-        return ['Warning: \nThere are no games today for this league.']
+    elif projections == 'Not enough data is available.':
+        return ['Warning: \nThere are currently no games or projections for this league.']
     elif projections == 'Error obtaining projection data.':
         return ['Warning: \nError obtaining projection data.']
     else:

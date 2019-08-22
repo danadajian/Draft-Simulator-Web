@@ -14,8 +14,6 @@ def get_sunday_string():
 def get_current_week(sunday_string):
     events_endpoint = 'stats/football/nfl/events/'
     events_call = call_api(events_endpoint, '&date=' + str(sunday_string))
-    if events_call == '404 error':
-        return 'no games'
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     week = events[0].get('week')
     return week
@@ -24,8 +22,6 @@ def get_current_week(sunday_string):
 def get_events(week):
     events_endpoint = 'stats/football/nfl/events/'
     events_call = call_api(events_endpoint, '&week=' + str(week))
-    if events_call == '404 error':
-        return 'no games'
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     return events
 
@@ -50,8 +46,8 @@ def get_team_info(events):
 
 
 def get_projections(week):
-    projections_endpoint = 'stats/football/nfl/fantasyProjections/weekly/'
-    proj_responses = call_api(projections_endpoint + str(week), '&season=2018').get('apiResults')[0].get('league').get(
+    projections_endpoint = 'stats/football/nfl/fantasyProjections/weekly/' + str(week)
+    proj_responses = call_api(projections_endpoint, '').get('apiResults')[0].get('league').get(
             'season').get('eventType')[0].get('fantasyProjections')
     return proj_responses
 
@@ -116,11 +112,17 @@ def get_nfl_projections():
         nfl_projections = [{
             'name': player,
             'projection': projection or 'unavailable',
-            'team': player.get('team') or 'unavailable',
-            'opponent': team_info.get(player.get('team')).get('opponent') or 'unavailable',
-            'weather': weather_by_event.get(
-                team_info.get(player.get('team')).get('eventId')) or 'unavailable'
+            'team': projection.get('team') or 'unavailable',
+            'opponent': (team_info.get(projection.get('team')).get('opponent')
+            if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable',
+            'weather': (weather_by_event.get(team_info.get(projection.get('team')).get('eventId'))
+            if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable'
         } for player, projection in projections.items()]
         return nfl_projections
+    except FileNotFoundError:
+        return 'Not enough data is available.'
     except ConnectionError:
         return 'Error obtaining projection data.'
+
+
+print(get_nfl_projections())
