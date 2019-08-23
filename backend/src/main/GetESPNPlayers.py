@@ -1,59 +1,39 @@
-import requests
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 from bs4 import BeautifulSoup
 
 
-def get_espn_html():
-    session = requests.session()
-    request = session.get('https://www.espn.com/fantasy/football/story/_/id/26415022/fantasy-football-updated-2019-ppr-rankings-mike-clay')
-    if request.status_code != 200:
-        return 'HTTP request failed.'
-    doc = BeautifulSoup(request.content, 'html.parser')
-    return str(doc.get_text)
+def get_players_from_page(driver):
+    WebDriverWait(driver, 30).until(ec.visibility_of_all_elements_located((By.CLASS_NAME, 'truncate')))
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    ranks = soup.find_all('div', class_='jsx-2810852873 table--cell ranking tar')
+    rank_list = [rank.get_text() for rank in ranks]
+    players = soup.find_all('a', class_='link clr-link pointer')
+    player_list = [player.get_text() for player in players]
+    teams = soup.find_all('span', class_='jsx-1705908198 pro-team-name fw-normal')
+    team_list = [team.get_text() for team in teams]
+    positions = soup.find_all('span', class_='playerinfo__playerpos ttu')
+    pos_list = [position.get_text() for position in positions]
+    player_dict = [
+        {
+            'Rank': rank_list[i],
+            'Name': player_list[i],
+            'Position': pos_list[i],
+            'Team': team_list[i]
+        }
+        for i in range(len(rank_list))]
+    return player_dict
 
 
-def parse_html(text):
-    string = [line for line in text.splitlines() if 'PPR Top 300 for 2019' in line][0]
-    player_strings = []
-    for i in range(300):
-        left_index = string.find('<td>' + str(i + 1) + '.')
-        right_index = string.find('<td>' + str(i + 2) + '.')
-        player_strings.append(string[left_index: right_index])
-    text_list = [player_string.split('>') for player_string in player_strings]
-    return text_list
-
-
-def get_espn_players():
-    text = get_espn_html()
-    if text == 'HTTP request failed.':
-        return 'HTTP request failed.'
-    text_list = parse_html(text)
-
-    player_list, pos_list, team_list = [], [], []
-    for string in text_list:
-        if len(string) < 2:
-            continue
-        elif '<a href=' in string[1]:
-            player_item = string[2]
-            player = player_item.replace('</a', '')
-            player_list.append(player)
-
-            pos = string[5].replace('</td', '')
-            pos_list.append(pos)
-
-            team = string[7].replace('</td', '')
-            team_list.append(team)
-        else:
-            player_item = string[1].replace('</td', '')
-            start_index = player_item.find('. ') + 2
-            player = player_item[start_index:]
-            player_list.append(player)
-
-            pos = string[3].replace('</td', '')
-            pos_list.append(pos)
-
-            team = string[5].replace('</td', '')
-            team_list.append(team)
-
-    top300dict = [{'Rank': i + 1, 'Name': player_list[i], 'Position': pos_list[i], 'Team': team_list[i]}
-                  for i in range(len(player_list))]
-    return top300dict
+def get_espn_players(driver):
+    url = 'https://fantasy.espn.com/football/players/projections'
+    driver.get(url)
+    full_player_dict = []
+    for i in range(6):
+        player_dict = get_players_from_page(driver)
+        full_player_dict = full_player_dict + player_dict
+        next_button = driver.find_elements_by_xpath("//a[text()='" + str(i + 2) + "']")
+        next_button[0].click()
+    return full_player_dict

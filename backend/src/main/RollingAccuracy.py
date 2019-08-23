@@ -31,7 +31,7 @@ def get_defense_projections(projections):
     defense_projections = {
         team.get('team').get('nickname') + ' D/ST':
         {
-            'position': 'DST',
+            'position': 'D/ST',
             'dkProjections': float(team.get('fantasyProjections')[0].get('points')),
             'fdProjections': float(team.get('fantasyProjections')[1].get('points')),
             'statsPPRProjections': float(team.get('fantasyProjections')[4].get('points')),

@@ -8,7 +8,7 @@ def position_count(player_list, pos_dict, pos):
 
 def is_valid_choice(player, pos_dict, team):
     if player and player not in team:
-        pos_limits = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'DST': 1, 'K': 1}
+        pos_limits = {'QB': 2, 'RB': 5, 'WR': 5, 'TE': 2, 'D/ST': 1, 'K': 1}
         player_pos = pos_dict.get(player)
         if player_pos and position_count(team, pos_dict, player_pos) < pos_limits.get(player_pos):
             return True
@@ -145,7 +145,7 @@ def order_expected_team_and_assign_positions(team, pos_dict):
     starting_lineup = [''] * 9
     bench = []
     new_position_dict = {}
-    position_order = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'RB WR TE', 'DST', 'K']
+    position_order = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'RB WR TE', 'D/ST', 'K']
     for player in team:
         position = pos_dict.get(player)
         player_index = next((position_order.index(spot) for spot in position_order if position in spot), -1)
