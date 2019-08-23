@@ -129,8 +129,8 @@ def get_dfs_lineup(site, sport, projections, black_list):
 def get_dfs_lineups(sport, projections, fd_black_list, dk_black_list):
     if projections == 'offseason':
         return ['Warning: \nThis league is currently in the offseason.']
-    elif projections == 'no games':
-        return ['Warning: \nThere are no games today for this league.']
+    elif projections == 'Not enough data is available.':
+        return ['Warning: \nThere are currently no games or projections for this league.']
     elif projections == 'Error obtaining projection data.':
         return ['Warning: \nError obtaining projection data.']
     else:
@@ -146,6 +146,11 @@ dfs_configs = {
             'display_matrix': ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util'],
             'salary_cap': 35000
         },
+        'nfl': {
+            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'D/ST'],
+            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
+            'salary_cap': 60000
+        },
         'nba': {
             'lineup_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
             'display_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
@@ -156,6 +161,11 @@ dfs_configs = {
         'mlb': {
             'lineup_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
             'display_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
+            'salary_cap': 50000
+        },
+        'nfl': {
+            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'D/ST'],
+            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
             'salary_cap': 50000
         },
         'nba': {

@@ -22,7 +22,7 @@ def call_api(endpoint, extra_params):
     url = 'http://api.stats.com/v1/' + endpoint + '?' + params
     response = requests.get(url)
     if response.status_code == 404:
-        return '404 error'
+        raise FileNotFoundError
     elif response.status_code != 200:
         print(response.status_code)
         raise ConnectionError

@@ -5,8 +5,6 @@ import datetime
 def get_events(date_string):
     events_endpoint = 'stats/baseball/mlb/events/'
     events_call = call_api(events_endpoint, '&date=' + date_string)
-    if events_call == '404 error':
-        return 'no games'
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     return events
 
@@ -88,5 +86,7 @@ def get_mlb_projections():
             'weather': weather_by_event.get(team_info.get(player.get('team').get('abbreviation')).get('eventId')) or 'unavailable'
         } for player in final_player_list]
         return mlb_projections
+    except FileNotFoundError:
+        return 'Not enough data is available.'
     except ConnectionError:
         return 'Error obtaining projection data.'
