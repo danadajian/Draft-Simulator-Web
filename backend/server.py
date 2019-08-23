@@ -11,13 +11,16 @@ from flask_caching import Cache
 from flask_heroku import Heroku
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy_utils import database_exists
 from flask_wtf import FlaskForm
 import os
+from selenium import webdriver
+from sqlalchemy_utils import database_exists
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 
+is_production = True if os.environ.get('IS_HEROKU') else False
+postgres_configured = True
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -28,10 +31,15 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-is_production = True if os.environ.get('IS_HEROKU') else False
-postgres_configured = True
-if not is_production:
+if is_production:
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--no-sandbox')
+    driver = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), chrome_options=chrome_options)
+else:
+    driver = webdriver.Chrome('/chromedriver')
     try:
         database_exists('postgresql://localhost/accounts')
     except Exception as e:
@@ -173,7 +181,9 @@ def save_ranking(site):
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=86400)
 def espn_players():
-    return jsonify(get_espn_players())
+    global espn_player_list
+    espn_player_list = get_espn_players(driver)
+    return jsonify(espn_player_list)
 
 
 @app.route("/yahoo-players")
@@ -190,9 +200,9 @@ def run_draft():
     players_string, team_count, pick_order, round_count, site = data_list
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
     user_list = eval(players_string.replace('\\', ''))
-    player_dict = get_espn_players() if site == '/espn' else get_yahoo_players()
+    player_list = espn_player_list if site == '/espn' else get_yahoo_players()
     try:
-        draft_results = get_draft_results(user_list, player_dict, team_count, pick_order, round_count)
+        draft_results = get_draft_results(user_list, player_list, team_count, pick_order, round_count)
     except RuntimeError:
         draft_results = ['Draft error!']
     return jsonify(draft_results)

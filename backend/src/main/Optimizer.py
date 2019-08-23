@@ -147,8 +147,8 @@ dfs_configs = {
             'salary_cap': 35000
         },
         'nfl': {
-            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST'],
-            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'DST'],
+            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'D/ST'],
+            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
             'salary_cap': 60000
         },
         'nba': {
@@ -164,8 +164,8 @@ dfs_configs = {
             'salary_cap': 50000
         },
         'nfl': {
-            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST'],
-            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'DST'],
+            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'D/ST'],
+            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
             'salary_cap': 50000
         },
         'nba': {
