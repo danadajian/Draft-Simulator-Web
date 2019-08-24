@@ -21,6 +21,7 @@ export class Optimizer extends Component {
         if (!sport) {
             alert('Please select a sport.');
         } else {
+            let prevSport = this.state.sport;
             this.setState({isLoading: true, sport: sport});
             fetch(window.location.origin + '/optimized-lineup/' + sport)
                 .then(response => {
@@ -29,19 +30,18 @@ export class Optimizer extends Component {
                     } else {
                         response.json()
                             .then((lineupJson) => {
-                                this.ingestDfsLineup(lineupJson, sport, false);
+                                this.ingestDfsLineup(lineupJson, sport, prevSport, false);
                             });
                     }
                 });
         }
     };
 
-    ingestDfsLineup = (lineupJson, sport, remove) => {
+    ingestDfsLineup = (lineupJson, sport, prevSport, remove) => {
         if (!remove) {
             if (lineupJson.length === 1) {
-                this.setState({isLoading: false}, function () {
-                    alert(lineupJson[0]);
-                });
+                this.setState({isLoading: false, sport: prevSport});
+                alert(lineupJson[0]);
                 return
             }
             if (typeof lineupJson[0] === "string") {
@@ -105,7 +105,7 @@ export class Optimizer extends Component {
                 <Navbar bg="primary" variant="dark">
                     <Nav className="Nav-bar">
                         <Nav.Link href="/home">Home</Nav.Link>
-                        <Nav.Link href="/espn">Back to Draft Simulator</Nav.Link>
+                        <Nav.Link href="/simulate">Back to Draft Simulator</Nav.Link>
                         <Nav.Link href="/logout">Logout</Nav.Link>
                     </Nav>
                 </Navbar>
@@ -119,8 +119,7 @@ export class Optimizer extends Component {
                         <option value="nba">NBA</option>
                     </select>
                     <button style={{marginTop: '10px'}}
-                            onClick={() => this.fetchOptimalLineups(sport)}>Reset
-                    </button>
+                            onClick={() => this.fetchOptimalLineups(sport)}>Reset</button>
                 </div>
                 {gridSection}
             </Container>

@@ -9,9 +9,9 @@ class App extends Component {
     render() {
         if (window.location.pathname === '/home') {
             return <Homepage/>
-        } else if (['/espn', '/yahoo'].includes(window.location.pathname)) {
+        } else if (window.location.pathname === '/simulate') {
             return <Simulator/>
-        } else if (window.location.pathname === '/dfs-optimizer') {
+        } else if (window.location.pathname === '/optimize') {
             return <Optimizer/>
         }
     }

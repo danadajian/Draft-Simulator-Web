@@ -7,15 +7,13 @@ export class Homepage extends Component {
         return (
                 <div className={'Home'}>
                     <h1 className={'Home-header'}>Welcome to Draft Simulator!</h1>
-                    <h3 className={'Dfs-header'}>To start, choose a draft site:</h3>
+                    <h3 className={'Dfs-header'}>To start, click the link below:</h3>
                     <div className={"Home-buttons"}>
-                    <button onClick={() => {window.location.href = window.location.origin + '/espn'}}
-                            className={'Site-button'}>ESPN</button>
-                    <button onClick={() => {window.location.href = window.location.origin + '/yahoo'}}
-                            className={'Site-button'}>Yahoo</button>
+                    <button onClick={() => {window.location.href = window.location.origin + '/simulate'}}
+                            className={'Site-button'}>Simulator</button>
                     </div>
                     <h3 className={'Dfs-header'}>Or, check out our DFS Optimizer:</h3>
-                    <button onClick={() => {window.location.href = window.location.origin + '/dfs-optimizer'}}
+                    <button onClick={() => {window.location.href = window.location.origin + '/optimize'}}
                             className={'Dfs-button'}>DFS Optimizer</button>
                     <button onClick={() => {window.location.href = window.location.origin + '/logout'}}
                             className={'Logout-button'}>Log Out</button>

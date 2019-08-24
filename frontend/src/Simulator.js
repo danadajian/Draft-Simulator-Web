@@ -11,18 +11,19 @@ export class Simulator extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: true, players: [], searchText: '', filteredPlayers: null,
+        this.state = {isLoading: true, players: [], searchText: '', filteredPlayers: null, site: 'espn',
             userPlayers: [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
             teamCount: 10, pickOrder: 5, roundCount: 16, isDrafting: false, isRandom: false,
             allFreqs: [], userFreqs: [], expectedTeam: [], frequencyData: []};
     }
 
     componentDidMount() {
-        this.fetchPlayersForSimulator(window.location.pathname);
+        this.fetchPlayersForSimulator(this.state.site);
     }
 
     fetchPlayersForSimulator = (site) => {
-        fetch(window.location.origin + site + '-players')
+        this.setState({isLoading: true});
+        fetch(window.location.origin + '/' + site + '-players')
             .then(response => {
                 if (response.status !== 200) {
                     alert('Could not load players.');
@@ -32,6 +33,7 @@ export class Simulator extends Component {
                             this.setState({
                                 isLoading: false,
                                 players: players,
+                                site: site
                             });
                         })
                 }
@@ -55,20 +57,16 @@ export class Simulator extends Component {
     };
 
     swapRankings = () => {
-        if (window.location.pathname.startsWith('/yahoo')) {
-            window.location.href = window.location.href.replace('yahoo', 'espn');
-        } else if (window.location.pathname.startsWith('/espn')) {
-            window.location.href = window.location.href.replace('espn', 'yahoo');
-        }
+        let newSite = (this.state.site === 'espn') ? 'yahoo' : 'espn';
+        this.fetchPlayersForSimulator(newSite);
     };
 
     saveRankings = () => {
-        let userPlayers = this.state.userPlayers;
-        let site = window.location.pathname;
+        let {userPlayers, site} = this.state;
         if (userPlayers.every((roundList) => roundList.length === 0)) {
             alert('Please rank at least one player before saving.');
         } else {
-            fetch(window.location.origin + '/save-ranking' + site, {
+            fetch(window.location.origin + '/save-ranking/' + site, {
                 method: 'POST',
                 body: JSON.stringify(userPlayers)
             }).then(response => {
@@ -82,8 +80,8 @@ export class Simulator extends Component {
     };
 
     loadRankings = () => {
-        let site = window.location.pathname;
-        fetch(window.location.origin + '/load-ranking' + site)
+        let site = this.state.site;
+        fetch(window.location.origin + '/load-ranking/' + site)
             .then(response => {
                 if (response.status !== 200) {
                     alert('Could not load user ranking data.');
@@ -200,7 +198,7 @@ export class Simulator extends Component {
             this.setState({isDrafting: false});
             return
         }
-        let {userPlayers, teamCount, pickOrder, roundCount} = this.state;
+        let {userPlayers, teamCount, pickOrder, roundCount, site} = this.state;
         if (userPlayers.every((roundList) => roundList.length === 0)) {
             alert('Please select at least one player to draft.');
         } else {
@@ -208,7 +206,7 @@ export class Simulator extends Component {
             this.setState({isDrafting: true});
             fetch(window.location.origin + '/draft-results', {
                 method: 'POST',
-                body: JSON.stringify(playerNames) + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + window.location.pathname
+                body: JSON.stringify(playerNames) + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + site
             }).then(response => {
                 if (response.status !== 200) {
                     alert('Error loading draft results.');
@@ -244,139 +242,157 @@ export class Simulator extends Component {
     };
 
     render() {
-        const {isLoading, players, filteredPlayers, userPlayers, teamCount, pickOrder, roundCount, isDrafting, isRandom,
+        const {isLoading, players, filteredPlayers, site,
+            userPlayers, teamCount, pickOrder, roundCount, isDrafting, isRandom,
             userFreqs, allFreqs, expectedTeam, frequencyData} = this.state;
+        let playerListBox, draftResultsTable;
 
         if (isLoading) {
-            return (
+            playerListBox =
                 <div className={"Loading"}>
-                    <div><p className={"Loading-text"}>Loading . . .</p></div>
+                    <div><p className={"Loading-text"}>Loading players . . .</p></div>
                     <div><img src={football} className={"App-logo"} alt="football"/></div>
-                </div>
-            );
-        } else if (isDrafting) {
-            return (
+                </div>;
+        } else {
+            playerListBox =
+                <PlayerListBox playerList={players} filterList={filteredPlayers} addPlayer={this.addPlayer}/>;
+        }
+        if (isDrafting) {
+            draftResultsTable =
                 <div className={"Loading"}>
                     <div><p className={"Loading-text"}>Drafting . . .</p></div>
                     <div><img src={football} className={"App-logo"} alt="football"/></div>
                     <div>
-                        <button onClick={() => this.simulateDrafts(true)} className={"Cancel-draft-button"}>Cancel
-                        </button>
+                        <button onClick={() => this.simulateDrafts(true)}
+                                className={"Cancel-draft-button"}>Cancel</button>
+                    </div>
+                </div>;
+        } else {
+            draftResultsTable = <DraftResultsTable frequencyData={frequencyData}/>;
+        }
+
+        const swapButtonText = (site === 'espn') ? 'Switch to Yahoo' : 'Switch to ESPN';
+        const swapButtonColor = (site === 'espn') ? '#6C00B3' : '#CE0000';
+
+        return (
+            <Container fluid={true}>
+                <Navbar bg="primary" variant="dark">
+                    <Nav className="Nav-bar">
+                      <Nav.Link href="/">Home</Nav.Link>
+                      <Nav.Link href="#about">About</Nav.Link>
+                      <Nav.Link href="#instructions">Instructions</Nav.Link>
+                      <Nav.Link href="/optimize">DFS Optimizer</Nav.Link>
+                        <Nav.Link href="/logout">Logout</Nav.Link>
+                    </Nav>
+                </Navbar>
+                <div className={"Info-buttons"}>
+                    <JqxPopover ref='about' isModal={true} width={310}
+                        position={'bottom'} title={'About Draft Simulator'} selector={'a[href$="#about"]'}>
+                        <p>Draft Simulator is a fantasy football draft preparation tool.</p>
+                        <p>More often than not, others in your league will only draft among the "top available
+                            players" in each round, which are determined by ESPN's preseason rankings.</p>
+                        <p>However, Draft Simulator allows you to create and refine your own personal rankings that
+                            you can bring to your draft to get the team you've always dreamed of.</p>
+                        <button onClick={this.closeAbout}
+                        style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Got it!</button>
+                    </JqxPopover>
+                    <JqxPopover ref='instructions' isModal={true} width={310}
+                        position={'bottom'} title={'Instructions'} selector={'a[href$="#instructions"]'}>
+                        <ol>
+                            <li>Search for and select players from the player list. These should be players you'd
+                                feel strongly about drafting.</li>
+                            <li>Click "Add" to move them to your preferred list.</li>
+                            <li>Drag and drop your players in order of overall preference.</li>
+                            <li>Adjust the sliders to your desired specifications, then click "Draft".</li>
+                            <li>See how often you were able to draft each player under the "Draft Frequency"
+                                tab.</li>
+                            <li>The "All Players" tab shows the draft frequency of all players taken, not just your
+                                preferred players.</li>
+                            <li>The "Expected Team" tab shows your most likely fantasy team given the
+                                simulations.</li>
+                        </ol>
+                        <button onClick={this.closeInstructions}
+                        style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
+                            Let's draft!</button>
+                    </JqxPopover>
+                </div>
+                <h1 className={"App-header"}>Draft Simulator</h1>
+                <div className={"Buttons-and-boxes"}>
+                    <div className={"Player-list-box"}>
+                        <div>
+                            {!filteredPlayers && <img src={search} style={{height: '3vmin', position: 'absolute'}}
+                                                      alt="search"/>}
+                            <input type="text" style={{height: '25px', width: '90%'}}
+                                   value={this.state.searchText}
+                                   onClick={this.filterPlayers}
+                                   onChange={this.filterPlayers}>{null}</input>
+                        </div>
+                        {playerListBox}
+                    </div>
+                    <div className={"Player-buttons"}>
+                        <button onClick={this.clearPlayers} style={{fontSize: 16}}
+                                className={"Clear-button"}>Clear</button>
+                        <button id='rankingButton' onClick={this.loadRankings}
+                                className={"Ranking-button"}>Load Saved Rankings</button>
+                        <button id='swapButton' style={{backgroundColor: swapButtonColor}}
+                                onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
+                    </div>
+                    <div className={"Player-list-box"}>
+                        <UserListBox userRoundList={userPlayers} removePlayer={this.removePlayer}
+                                     movePlayer={this.movePlayer} className={"Player-list-box"}/>
+                    </div>
+                    <div className={"Draft-buttons"}>
+                        <button onClick={this.saveRankings} style={{fontSize: 16}}
+                                className={"Ranking-button"}>Save Player Rankings</button>
+                        <button onClick={() => this.simulateDrafts(false)}
+                                style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
+                    </div>
+                    <div className={"Player-list-box"}>
+                        <tr>
+                            <button
+                                onClick={() => this.toggleFrequencyData(userFreqs)}
+                                style={{borderStyle: (frequencyData === userFreqs) ?
+                                        'inset' : 'outset'}}>Your Players</button>
+                            <button
+                                onClick={() => this.toggleFrequencyData(allFreqs)}
+                                style={{borderStyle: (frequencyData === allFreqs) ?
+                                        'inset' : 'outset'}}>All Players</button>
+                            <button
+                                onClick={() => this.toggleFrequencyData(expectedTeam)}
+                                style={{borderStyle: (frequencyData === expectedTeam) ?
+                                        'inset' : 'outset'}}>Expected Team</button>
+                        </tr>
+                        {draftResultsTable}
                     </div>
                 </div>
-            );
-        } else {
-            const swapButtonText = window.location.pathname.startsWith('/espn') ? 'Switch to Yahoo' : 'Switch to ESPN';
-            const swapButtonColor = window.location.pathname.startsWith('/espn') ? '#6C00B3' : '#CE0000';
-
-            return (
-                <Container fluid={true}>
-                    <Navbar bg="primary" variant="dark">
-                        <Nav className="Nav-bar">
-                          <Nav.Link href="/">Home</Nav.Link>
-                          <Nav.Link href="#about">About</Nav.Link>
-                          <Nav.Link href="#instructions">Instructions</Nav.Link>
-                          <Nav.Link href="/dfs-optimizer">DFS Optimizer</Nav.Link>
-                            <Nav.Link href="/logout">Logout</Nav.Link>
-                        </Nav>
-                    </Navbar>
-                    <div className={"Info-buttons"}>
-                        <JqxPopover ref='about' isModal={true} width={310}
-                            position={'bottom'} title={'About Draft Simulator'} selector={'a[href$="#about"]'}>
-                            <p>Draft Simulator is a fantasy football draft preparation tool.</p>
-                            <p>More often than not, others in your league will only draft among the "top available players"
-                                in each round, which are determined by ESPN's preseason rankings.</p>
-                            <p>However, Draft Simulator allows you to create and refine your own personal rankings that you
-                                can bring to your draft to get the team you've always dreamed of.</p>
-                            <button onClick={this.closeAbout}
-                            style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                                Got it!</button>
-                        </JqxPopover>
-                        <JqxPopover ref='instructions' isModal={true} width={310}
-                            position={'bottom'} title={'Instructions'} selector={'a[href$="#instructions"]'}>
-                            <ol>
-                                <li>Search for and select players from the player list. These should be players you'd feel
-                                    strongly about drafting.</li>
-                                <li>Click "Add" to move them to your preferred list.</li>
-                                <li>Drag and drop your players in order of overall preference.</li>
-                                <li>Adjust the sliders to your desired specifications, then click "Draft".</li>
-                                <li>See how often you were able to draft each player under the "Draft Frequency" tab.</li>
-                                <li>The "All Players" tab shows the draft frequency of all players taken, not just your
-                                    preferred players.</li>
-                                <li>The "Expected Team" tab shows your most likely fantasy team given the simulations.</li>
-                            </ol>
-                            <button onClick={this.closeInstructions}
-                            style={{ float: 'right', marginTop: '10px', padding: '8px 12px', borderRadius: '6px' }}>
-                                Let's draft!</button>
-                        </JqxPopover>
+                <div className={"Slider-row"}>
+                    <div className={"Sliders"}>
+                        <p>Number of teams per draft:</p>
+                        <div>{teamCount}</div>
+                        <input type={"range"} min={6} max={14} step={2} value={teamCount}
+                               onChange={(event) => this.handleSliderChange('teamCount', event)}/>
                     </div>
-                    <h1 className={"App-header"}>Draft Simulator</h1>
-                    <div className={"Buttons-and-boxes"}>
-                        <div className={"Player-list-box"}>
-                            <div>
-                                {!filteredPlayers && <img src={search} style={{height: '3vmin', position: 'absolute'}} alt="search"/>}
-                                <input type="text" style={{height: '25px', width: '90%'}}
-                                       value={this.state.searchText}
-                                       onClick={this.filterPlayers}
-                                       onChange={this.filterPlayers}>{null}</input>
-                            </div>
-                            <PlayerListBox playerList={players} filterList={filteredPlayers} addPlayer={this.addPlayer}/>
-                        </div>
-                        <div className={"Player-buttons"}>
-                            <button onClick={this.clearPlayers} style={{fontSize: 16}} className={"Clear-button"}>Clear</button>
-                            <button id='rankingButton' onClick={this.loadRankings} className={"Ranking-button"}>Load Saved Rankings</button>
-                            <button id='swapButton' style={{backgroundColor: swapButtonColor}} onClick={this.swapRankings} className={"Swap-button"}>{swapButtonText}</button>
-                        </div>
-                        <div className={"Player-list-box"}>
-                            <UserListBox userRoundList={userPlayers} removePlayer={this.removePlayer} movePlayer={this.movePlayer} className={"Player-list-box"}/>
-                        </div>
-                        <div className={"Draft-buttons"}>
-                            <button onClick={this.saveRankings} style={{fontSize: 16}} className={"Ranking-button"}>Save Player Rankings</button>
-                            <button onClick={() => this.simulateDrafts(false)} style={{fontSize: 16}} className={"Draft-button"}>Draft!</button>
-                        </div>
-                        <div className={"Player-list-box"}>
-                            <tr>
-                                <button
-                                    onClick={() => this.toggleFrequencyData(userFreqs)}
-                                    style={{borderStyle: (frequencyData === userFreqs) ? 'inset' : 'outset'}}>Your Players</button>
-                                <button
-                                    onClick={() => this.toggleFrequencyData(allFreqs)}
-                                    style={{borderStyle: (frequencyData === allFreqs) ? 'inset' : 'outset'}}>All Players</button>
-                                <button
-                                    onClick={() => this.toggleFrequencyData(expectedTeam)}
-                                    style={{borderStyle: (frequencyData === expectedTeam) ? 'inset' : 'outset'}}>Expected Team</button>
-                            </tr>
-                            <DraftResultsTable frequencyData={frequencyData}/>
-                        </div>
+                    <div className={"Sliders"}>
+                        <p>Your pick in the draft:</p>
+                        <div>{pickOrder}</div>
+                        <input type={"range"} min={1} max={teamCount} value={pickOrder}
+                                   onChange={(event) => this.handleSliderChange('pickOrder', event)}/>
+                        <form>
+                          <label>
+                            Randomize:
+                            <input type="checkbox" checked={isRandom} onChange={this.determineIfRandom}/>
+                          </label>
+                        </form>
                     </div>
-                    <div className={"Slider-row"}>
-                        <div className={"Sliders"}>
-                            <p>Number of teams per draft:</p>
-                            <div>{teamCount}</div>
-                            <input type={"range"} min={6} max={14} step={2} value={teamCount}
-                                   onChange={(event) => this.handleSliderChange('teamCount', event)}/>
-                        </div>
-                        <div className={"Sliders"}>
-                            <p>Your pick in the draft:</p>
-                            <div>{pickOrder}</div>
-                            <input type={"range"} min={1} max={teamCount} value={pickOrder}
-                                       onChange={(event) => this.handleSliderChange('pickOrder', event)}/>
-                            <form>
-                              <label>
-                                Randomize:
-                                <input type="checkbox" checked={isRandom} onChange={this.determineIfRandom}/>
-                              </label>
-                            </form>
-                        </div>
-                        <div className={"Sliders"}>
-                            <p>Number of rounds per draft:</p>
-                            <div>{roundCount}</div>
-                            <input type={"range"} min={1} max={16} value={roundCount}
-                                       onChange={(event) => this.handleSliderChange('roundCount', event)}/>
-                        </div>
+                    <div className={"Sliders"}>
+                        <p>Number of rounds per draft:</p>
+                        <div>{roundCount}</div>
+                        <input type={"range"} min={1} max={16} value={roundCount}
+                                   onChange={(event) => this.handleSliderChange('roundCount', event)}/>
                     </div>
-                </Container>
-            )
-        }
+                </div>
+            </Container>
+        )
     }
 }
