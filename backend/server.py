@@ -136,15 +136,9 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/espn")
+@app.route("/simulate")
 @might_need_to_login(login_required, is_production or postgres_configured)
-def espn():
-    return render_template("index.html")
-
-
-@app.route("/yahoo")
-@might_need_to_login(login_required, is_production or postgres_configured)
-def yahoo():
+def simulate():
     return render_template("index.html")
 
 
@@ -202,7 +196,7 @@ def run_draft():
     players_string, team_count, pick_order, round_count, site = data_list
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
     user_list = eval(players_string.replace('\\', ''))
-    player_list = cached_espn_players() if site == '/espn' else cached_yahoo_players()
+    player_list = cached_espn_players() if site == 'espn' else cached_yahoo_players()
     try:
         draft_results = get_draft_results(user_list, player_list, team_count, pick_order, round_count)
     except RuntimeError:
@@ -210,13 +204,13 @@ def run_draft():
     return jsonify(draft_results)
 
 
-@app.route("/dfs-optimizer")
+@app.route("/optimize")
 @might_need_to_login(login_required, is_production or postgres_configured)
 def dfs_optimizer():
     return render_template("index.html")
 
 
-@app.route("/dfs-optimizer/projections/<sport>")
+@app.route("/optimize/projections/<sport>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=3600)
 def cached_dfs_projections(sport):
