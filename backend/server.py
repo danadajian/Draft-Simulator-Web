@@ -13,14 +13,11 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 import os
-from selenium import webdriver
 from sqlalchemy_utils import database_exists
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 
-is_production = True if os.environ.get('IS_HEROKU') else False
-postgres_configured = True
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -31,13 +28,10 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-if is_production:
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--no-sandbox')
-else:
+
+is_production = True if os.environ.get('IS_HEROKU') else False
+postgres_configured = True
+if not is_production:
     try:
         database_exists('postgresql://localhost/accounts')
     except Exception as e:
@@ -179,12 +173,7 @@ def save_ranking(site):
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=86400)
 def espn_players():
-    global espn_player_list
-    driver = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), chrome_options=chrome_options)\
-        if is_production else webdriver.Chrome('/chromedriver')
-    espn_player_list = get_espn_players(driver)
-    driver.quit()
-    return jsonify(espn_player_list)
+    return jsonify(get_espn_players())
 
 
 @app.route("/yahoo-players")
