@@ -1,4 +1,4 @@
-from backend.src.main.DFSFunctions import *
+from .DFSFunctions import *
 import datetime
 
 
@@ -123,6 +123,3 @@ def get_nfl_projections():
         return 'Not enough data is available.'
     except ConnectionError:
         return 'Error obtaining projection data.'
-
-
-print(get_nfl_projections())
