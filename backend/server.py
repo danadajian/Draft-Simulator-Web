@@ -169,18 +169,30 @@ def save_ranking(site):
     return 'User ranking saved.'
 
 
-@app.route("/espn-players")
+@app.route("/cached-espn-players")
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=86400)
+def cached_espn_players():
+    return get_espn_players()
+
+
+@app.route("/espn-players")
+@might_need_to_login(login_required, is_production or postgres_configured)
 def espn_players():
-    return jsonify(get_espn_players())
+    return jsonify(cached_espn_players())
+
+
+@app.route("/cached-yahoo-players")
+@might_need_to_login(login_required, is_production or postgres_configured)
+@cache.cached(timeout=86400)
+def cached_yahoo_players():
+    return get_yahoo_players()
 
 
 @app.route("/yahoo-players")
 @might_need_to_login(login_required, is_production or postgres_configured)
-@cache.cached(timeout=86400)
 def yahoo_players():
-    return jsonify(get_yahoo_players())
+    return jsonify(cached_yahoo_players())
 
 
 @app.route("/draft-results", methods=['POST'])
@@ -190,7 +202,7 @@ def run_draft():
     players_string, team_count, pick_order, round_count, site = data_list
     team_count, pick_order, round_count = int(team_count), int(pick_order), int(round_count)
     user_list = eval(players_string.replace('\\', ''))
-    player_list = espn_player_list if site == '/espn' else get_yahoo_players()
+    player_list = cached_espn_players() if site == '/espn' else cached_yahoo_players()
     try:
         draft_results = get_draft_results(user_list, player_list, team_count, pick_order, round_count)
     except RuntimeError:
