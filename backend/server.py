@@ -37,9 +37,7 @@ if is_production:
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--no-sandbox')
-    driver = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), chrome_options=chrome_options)
 else:
-    driver = webdriver.Chrome('/chromedriver')
     try:
         database_exists('postgresql://localhost/accounts')
     except Exception as e:
@@ -182,7 +180,10 @@ def save_ranking(site):
 @cache.cached(timeout=86400)
 def espn_players():
     global espn_player_list
+    driver = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), chrome_options=chrome_options)\
+        if is_production else webdriver.Chrome('/chromedriver')
     espn_player_list = get_espn_players(driver)
+    driver.quit()
     return jsonify(espn_player_list)
 
 
