@@ -1,35 +1,31 @@
 self.__precacheManifest = [
   {
-    "revision": "935f251e2415879fa728",
-    "url": "/static/react/css/main.8873d0f1.chunk.css"
+    "revision": "dda0cf390d26e427a9dd145a90c46b07",
+    "url": "/static/react/media/rainy.dda0cf39.ico"
   },
   {
-    "revision": "935f251e2415879fa728",
-    "url": "/static/react/js/main.c7e60763.chunk.js"
+    "revision": "162b0164036653e46f14",
+    "url": "/static/react/css/main.cebcb93e.chunk.css"
   },
   {
-    "revision": "53eac5d40d2daff628d2",
-    "url": "/static/react/js/runtime~main.5d7886d3.js"
+    "revision": "dacd178ce7b78af49829",
+    "url": "/static/react/js/runtime~main.68e9eaf0.js"
   },
   {
-    "revision": "d4824d4ee727a5efb139",
-    "url": "/static/react/css/2.1c4270d1.chunk.css"
+    "revision": "6188903947924fda894d30be5f7d41e7",
+    "url": "/static/react/media/down.61889039.ico"
   },
   {
-    "revision": "d4824d4ee727a5efb139",
-    "url": "/static/react/js/2.240d67ed.chunk.js"
+    "revision": "8cf8bd62a04d9a48b078",
+    "url": "/static/react/js/2.1a6fe8e3.chunk.js"
   },
   {
     "revision": "c5005feba5d92371ab2c34bb97965345",
     "url": "/static/react/media/football.c5005feb.ico"
   },
   {
-    "revision": "076dc20edf52be6efbb83c7dd09b84fa",
-    "url": "/static/react/media/map-hue.076dc20e.png"
-  },
-  {
-    "revision": "b01e6120d05abd33918d1dbb78c0660f",
-    "url": "/static/react/media/map-saturation-overlay.b01e6120.png"
+    "revision": "fac026150f2238451561518806c0d56d",
+    "url": "/static/react/media/football2.fac02615.svg"
   },
   {
     "revision": "04c89f3b398312edea35fd2f5b3a1152",
@@ -44,8 +40,8 @@ self.__precacheManifest = [
     "url": "/static/react/media/partlycloudy.a5e52894.ico"
   },
   {
-    "revision": "dda0cf390d26e427a9dd145a90c46b07",
-    "url": "/static/react/media/rainy.dda0cf39.ico"
+    "revision": "162b0164036653e46f14",
+    "url": "/static/react/js/main.5e5a08f0.chunk.js"
   },
   {
     "revision": "203024abc663f0adbb4437be12113bbc",
@@ -60,6 +56,14 @@ self.__precacheManifest = [
     "url": "/static/react/media/sunny.a306062d.ico"
   },
   {
+    "revision": "076dc20edf52be6efbb83c7dd09b84fa",
+    "url": "/static/react/media/map-hue.076dc20e.png"
+  },
+  {
+    "revision": "b01e6120d05abd33918d1dbb78c0660f",
+    "url": "/static/react/media/map-saturation-overlay.b01e6120.png"
+  },
+  {
     "revision": "220c44df06de135a3076fb8e80ca6b5a",
     "url": "/static/react/media/plus.220c44df.ico"
   },
@@ -72,11 +76,11 @@ self.__precacheManifest = [
     "url": "/static/react/media/up.04732abf.ico"
   },
   {
-    "revision": "6188903947924fda894d30be5f7d41e7",
-    "url": "/static/react/media/down.61889039.ico"
+    "revision": "8cf8bd62a04d9a48b078",
+    "url": "/static/react/css/2.9796c495.chunk.css"
   },
   {
-    "revision": "b9fdcd08067d7430055d7c6e623aebb0",
+    "revision": "a86a37f9dbfa95aeda8fb4c757bd2ca3",
     "url": "/static/react/../../templates/index.html"
   }
 ];

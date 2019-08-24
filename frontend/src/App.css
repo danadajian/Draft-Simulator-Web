@@ -239,6 +239,15 @@ a:active {
   padding-bottom: 30%;
 }
 
+.Optimizing-text {
+  font-size: x-large;
+  font-weight: bold;
+  font-style: oblique;
+  text-align: center;
+  color: black;
+  padding-top: 25%;
+}
+
 .App-logo {
   animation: App-logo-spin infinite 2.5s linear;
   height: 20vmin;
@@ -252,6 +261,36 @@ a:active {
   to {
     transform: rotate(360deg);
   }
+}
+
+.App-logo2 {
+  animation: App-logo-fill 2s ease infinite;
+  background: white;
+  height: 20vmin;
+}
+
+@keyframes App-logo-fill {
+  0% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, transparent 0)}
+  5% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 5%, transparent 0)}
+  10% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 10%, transparent 0)}
+  15% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 15%, transparent 0)}
+  20% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 20%, transparent 0)}
+  25% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 25%, transparent 0)}
+  30% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 30%, transparent 0)}
+  35% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 35%, transparent 0)}
+  40% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 40%, transparent 0)}
+  45% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 45%, transparent 0)}
+  50% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 50%, transparent 0)}
+  55% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 55%, transparent 0)}
+  60% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 60%, transparent 0)}
+  65% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 65%, transparent 0)}
+  70% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 70%, transparent 0)}
+  75% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 75%, transparent 0)}
+  80% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 80%, transparent 0)}
+  85% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 85%, transparent 0)}
+  90% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 90%, transparent 0)}
+  95% {mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 95%, transparent 0)}
+  100% {mask-image: none}
 }
 
 .Dfs-grid-section {

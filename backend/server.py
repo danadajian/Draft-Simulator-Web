@@ -216,26 +216,24 @@ def dfs_optimizer():
     return render_template("index.html")
 
 
-@app.route("/dfs-optimizer/projections", methods=['GET', 'POST'])
+@app.route("/dfs-optimizer/projections/<sport>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=3600)
-def dfs_projections():
-    global projections_dict
-    projections_dict = {'mlb': get_mlb_projections(),
-                        'nfl': get_nfl_projections(),
-                        'nba': get_nba_projections()}
-    return jsonify(projections_dict)
+def cached_dfs_projections(sport):
+    if sport == 'mlb':
+        return get_mlb_projections()
+    elif sport == 'nfl':
+        return get_nfl_projections()
+    elif sport == 'nba':
+        return get_nba_projections()
+    else:
+        return 'Invalid sport.'
 
 
 @app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def optimized_team(sport):
-    global projections
-    try:
-        projections = projections_dict.get(sport)
-    except NameError:
-        dfs_projections()
-        projections = projections_dict.get(sport)
+    projections = cached_dfs_projections(sport)
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
