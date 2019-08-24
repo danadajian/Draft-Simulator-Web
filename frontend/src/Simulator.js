@@ -2,7 +2,6 @@ import React, {Component} from 'react'
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import './App.css';
 import JqxPopover from './jqxwidgets/react_jqxpopover'
-import JqxSlider from './jqxwidgets/react_jqxslider'
 import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx"
 import { DraftResultsTable } from "./DraftResultsTable.tsx";
 import football from './icons/football.ico'
@@ -34,17 +33,13 @@ export class Simulator extends Component {
                                 isLoading: false,
                                 players: players,
                             });
-                            this.bindSlidersToChangeEvent();
                         })
                 }
             });
     };
 
-    bindSlidersToChangeEvent = () => {
-        this.refs.teamCountSlider.on('change', (event) => {
-            let newTeamCount = event.args.value;
-            this.refs.pickOrderSlider.setOptions({max: newTeamCount});
-        });
+    handleSliderChange = (param, event) => {
+        this.setState({[param]: event.target.value})
     };
 
     closeAbout = () => {
@@ -98,8 +93,7 @@ export class Simulator extends Component {
                             if (userRanking[0] === 'No ranking specified.') {
                                 alert(userRanking[0]);
                             } else {
-                                let players = this.state.players;
-                                let userPlayers = this.state.userPlayers;
+                                let {players, userPlayers} = this.state;
                                 let allPlayers = players.concat(userPlayers.flat());
                                 players = allPlayers.sort((a, b) => a.Rank - b.Rank);
                                 let allLoadedPlayers = userRanking.flat();
@@ -135,8 +129,7 @@ export class Simulator extends Component {
     };
 
     addPlayer = (playerIndex) => {
-        let players = this.state.players;
-        let userPlayers = this.state.userPlayers;
+        let {players, userPlayers} = this.state;
         let playerToAdd = players[playerIndex];
         players.splice(playerIndex, 1);
         userPlayers[0].push(playerToAdd);
@@ -149,8 +142,7 @@ export class Simulator extends Component {
     };
 
     removePlayer = (roundIndex, playerIndex) => {
-        let players = this.state.players;
-        let userPlayers = this.state.userPlayers;
+        let {players, userPlayers} = this.state;
         let roundList = userPlayers[roundIndex];
         let removedPlayer = roundList[playerIndex];
         let removedPlayerRank = removedPlayer.Rank;
@@ -164,8 +156,7 @@ export class Simulator extends Component {
     };
 
     clearPlayers = () => {
-        let players = this.state.players;
-        let userPlayers = this.state.userPlayers;
+        let {players, userPlayers} = this.state;
         let allUserPlayers = userPlayers.flat();
         let allPlayers = players.concat(allUserPlayers);
         this.setState({
@@ -209,21 +200,12 @@ export class Simulator extends Component {
             this.setState({isDrafting: false});
             return
         }
-        let userPlayers = this.state.userPlayers;
+        let {userPlayers, teamCount, pickOrder, roundCount} = this.state;
         if (userPlayers.every((roundList) => roundList.length === 0)) {
             alert('Please select at least one player to draft.');
         } else {
             let playerNames = userPlayers.map((roundList) => roundList.map((player) => player.Name));
-            let teamCount = this.refs.teamCountSlider.getValue();
-            let roundCount = this.refs.roundCountSlider.getValue();
-            let userPick = this.refs.pickOrderSlider.getValue();
-            let pickOrder = (this.state.isRandom) ? 0: userPick;
-            this.setState({
-                isDrafting: true,
-                teamCount: teamCount,
-                pickOrder: userPick,
-                roundCount: roundCount
-            });
+            this.setState({isDrafting: true});
             fetch(window.location.origin + '/draft-results', {
                 method: 'POST',
                 body: JSON.stringify(playerNames) + '|' + teamCount + '|' + pickOrder + '|' + roundCount + '|' + window.location.pathname
@@ -255,8 +237,6 @@ export class Simulator extends Component {
             expectedTeam: draftResults.ExpectedTeam,
             frequencyData: draftResults.UserFrequencies
         });
-
-        this.bindSlidersToChangeEvent();
     };
 
     toggleFrequencyData = (frequencyData) => {
@@ -371,32 +351,28 @@ export class Simulator extends Component {
                     </div>
                     <div className={"Slider-row"}>
                         <div className={"Sliders"}>
-                        <p>Number of teams per draft:</p>
-                        <JqxSlider ref='teamCountSlider'
-                        height={55} width={350}
-                        value={teamCount} min={6} max={14} showTickLabels={true} step={2}
-                        ticksFrequency={2} tooltip={true} mode={'fixed'}/>
+                            <p>Number of teams per draft:</p>
+                            <div>{teamCount}</div>
+                            <input type={"range"} min={6} max={14} step={2} value={teamCount}
+                                   onChange={(event) => this.handleSliderChange('teamCount', event)}/>
                         </div>
                         <div className={"Sliders"}>
-                        <p>Your pick in the draft:</p>
-                        <JqxSlider ref='pickOrderSlider'
-                            height={55} width={350}
-                            value={pickOrder} min={1} max={teamCount} showTickLabels={true}
-                            ticksFrequency={1} tooltip={true} mode={'fixed'}/>
-                        <form>
-                          <label>
-                            Randomize:
-                            <input type="checkbox" checked={isRandom} onChange={this.determineIfRandom}/>
-                          </label>
-                        </form>
+                            <p>Your pick in the draft:</p>
+                            <div>{pickOrder}</div>
+                            <input type={"range"} min={1} max={teamCount} value={pickOrder}
+                                       onChange={(event) => this.handleSliderChange('pickOrder', event)}/>
+                            <form>
+                              <label>
+                                Randomize:
+                                <input type="checkbox" checked={isRandom} onChange={this.determineIfRandom}/>
+                              </label>
+                            </form>
                         </div>
                         <div className={"Sliders"}>
-                        <p>Number of rounds per draft:</p>
-                        <JqxSlider ref='roundCountSlider'
-                        height={55} width={350}
-                        value={roundCount} min={1} max={16} showTickLabels={true}
-                        ticksFrequency={15} showMinorTicks={true}
-                        minorTicksFrequency={1} tooltip={true} mode={'fixed'}/>
+                            <p>Number of rounds per draft:</p>
+                            <div>{roundCount}</div>
+                            <input type={"range"} min={1} max={16} value={roundCount}
+                                       onChange={(event) => this.handleSliderChange('roundCount', event)}/>
                         </div>
                     </div>
                 </Container>
