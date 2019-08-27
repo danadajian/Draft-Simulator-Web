@@ -34,31 +34,74 @@ def get_best_lineup(player_pools):
     return best_lineup
 
 
-def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
-    optimal_lineup = [player for player in best_lineup]
-    current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
+def best_first_downgrade(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
+    final_lineup = [player for player in best_lineup]
+    current_salary = sum([salary_dict.get(player) for player in final_lineup])
     salary_min = statistics.mean(list(salary_dict.values()))
     while current_salary > salary_cap:
         current_lowest_cost, downgrade_index, new_player = None, None, None
-        for player in optimal_lineup:
-            player_pool = pools[optimal_lineup.index(player)]
+        for player in final_lineup:
+            player_pool = pools[final_lineup.index(player)]
             if player in player_pool:
                 player_index = player_pool.index(player)
             else:
                 return None
-            if player_index == len(player_pool) - 1 or player_pool[player_index + 1] in optimal_lineup or salary_dict.get(player) < salary_min:
+            if player_index == len(player_pool) - 1 or player_pool[player_index + 1] in final_lineup or salary_dict.get(player) < salary_min:
                 continue
             current_ratio = proj_pts_dict.get(player) / salary_dict.get(player)
             downgrade_ratio = proj_pts_dict.get(player_pool[player_index + 1]) / salary_dict.get(player_pool[player_index + 1])
             cost_to_downgrade = current_ratio - downgrade_ratio
             if not current_lowest_cost or cost_to_downgrade < current_lowest_cost:
                 current_lowest_cost = cost_to_downgrade
-                downgrade_index = optimal_lineup.index(player)
+                downgrade_index = final_lineup.index(player)
                 new_player = player_pool[player_index + 1]
         if not new_player:
             return None
-        optimal_lineup[downgrade_index] = new_player
-        current_salary = sum([salary_dict.get(player) for player in optimal_lineup])
+        final_lineup[downgrade_index] = new_player
+        current_salary = sum([salary_dict.get(player) for player in final_lineup])
+    return final_lineup
+
+
+def improve_lineup(lineup, max_pts, pools, proj_pts_dict, salary_dict, salary_cap):
+    better_lineup = []
+    for player in lineup:
+        player_index = lineup.index(player)
+        player_pool = pools[player_index]
+        player_pool_with_pts = {player: proj_pts_dict.get(player) for player in player_pool}
+        sorted_pool = sorted(player_pool_with_pts, key=player_pool_with_pts.__getitem__, reverse=True)
+        counter = 1
+        while sorted_pool.index(player) - counter >= 0:
+            new_lineup = [player for player in lineup]
+            new_index = sorted_pool.index(player) - counter
+            new_player = sorted_pool[new_index]
+            if new_player not in new_lineup:
+                new_lineup[player_index] = new_player
+                if sum([proj_pts_dict.get(player) for player in new_lineup]) > max_pts \
+                        and sum([salary_dict.get(player) for player in new_lineup]) <= salary_cap:
+                    max_pts = sum([proj_pts_dict.get(player) for player in new_lineup])
+                    better_lineup = new_lineup
+            counter += 1
+    return {'better_lineup': better_lineup, 'max_pts': max_pts}
+
+
+def maximize_improvement(lineup, pools, proj_pts_dict, salary_dict, salary_cap):
+    max_pts = sum([proj_pts_dict.get(player) for player in lineup])
+    while True:
+        results_dict = improve_lineup(lineup, max_pts, pools, proj_pts_dict, salary_dict, salary_cap)
+        better_lineup, new_max = results_dict.get('better_lineup'), results_dict.get('max_pts')
+        if not better_lineup:
+            print('Better lineup could not be found!')
+            for player in lineup:
+                print(player, proj_pts_dict.get(player), salary_dict.get(player))
+            print(new_max, sum([salary_dict.get(player) for player in lineup]))
+            return lineup
+        lineup = better_lineup
+        max_pts = new_max
+
+
+def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
+    initial_lineup = best_first_downgrade(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap)
+    optimal_lineup = maximize_improvement(initial_lineup, pools, proj_pts_dict, salary_dict, salary_cap)
     return optimal_lineup
 
 
