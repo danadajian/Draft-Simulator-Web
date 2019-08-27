@@ -27,10 +27,10 @@ const Player = (props: playerProps) => {
     const weatherImage =
         (forecast.includes('partly')) ? partlyCloudy :
         (forecast.includes('cloud')) ? cloudy :
-        (forecast.includes('rain')) ? rainy :
-        (forecast.includes('snow')) ? snowy :
-        (forecast.includes('storm')) ? stormy :
-        (forecast.includes('sun')) ? sunny : null;
+        (forecast.includes('storm') || forecast.includes('thunder')) ? stormy :
+        (forecast.includes('rain') || forecast.includes('shower')) ? rainy :
+        (forecast.includes('snow') || forecast.includes('flurr')) ? snowy :
+        (forecast.includes('sun') || forecast.includes('clear')) ? sunny : null;
 
     return (
         <tr>
