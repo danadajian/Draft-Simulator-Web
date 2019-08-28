@@ -54,3 +54,19 @@ class OptimizerTests(unittest.TestCase):
         new_salary = sum([salary_dict.get(player) for player in new_lineup])
         print(new_pts, new_salary)
         self.assertTrue(new_pts > old_pts)
+
+    def test_new_v_newer(self):
+        old_lineup = optimize(best_lineup, pools, proj_points_dict, salary_dict, salary_cap)
+        new_lineup = optimize(best_lineup, pools, proj_points_dict, salary_dict, salary_cap)
+        for player in old_lineup:
+            print(pos_dict.get(player), player, proj_points_dict.get(player), salary_dict.get(player))
+        old_pts = sum([proj_points_dict.get(player) for player in old_lineup])
+        old_salary = sum([salary_dict.get(player) for player in old_lineup])
+        print(old_pts, old_salary)
+        print('~~~~~~~~~~~~~~~~~~~~~~~~')
+        for player in new_lineup:
+            print(pos_dict.get(player), player, proj_points_dict.get(player), salary_dict.get(player))
+        new_pts = sum([proj_points_dict.get(player) for player in new_lineup])
+        new_salary = sum([salary_dict.get(player) for player in new_lineup])
+        print(new_pts, new_salary)
+        self.assertTrue(new_pts > old_pts)
