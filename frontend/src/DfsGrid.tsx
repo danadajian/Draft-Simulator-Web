@@ -23,14 +23,15 @@ const stormy = require("./icons/stormy.ico") as any;
 const sunny = require("./icons/sunny.ico") as any;
 
 const Player = (props: playerProps) => {
-    const forecast = props.player.Weather.forecast.toLowerCase();
-    const weatherImage =
+    const forecast = (props.player.Weather.forecast) ? props.player.Weather.forecast.toLowerCase() : null;
+    const weatherImage = (props.player.Weather.forecast) ?
         (forecast.includes('partly')) ? partlyCloudy :
         (forecast.includes('cloud')) ? cloudy :
-        (forecast.includes('rain')) ? rainy :
-        (forecast.includes('snow')) ? snowy :
-        (forecast.includes('storm')) ? stormy :
-        (forecast.includes('sun')) ? sunny : null;
+        (forecast.includes('storm') || forecast.includes('thunder')) ? stormy :
+        (forecast.includes('rain') || forecast.includes('shower')) ? rainy :
+        (forecast.includes('snow') || forecast.includes('flurr')) ? snowy :
+        (forecast.includes('sun') || forecast.includes('clear')) ? sunny : null
+        : null;
 
     return (
         <tr>
