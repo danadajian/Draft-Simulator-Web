@@ -66,9 +66,7 @@ def improve_lineup(lineup, max_pts, pools, proj_pts_dict, salary_dict, salary_ca
     better_lineup = []
     for player in lineup:
         player_index = lineup.index(player)
-        player_pool = pools[player_index]
-        player_pool_with_pts = {player: proj_pts_dict.get(player) for player in player_pool}
-        sorted_pool = sorted(player_pool_with_pts, key=player_pool_with_pts.__getitem__, reverse=True)
+        sorted_pool = pools[player_index]
         counter = 1
         while sorted_pool.index(player) - counter >= 0:
             new_lineup = [player for player in lineup]
