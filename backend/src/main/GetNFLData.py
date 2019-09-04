@@ -7,21 +7,22 @@ def get_sunday_string():
     current_day = datetime.datetime.today().weekday()
     days_till_sunday = 6 - current_day
     sunday = now + datetime.timedelta(days=days_till_sunday)
-    sunday_string = str(sunday.year) + '-' + str(sunday.month) + '-' + str(sunday.day)
+    month = '0' + str(sunday.month) if len(str(sunday.month)) == 1 else str(sunday.month)
+    day = '0' + str(sunday.day) if len(str(sunday.day)) == 1 else str(sunday.day)
+    sunday_string = str(sunday.year) + '-' + month + '-' + day
     return sunday_string
 
 
-def get_current_week(sunday_string):
+def get_sunday_events(sunday_string):
     events_endpoint = 'stats/football/nfl/events/'
     events_call = call_api(events_endpoint, '&date=' + str(sunday_string))
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
-    week = events[0].get('week')
-    return week
+    return events
 
 
-def get_events(week):
+def get_all_events():
     events_endpoint = 'stats/football/nfl/events/'
-    events_call = call_api(events_endpoint, '&week=' + str(week))
+    events_call = call_api(events_endpoint, '')
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     return events
 
@@ -95,7 +96,7 @@ def get_weather(date_string):
                          'details':
                             str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
                             str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'}
-                        for forecast in weather_results_by_event}
+                        for forecast in weather_results_by_event if forecast.get('forecasts')[0]}
     return weather_by_event
 
 
@@ -104,20 +105,21 @@ def get_nfl_projections():
         if is_offseason('nfl'):
             return 'offseason'
         sunday_string = get_sunday_string()
-        week = get_current_week(sunday_string)
-        events = get_events(week)
+        # events = get_all_events()
+        events = get_sunday_events(sunday_string)
+        week = events[0].get('week')
         team_info = get_team_info(events)
         projections = get_projections_from_week(week)
         weather_by_event = get_weather(sunday_string)
         nfl_projections = [{
             'name': player,
-            'projection': projection or 'unavailable',
+            'projection': projection.get('projection') or 'unavailable',
             'team': projection.get('team') or 'unavailable',
             'opponent': (team_info.get(projection.get('team')).get('opponent')
             if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable',
             'weather': (weather_by_event.get(team_info.get(projection.get('team')).get('eventId'))
             if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable'
-        } for player, projection in projections.items()]
+        } for player, projection in projections.items() if team_info.get(projection.get('team'))]
         return nfl_projections
     except FileNotFoundError:
         return 'Not enough data is available.'
