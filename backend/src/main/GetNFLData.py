@@ -17,7 +17,7 @@ def get_sunday_events(sunday_string):
     events_endpoint = 'stats/football/nfl/events/'
     events_call = call_api(events_endpoint, '&date=' + str(sunday_string))
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
-    return events
+    return events[:-1]
 
 
 def get_all_events():
@@ -108,7 +108,7 @@ def get_nfl_projections():
             return 'offseason'
         sunday_string = get_sunday_string()
         # events = get_all_events()
-        events = [event for event in get_sunday_events(sunday_string) if event.get('eventId') != 2142112]
+        events = get_sunday_events(sunday_string)
         week = events[0].get('week')
         team_info = get_team_info(events)
         projections = get_projections_from_week(week)
@@ -119,9 +119,9 @@ def get_nfl_projections():
             'projection': projection.get('projection') or 'unavailable',
             'team': projection.get('team') or 'unavailable',
             'opponent': (team_info.get(projection.get('team')).get('opponent')
-            if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable',
+                         if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable',
             'weather': (weather_by_event.get(team_info.get(projection.get('team')).get('eventId'))
-            if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable'
+                        if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable'
         } for player, projection in projections.items() if team_info.get(projection.get('team'))]
         return nfl_projections
     except FileNotFoundError:
