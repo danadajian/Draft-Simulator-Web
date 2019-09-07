@@ -1,5 +1,5 @@
 import statistics
-from backend.src.main.GetSalaries import get_fd_salaries
+from .GetSalaries import get_fd_salaries
 
 
 def remove_ignored_players(player_pools, black_list):
