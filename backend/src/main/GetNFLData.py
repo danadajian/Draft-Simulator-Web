@@ -58,6 +58,7 @@ def get_offense_projections(projections):
     offense_projections = {
         player.get('player').get('firstName') + ' ' + player.get('player').get('lastName'):
         {
+            'id': player.get('player').get('playerId'),
             'team': player.get('team').get('abbreviation'),
             'projection': player.get('fantasyProjections')
         }
@@ -71,6 +72,7 @@ def get_defense_projections(projections):
     defense_projections = {
         team.get('team').get('nickname') + ' D/ST':
         {
+            'id': team.get('team').get('teamId'),
             'team': team.get('team').get('abbreviation'),
             'projection': team.get('fantasyProjections')
         }
@@ -106,13 +108,14 @@ def get_nfl_projections():
             return 'offseason'
         sunday_string = get_sunday_string()
         # events = get_all_events()
-        events = get_sunday_events(sunday_string)
+        events = [event for event in get_sunday_events(sunday_string) if event.get('eventId') != 2142112]
         week = events[0].get('week')
         team_info = get_team_info(events)
         projections = get_projections_from_week(week)
         weather_by_event = get_weather(sunday_string)
         nfl_projections = [{
             'name': player,
+            'id': projection.get('id') or 'unavailable',
             'projection': projection.get('projection') or 'unavailable',
             'team': projection.get('team') or 'unavailable',
             'opponent': (team_info.get(projection.get('team')).get('opponent')
