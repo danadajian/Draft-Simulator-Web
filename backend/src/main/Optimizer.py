@@ -1,4 +1,5 @@
 import statistics
+from backend.src.main.GetSalaries import get_fd_salaries
 
 
 def remove_ignored_players(player_pools, black_list):
@@ -9,13 +10,21 @@ def remove_ignored_players(player_pools, black_list):
     return player_pools
 
 
+def is_valid_position(position, lineup_spot):
+    return True if (
+        position in lineup_spot or
+        lineup_spot in position or
+        any(pos in lineup_spot for pos in position.split('/')) or
+        any(pos in position for pos in lineup_spot.split(' '))
+    ) else False
+
+
 def get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict):
     sorted_players = sorted(proj_dict, key=proj_dict.__getitem__, reverse=True)
     sorted_positions = [pos_dict.get(player) for player in sorted_players]
     sorted_positions_dict = dict(zip(sorted_players, sorted_positions))
     player_pools_with_ignored = [[player for player in sorted_positions_dict.keys()
-                                  if (sorted_positions_dict.get(player) in spot
-                                  or spot in sorted_positions_dict.get(player))
+                                  if is_valid_position(pos_dict.get(player), spot)
                                   and player in salary_dict.keys()]
                                  for spot in lineup_matrix]
     player_pools = remove_ignored_players(player_pools_with_ignored, black_list)
@@ -88,10 +97,6 @@ def maximize_improvement(lineup, pools, proj_pts_dict, salary_dict, salary_cap):
         results_dict = improve_lineup(lineup, max_pts, pools, proj_pts_dict, salary_dict, salary_cap)
         better_lineup, new_max = results_dict.get('better_lineup'), results_dict.get('max_pts')
         if not better_lineup:
-            print('Better lineup could not be found!')
-            for player in lineup:
-                print(player, proj_pts_dict.get(player), salary_dict.get(player))
-            print(new_max, sum([salary_dict.get(player) for player in lineup]))
             return lineup
         lineup = better_lineup
         max_pts = new_max
@@ -149,15 +154,22 @@ def get_dfs_lineup(site, sport, projections, black_list):
     proj_points_dict = {player_dict.get('name'): float(site_projection.get('points'))
                         for player_dict in projections
                         for site_projection in player_dict.get('projection')
-                        if site_projection.get('siteId') == site_id}
+                        if site_projection.get('siteId') == (5 if sport == 'nfl' else site_id)}
     pos_dict = {player_dict.get('name'): site_projection.get('position')
                 for player_dict in projections
                 for site_projection in player_dict.get('projection')
                 if site_projection.get('siteId') == site_id}
-    salary_dict = {player_dict.get('name'): int(site_projection.get('salary'))
-                   for player_dict in projections
-                   for site_projection in player_dict.get('projection')
-                   if site_projection.get('siteId') == site_id}
+    if site == 'dk':
+        salary_dict = {player_dict.get('name'): int(site_projection.get('salary'))
+                       for player_dict in projections
+                       for site_projection in player_dict.get('projection')
+                       if site_projection.get('siteId') == site_id}
+    else:
+        fd_salary_dict = get_fd_salaries()
+        salary_dict = {player_dict.get('name'): fd_salary_dict.get(player_dict.get('id'))
+                       for player_dict in projections
+                       for site_projection in player_dict.get('projection')
+                       if site_projection.get('siteId') == site_id and fd_salary_dict.get(player_dict.get('id'))}
     team_and_weather_dict = {player_dict.get('name'): {'team': player_dict.get('team'),
                                                        'opponent': player_dict.get('opponent'),
                                                        'weather': player_dict.get('weather')}

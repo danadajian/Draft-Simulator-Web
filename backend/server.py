@@ -36,7 +36,7 @@ if not is_production:
         database_exists('postgresql://localhost/accounts')
     except Exception as e:
         postgres_configured = False
-        print(e.args, '=> WARNING: Postgres is not configured, so login functionality cannot be tested.')
+        print('WARNING: Postgres is not configured, so login functionality cannot be tested.\n', e)
         pass
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
 
