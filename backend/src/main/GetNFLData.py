@@ -17,7 +17,7 @@ def get_sunday_events(sunday_string):
     events_endpoint = 'stats/football/nfl/events/'
     events_call = call_api(events_endpoint, '&date=' + str(sunday_string))
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
-    return events
+    return events[:-1]
 
 
 def get_all_events():
@@ -58,6 +58,7 @@ def get_offense_projections(projections):
     offense_projections = {
         player.get('player').get('firstName') + ' ' + player.get('player').get('lastName'):
         {
+            'id': player.get('player').get('playerId'),
             'team': player.get('team').get('abbreviation'),
             'projection': player.get('fantasyProjections')
         }
@@ -71,6 +72,7 @@ def get_defense_projections(projections):
     defense_projections = {
         team.get('team').get('nickname') + ' D/ST':
         {
+            'id': team.get('team').get('teamId'),
             'team': team.get('team').get('abbreviation'),
             'projection': team.get('fantasyProjections')
         }
@@ -113,6 +115,7 @@ def get_nfl_projections():
         weather_by_event = get_weather(sunday_string)
         nfl_projections = [{
             'name': player,
+            'id': projection.get('id') or 'unavailable',
             'projection': projection.get('projection') or 'unavailable',
             'team': projection.get('team') or 'unavailable',
             'opponent': (team_info.get(projection.get('team')).get('opponent')
