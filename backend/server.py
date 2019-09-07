@@ -206,7 +206,7 @@ def run_draft():
 
 @app.route("/optimize")
 @might_need_to_login(login_required, is_production or postgres_configured)
-def dfs_optimizer():
+def optimize():
     return render_template("index.html")
 
 
