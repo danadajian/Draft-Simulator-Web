@@ -7,23 +7,28 @@ export class Optimizer extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: false, sport: '', fdLineup: [], dkLineup: []};
+        this.state = {isLoading: false, sport: '', slate: 'main', fdLineup: [], dkLineup: []};
     }
 
     dfsSportChange = (event) => {
-        let sport = event.target.value;
-        if (sport !== 'none') {
-            this.fetchOptimalLineups(sport);
+        let newSport = event.target.value;
+        if (newSport !== 'none') {
+            this.fetchOptimalLineups(newSport, this.state.slate);
         }
     };
 
-    fetchOptimalLineups = (sport) => {
+    slateChange = (event) => {
+        let newSlate = event.target.value;
+        this.fetchOptimalLineups(this.state.sport, newSlate);
+    };
+
+    fetchOptimalLineups = (sport, slate) => {
         if (!sport) {
             alert('Please select a sport.');
         } else {
             let prevSport = this.state.sport;
-            this.setState({isLoading: true, sport: sport});
-            fetch(window.location.origin + '/optimized-lineup/' + sport)
+            this.setState({isLoading: true, sport: sport, slate: slate});
+            fetch(window.location.origin + '/optimized-lineup/' + sport + '/' + slate)
                 .then(response => {
                     if (response.status !== 200) {
                         alert('Failed to generate lineups.');
@@ -56,9 +61,9 @@ export class Optimizer extends Component {
     };
 
     removePlayerFromDfsLineup = (lineupIndex, site) => {
-        let sport = this.state.sport;
+        let {sport, slate} = this.state;
         let removedPlayer = (site === 'fd') ? this.state.fdLineup[lineupIndex].Name : this.state.dkLineup[lineupIndex].Name;
-        fetch(window.location.origin + '/optimized-lineup/' + sport, {
+        fetch(window.location.origin + '/optimized-lineup/' + sport + '/' + slate, {
             method: 'POST',
             body: removedPlayer + '|' + site
         }).then(response => {
@@ -67,7 +72,7 @@ export class Optimizer extends Component {
             } else {
                 response.json()
                     .then((lineupJson) => {
-                        this.ingestDfsLineup(lineupJson, sport, true);
+                        this.ingestDfsLineup(lineupJson, sport, sport, true);
                         let alertString = (site === 'fd') ?
                             ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
                         alert('You have removed ' + removedPlayer + alertString);
@@ -77,7 +82,7 @@ export class Optimizer extends Component {
     };
 
     render() {
-        const {isLoading, sport, fdLineup, dkLineup} = this.state;
+        const {isLoading, sport, slate, fdLineup, dkLineup} = this.state;
         let gridSection;
 
         if (isLoading) {
@@ -112,14 +117,21 @@ export class Optimizer extends Component {
                 <h1 className={"App-header"}>DFS Optimizer</h1>
                 <div className={"Dfs-sport"}>
                     <h3>Choose a sport:</h3>
-                    <select ref={"dropDown"} className={"Drop-down"} onChange={this.dfsSportChange} value={sport}>
+                    <select className={"Drop-down"} onChange={this.dfsSportChange} value={sport}>
                         <option value="none"> </option>
                         <option value="mlb">MLB</option>
                         <option value="nfl">NFL</option>
                         <option value="nba">NBA</option>
                     </select>
+                    {(sport === 'nfl') && <h3>Choose a game slate:</h3>}
+                    {(sport === 'nfl') && <select className={"Drop-down"} onChange={this.slateChange} value={slate}>
+                                            <option value="thurs">Thurs only</option>
+                                            <option value="thurs-mon">Thurs - Mon</option>
+                                            <option value="main">Sun (Main)</option>
+                                            <option value="sun-mon">Sun - Mon</option>
+                                          </select>}
                     <button style={{marginTop: '10px'}}
-                            onClick={() => this.fetchOptimalLineups(sport)}>Reset</button>
+                            onClick={() => this.fetchOptimalLineups(sport, slate)}>Reset</button>
                 </div>
                 {gridSection}
             </Container>

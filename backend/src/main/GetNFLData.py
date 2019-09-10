@@ -1,23 +1,22 @@
-from .DFSFunctions import *
+from backend.src.main.DFSFunctions import *
 import datetime
 
 
-def get_sunday_string():
+def get_dow_string(dow_number):
     now = datetime.datetime.now()
     current_day = datetime.datetime.today().weekday()
-    days_till_sunday = 6 - current_day
-    sunday = now + datetime.timedelta(days=days_till_sunday)
-    month = '0' + str(sunday.month) if len(str(sunday.month)) == 1 else str(sunday.month)
-    day = '0' + str(sunday.day) if len(str(sunday.day)) == 1 else str(sunday.day)
-    sunday_string = str(sunday.year) + '-' + month + '-' + day
-    return sunday_string
+    days_till = dow_number - current_day
+    dow = now + datetime.timedelta(days=days_till)
+    month = '0' + str(dow.month) if len(str(dow.month)) == 1 else str(dow.month)
+    day = '0' + str(dow.day) if len(str(dow.day)) == 1 else str(dow.day)
+    dow_string = str(dow.year) + '-' + month + '-' + day
+    return dow_string
 
 
-def get_sunday_events(sunday_string):
-    events_endpoint = 'stats/football/nfl/events/'
-    events_call = call_api(events_endpoint, '&date=' + str(sunday_string))
-    events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
-    return events[:-1]
+def get_date_string(day):
+    days_of_week = ['Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun', 'Mon']
+    dow_dict = {day: num for num, day in enumerate(days_of_week, 1)}
+    return get_dow_string(dow_dict.get(day))
 
 
 def get_all_events():
@@ -25,6 +24,17 @@ def get_all_events():
     events_call = call_api(events_endpoint, '')
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     return events
+
+
+def get_event_dates(events):
+    event_dates = {}
+    for event in events:
+        year = str(event.get('startDate')[0].get('year'))
+        month = str(event.get('startDate')[0].get('month'))
+        day = str(event.get('startDate')[0].get('date'))
+        date_string = year + '-' + ('0' + month if len(month) == 1 else month) + '-' + ('0' + day if len(day) == 1 else day)
+        event_dates.update({event.get('eventId'): date_string})
+    return event_dates
 
 
 def get_team_info(events):
@@ -89,30 +99,48 @@ def get_projections_from_week(week):
     return projections_from_week
 
 
-def get_weather(date_string):
+def get_weather(date_strings):
     weather_endpoint = 'stats/football/nfl/weatherforecasts/'
-    call = call_api(weather_endpoint, '&date=' + date_string)
-    weather_results_by_event = call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('weatherForecasts')
-    weather_by_event = {forecast.get('eventId'):
-                        {'forecast': forecast.get('forecasts')[0].get('condition'),
-                         'details':
-                            str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
-                            str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'}
-                        for forecast in weather_results_by_event if forecast.get('forecasts')[0]}
+    weather_by_event = {}
+    for date_string in date_strings:
+        try:
+            call = call_api(weather_endpoint, '&date=' + date_string)
+            weather_results_by_event = call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('weatherForecasts')
+            weather_by_event.update({forecast.get('eventId'):
+                                {'forecast': forecast.get('forecasts')[0].get('condition'),
+                                 'details':
+                                    str(int(forecast.get('forecasts')[0].get('temperature')[0].get('degrees'))) + '°, ' +
+                                    str(int(round(float(forecast.get('forecasts')[0].get('precipitation')) * 100, 0))) + '% precip'}
+                                for forecast in weather_results_by_event if forecast.get('forecasts')[0]})
+        except FileNotFoundError:
+            weather_by_event.update({})
     return weather_by_event
 
 
-def get_nfl_projections():
+def get_nfl_projections(slate):
     try:
         if is_offseason('nfl'):
             return 'offseason'
-        sunday_string = get_sunday_string()
-        # events = get_all_events()
-        events = get_sunday_events(sunday_string)
-        week = events[0].get('week')
+        all_events = get_all_events()
+        event_dates = get_event_dates(all_events)
+        thurs_string, sun_string, mon_string = get_date_string('Thurs'), get_date_string('Sun'), get_date_string('Mon')
+        if slate == 'main':
+            events = [event for event in all_events if event_dates.get(event.get('eventId')) == sun_string][:-1]
+            weather_by_event = get_weather([sun_string])
+        elif slate == 'thurs':
+            events = [event for event in all_events if event_dates.get(event.get('eventId')) == thurs_string]
+            weather_by_event = get_weather([thurs_string])
+        elif slate == 'thurs-mon':
+            events = all_events
+            weather_by_event = get_weather([thurs_string, sun_string, mon_string])
+        elif slate == 'sun-mon':
+            events = [event for event in all_events if event_dates.get(event.get('eventId')) in (sun_string, mon_string)]
+            weather_by_event = get_weather([sun_string, mon_string])
+        else:
+            events, weather_by_event = [], []
         team_info = get_team_info(events)
+        week = all_events[0].get('week')
         projections = get_projections_from_week(week)
-        weather_by_event = get_weather(sunday_string)
         nfl_projections = [{
             'name': player,
             'id': projection.get('id') or 'unavailable',

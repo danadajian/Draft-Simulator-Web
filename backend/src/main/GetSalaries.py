@@ -1,13 +1,13 @@
 import requests
-from .GetNFLData import get_sunday_string
+from .GetNFLData import get_date_string
 
 
 def get_fd_salaries():
-    url = 'https://www.fanduel.com/api/playerprices?date=' + get_sunday_string()
+    url = 'https://www.fanduel.com/api/playerprices?date=' + get_date_string('Thurs')
     call = requests.get(url).text
     response = call.splitlines()
-    lower_bound = next(i for i in range(len(response)) if '<game>' in response[i] and '<label>Sun-Mon</label>' in response[i + 2])
-    upper_bound = next(j for j in range(lower_bound + 1, len(response)) if '<game>' in response[j])
+    lower_bound = next(i for i in range(len(response)) if '<game>' in response[i] and '<label>Thu-Mon</label>' in response[i + 2])
+    upper_bound = next((j for j in range(lower_bound + 1, len(response)) if '<game>' in response[j]), len(response))
     salary_dict = {}
     for i in range(lower_bound, upper_bound):
         if '<player>' in response[i]:
