@@ -1,5 +1,5 @@
 import unittest
-from backend.src.main.Optimizer import *
+from src.main.Optimizer import *
 
 
 class OptimizerTests(unittest.TestCase):

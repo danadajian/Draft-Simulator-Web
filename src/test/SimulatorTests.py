@@ -1,5 +1,5 @@
 import unittest
-from backend.src.main.Simulator import *
+from src.main.Simulator import *
 
 
 class SimulateDraftTests(unittest.TestCase):

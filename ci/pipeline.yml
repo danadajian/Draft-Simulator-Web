@@ -71,4 +71,4 @@ jobs:
                   login $HEROKU_EMAIL
                   password $HEROKU_AUTH
                 EOF
-                git subtree push --prefix backend https://git.heroku.com/draft-simulator.git master
+                git subtree push https://git.heroku.com/draft-simulator.git master

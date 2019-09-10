@@ -1,5 +1,5 @@
-from backend.src.main.DFSFunctions import call_api
-from backend.src.main.Optimizer import *
+from src.main.DFSFunctions import call_api
+from src.main.Optimizer import *
 
 
 def call_weekly_projections(week):
