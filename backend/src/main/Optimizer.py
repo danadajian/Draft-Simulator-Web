@@ -11,6 +11,8 @@ def remove_ignored_players(player_pools, black_list):
 
 
 def is_valid_position(position, lineup_spot):
+    if not position:
+        return False
     return True if (
         position in lineup_spot or
         lineup_spot in position or
@@ -21,7 +23,7 @@ def is_valid_position(position, lineup_spot):
 
 def get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict):
     sorted_players = sorted(proj_dict, key=proj_dict.__getitem__, reverse=True)
-    sorted_positions = [pos_dict.get(player) for player in sorted_players]
+    sorted_positions = [pos_dict.get(player) for player in sorted_players if pos_dict.get(player)]
     sorted_positions_dict = dict(zip(sorted_players, sorted_positions))
     player_pools_with_ignored = [[player for player in sorted_positions_dict.keys()
                                   if is_valid_position(pos_dict.get(player), spot)
@@ -171,6 +173,7 @@ def get_dfs_lineup(site, sport, projections, black_list):
     pos_dict = {player_dict.get('name'): site_projection.get('position')
                 for player_dict in projections
                 for site_projection in player_dict.get('projection')
+                if site_projection.get('position')
                 if site_projection.get('siteId') == site_id}
     team_and_weather_dict = {player_dict.get('name'): {'team': player_dict.get('team'),
                                                        'opponent': player_dict.get('opponent'),

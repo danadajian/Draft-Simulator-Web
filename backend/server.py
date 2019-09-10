@@ -210,24 +210,24 @@ def optimize():
     return render_template("index.html")
 
 
-@app.route("/optimize/projections/<sport>")
+@app.route("/optimize/projections/<sport>/<slate>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=3600)
-def cached_dfs_projections(sport):
+def cached_dfs_projections(sport, slate):
     if sport == 'mlb':
         return get_mlb_projections()
     elif sport == 'nfl':
-        return get_nfl_projections()
+        return get_nfl_projections(slate)
     elif sport == 'nba':
         return get_nba_projections()
     else:
         return 'Invalid sport.'
 
 
-@app.route("/optimized-lineup/<sport>", methods=['GET', 'POST'])
+@app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
-def optimized_team(sport):
-    projections = cached_dfs_projections(sport)
+def optimized_team(sport, slate):
+    projections = cached_dfs_projections(sport, slate)
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
