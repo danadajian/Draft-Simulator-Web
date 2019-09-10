@@ -1,5 +1,5 @@
 import statistics
-from .GetSalaries import get_fd_salaries
+from .GetSalaries import *
 
 
 def remove_ignored_players(player_pools, black_list):
@@ -155,12 +155,12 @@ def get_dfs_lineup(site, sport, projections, black_list):
     display_matrix = dfs_configs.get(site).get(sport).get('display_matrix')
     salary_cap = dfs_configs.get(site).get(sport).get('salary_cap')
     site_id = 1 if site == 'dk' else 2
-    if site == 'fd' and sport == 'nfl':
-        fd_salary_dict = get_fd_salaries()
-        salary_dict = {player_dict.get('name'): fd_salary_dict.get(player_dict.get('id'))
+    if sport == 'nfl':
+        raw_salary_dict = get_fd_salaries() if site == 'fd' else get_dk_salaries()
+        salary_dict = {player_dict.get('name'): raw_salary_dict.get(player_dict.get('id'))
                        for player_dict in projections
                        for site_projection in player_dict.get('projection')
-                       if site_projection.get('siteId') == site_id and fd_salary_dict.get(player_dict.get('id'))}
+                       if site_projection.get('siteId') == site_id and raw_salary_dict.get(player_dict.get('id'))}
     else:
         salary_dict = {player_dict.get('name'): int(site_projection.get('salary'))
                        for player_dict in projections

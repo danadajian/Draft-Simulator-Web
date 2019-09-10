@@ -1,4 +1,5 @@
 import requests
+import json
 from .GetNFLData import get_date_string
 
 
@@ -20,5 +21,17 @@ def get_fd_salaries():
             sal_upper = sal_string.find('</salary>')
             salary = sal_string[sal_lower: sal_upper]
             salary_dict.update({int(id): int(salary)})
+    return salary_dict
 
+
+def get_dk_salaries():
+    url = 'https://api.draftkings.com/partners/v1/draftpool/sports/nfl/?format=json'
+    call = requests.get(url).text
+    response = json.loads(call)
+    contests = response.get('draftPool')
+    players = next(contest for contest in contests
+                   if contest.get('sport') == 'NFL'
+                   and contest.get('gameType') == 'Classic'
+                   and contest.get('suffix') == ' (Thu-Mon)').get('draftPool')
+    salary_dict = {int(player.get('playerId')): int(player.get('salary')) for player in players}
     return salary_dict
