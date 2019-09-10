@@ -1,4 +1,4 @@
-from backend.src.main.DFSFunctions import *
+from .DFSFunctions import *
 import datetime
 
 
