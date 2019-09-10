@@ -1,5 +1,4 @@
 import unittest
-from backend.src.main.GetESPNPlayers import *
 
 
 class GetPlayersTests(unittest.TestCase):

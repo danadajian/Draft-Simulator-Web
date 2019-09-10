@@ -5,7 +5,7 @@ import datetime
 import os
 
 try:
-    from backend.src.main.apiCredentials import *
+    from src.main.apiCredentials import *
 except ImportError:
     api_key_from_credentials, api_secret_from_credentials = None, None
     pass

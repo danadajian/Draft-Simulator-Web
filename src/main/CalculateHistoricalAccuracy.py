@@ -1,4 +1,4 @@
-from backend.src.main.DFSFunctions import *
+from src.main.DFSFunctions import *
 
 
 def call_weekly_projections(week, year):

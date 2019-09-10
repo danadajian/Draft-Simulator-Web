@@ -10,11 +10,6 @@ Languages/services used:
 * Web hosting: Heroku
 * Deployment pipeline: Concourse, Docker
 
-Heroku CLI deploy command:
-* `git subtree push --prefix backend https://git.heroku.com/draft-simulator.git master`
-* If it doesn't cooperate...
-    * ``git push heroku `git subtree split --prefix backend master`:master --force``
-
 Heroku Postgres commands:
 * Push local db:
     * `heroku pg:push accounts DATABASE_URL -a draft-simulator`
