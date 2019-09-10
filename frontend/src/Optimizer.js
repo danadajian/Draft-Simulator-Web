@@ -55,8 +55,8 @@ export class Optimizer extends Component {
                 alert(lineupJson[1]);
             }
         }
-        let fdLineup = (typeof lineupJson[0] === "string") ? this.state.fdLineup : lineupJson[0];
-        let dkLineup = (typeof lineupJson[1] === "string") ? this.state.dkLineup : lineupJson[1];
+        let fdLineup = (typeof lineupJson[0] === "string") ? [] : lineupJson[0];
+        let dkLineup = (typeof lineupJson[1] === "string") ? [] : lineupJson[1];
         this.setState({isLoading: false, fdLineup: fdLineup, dkLineup: dkLineup});
     };
 
