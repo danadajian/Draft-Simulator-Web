@@ -218,7 +218,14 @@ def cached_dfs_data(sport, slate):
     if sport == 'mlb':
         return {'projections': get_mlb_projections(), 'info': {'fd': None, 'dk': None}}
     elif sport == 'nfl':
-        return {'projections': get_nfl_projections(slate), 'info': {'fd': get_fd_info(), 'dk': get_dk_info()}}
+        projections = get_nfl_projections(slate)
+        if slate == 'thurs':
+            matchup_player = next(player_dict for player_dict in projections if '@' in player_dict.get('opponent'))
+            matchup = (matchup_player.get('team') + ' ' + matchup_player.get('opponent')).upper()
+            info = {'fd': get_fd_mvp_info(matchup), 'dk': get_dk_mvp_info(matchup.replace('@', 'vs'))}
+        else:
+            info = {'fd': get_fd_info(), 'dk': get_dk_info()}
+        return {'projections': projections, 'info': info}
     elif sport == 'nba':
         return {'projections': get_nba_projections(), 'info': {'fd': None, 'dk': None}}
     else:
@@ -242,7 +249,7 @@ def optimized_team(sport, slate):
     else:
         fd_black_list, dk_black_list = [], []
     session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
-    dfs_lineups = get_dfs_lineups(sport, projections, dfs_info, fd_black_list, dk_black_list)
+    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list)
     return jsonify(dfs_lineups)
 
 

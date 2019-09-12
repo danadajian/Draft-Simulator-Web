@@ -1,5 +1,6 @@
 import statistics
 from .GetInjuries import *
+from .MVPOptimizer import *
 
 
 def remove_ignored_players(player_pools, black_list):
@@ -104,26 +105,38 @@ def maximize_improvement(lineup, pools, proj_pts_dict, salary_dict, salary_cap):
         max_pts = new_max
 
 
-def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
-    initial_lineup = best_first_downgrade(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap)
-    if not initial_lineup:
-        return initial_lineup
-    optimal_lineup = maximize_improvement(initial_lineup, pools, proj_pts_dict, salary_dict, salary_cap)
-    return optimal_lineup
-
-
-def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap,
-                  team_and_weather_dict, injured_dict):
-    player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict)
+def optimize(lineup_matrix, black_list, proj_pts_dict, pos_dict, salary_dict, salary_cap):
+    player_pools = get_player_pools(lineup_matrix, black_list, proj_pts_dict, pos_dict, salary_dict)
     best_lineup = get_best_lineup(player_pools)
     if not best_lineup:
-        return 'Warning: \nNot enough data available to generate lineup.'
-    optimal_lineup = optimize(best_lineup, player_pools, proj_dict, salary_dict, cap)
+        return None
+    initial_lineup = best_first_downgrade(best_lineup, player_pools, proj_pts_dict, salary_dict, salary_cap)
+    if not initial_lineup:
+        return initial_lineup
+    optimal_lineup = maximize_improvement(initial_lineup, player_pools, proj_pts_dict, salary_dict, salary_cap)
     if not optimal_lineup:
+        return optimal_lineup
+    optimal_dict = {
+        'lineup': optimal_lineup,
+        'total_pts': sum([proj_pts_dict.get(player) for player in optimal_lineup]),
+        'total_salary': sum([salary_dict.get(player) for player in optimal_lineup]),
+        'max_pts': sum([proj_pts_dict.get(player) for player in best_lineup])
+    }
+    return optimal_dict
+
+
+def output_lineup(lineup_matrix, display_matrix, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
+                  team_and_weather_dict, injured_dict):
+    if slate == 'mvp':
+        optimal_dict = optimize_mvp(black_list, proj_dict, salary_dict, len(display_matrix), cap)
+    else:
+        optimal_dict = optimize(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict, cap)
+    if not optimal_dict:
         return 'Warning: \nNot enough data available to generate lineup.'
-    total_pts = round(sum([proj_dict.get(player) for player in optimal_lineup]), 1)
-    total_salary = sum([salary_dict.get(player) for player in optimal_lineup])
-    max_pts = sum([proj_dict.get(player) for player in best_lineup])
+    optimal_lineup = optimal_dict.get('lineup')
+    total_pts = round(optimal_dict.get('total_pts'), 1)
+    total_salary = optimal_dict.get('total_salary')
+    max_pts = optimal_dict.get('max_pts')
     lineup_json = [{'Position': display_matrix[optimal_lineup.index(player)],
                     'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
                     'Name': player,
@@ -154,10 +167,11 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
     return lineup_json
 
 
-def get_dfs_lineup(site, sport, projections, dfs_info, black_list):
-    lineup_matrix = dfs_configs.get(site).get(sport).get('lineup_matrix')
-    display_matrix = dfs_configs.get(site).get(sport).get('display_matrix')
-    salary_cap = dfs_configs.get(site).get(sport).get('salary_cap')
+def get_dfs_lineup(site, sport, slate, projections, dfs_info, black_list):
+    slate = 'mvp' if slate == 'thurs' else 'main'
+    lineup_matrix = dfs_configs.get(site).get(sport).get(slate).get('lineup_matrix')
+    display_matrix = dfs_configs.get(site).get(sport).get(slate).get('display_matrix')
+    salary_cap = dfs_configs.get(site).get(sport).get(slate).get('salary_cap')
     site_id = 1 if site == 'dk' else 2
     if sport == 'nfl':
         pos_dict = {player_dict.get('name'): dfs_info.get(player_dict.get('id')).get('position')
@@ -181,7 +195,7 @@ def get_dfs_lineup(site, sport, projections, dfs_info, black_list):
     proj_points_dict = {player_dict.get('name'): float(site_projection.get('points'))
                         for player_dict in projections
                         for site_projection in player_dict.get('projection')
-                        if site_projection.get('siteId') == site_id}
+                        if site_projection.get('siteId') == site_id and player_dict.get('name') in salary_dict.keys()}
     team_and_weather_dict = {player_dict.get('name'): {'team': player_dict.get('team'),
                                                        'opponent': player_dict.get('opponent'),
                                                        'weather': player_dict.get('weather')}
@@ -191,14 +205,15 @@ def get_dfs_lineup(site, sport, projections, dfs_info, black_list):
         player: injury_info_dict.get(player.split(' ')[0] + ' ' + player.split(' ')[1]).get('status')
         for player in proj_points_dict.keys()
         if injury_info_dict.get(player.split(' ')[0] + ' ' + player.split(' ')[1])
-        and pos_dict.get(player) == injury_info_dict.get(player.split(' ')[0] + ' ' + player.split(' ')[1]).get('position')
+        and pos_dict.get(player) == injury_info_dict.get(player.split(' ')[0]
+                                                         + ' ' + player.split(' ')[1]).get('position')
     }
-    dfs_lineup = output_lineup(lineup_matrix, display_matrix, black_list, proj_points_dict, pos_dict, salary_dict,
-                               salary_cap, team_and_weather_dict, injured_dict)
+    dfs_lineup = output_lineup(lineup_matrix, display_matrix, slate, black_list, proj_points_dict, pos_dict,
+                               salary_dict, salary_cap, team_and_weather_dict, injured_dict)
     return dfs_lineup
 
 
-def get_dfs_lineups(sport, projections, dfs_info, fd_black_list, dk_black_list):
+def get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list):
     if projections == 'offseason':
         return ['Warning: \nThis league is currently in the offseason.']
     elif projections == 'Not enough data is available.':
@@ -206,44 +221,64 @@ def get_dfs_lineups(sport, projections, dfs_info, fd_black_list, dk_black_list):
     elif projections == 'Error obtaining projection data.':
         return ['Warning: \nError obtaining projection data.']
     else:
-        fd_lineup = get_dfs_lineup('fd', sport, projections, dfs_info.get('fd'), fd_black_list)
-        dk_lineup = get_dfs_lineup('dk', sport, projections, dfs_info.get('dk'), dk_black_list)
+        fd_lineup = get_dfs_lineup('fd', sport, slate, projections, dfs_info.get('fd'), fd_black_list)
+        dk_lineup = get_dfs_lineup('dk', sport, slate, projections, dfs_info.get('dk'), dk_black_list)
         return [fd_lineup, dk_lineup]
 
 
 dfs_configs = {
     'fd': {
         'mlb': {
-            'lineup_matrix': ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF'],
-            'display_matrix': ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util'],
-            'salary_cap': 35000
+            'main': {
+                'lineup_matrix': ['P', 'C 1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'C 1B 2B 3B SS OF'],
+                'display_matrix': ['P', 'C/1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF', 'Util'],
+                'salary_cap': 35000
+            }
         },
         'nfl': {
-            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST'],
-            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
-            'salary_cap': 60000
+            'main': {
+                'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST'],
+                'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
+                'salary_cap': 60000
+            },
+            'mvp': {
+                'display_matrix': ['MVP (1.5x Points)', 'FLEX', 'FLEX', 'FLEX', 'FLEX'],
+                'salary_cap': 60000
+            }
         },
         'nba': {
-            'lineup_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
-            'display_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
-            'salary_cap': 60000
+            'main': {
+                'lineup_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
+                'display_matrix': ['PG', 'PG', 'SG', 'SG', 'SF', 'SF', 'PF', 'PF', 'C'],
+                'salary_cap': 60000
+            }
         }
     },
     'dk': {
         'mlb': {
-            'lineup_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
-            'display_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
-            'salary_cap': 50000
+            'main': {
+                'lineup_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
+                'display_matrix': ['P', 'P', 'C', '1B', '2B', '3B', 'SS', 'OF', 'OF', 'OF'],
+                'salary_cap': 50000
+            }
         },
         'nfl': {
-            'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST'],
-            'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
-            'salary_cap': 50000
+            'main': {
+                'lineup_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'RB WR TE', 'DST'],
+                'display_matrix': ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'D/ST'],
+                'salary_cap': 50000
+            },
+            'mvp': {
+                'display_matrix': ['MVP (1.5x Points)', 'FLEX', 'FLEX', 'FLEX', 'FLEX', 'FLEX'],
+                'salary_cap': 50000
+            }
         },
         'nba': {
-            'lineup_matrix': ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C'],
-            'display_matrix': ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util'],
-            'salary_cap': 50000
+            'main': {
+                'lineup_matrix': ['PG', 'SG', 'SF', 'PF', 'C', 'PG SG', 'SF PF', 'PG SG SF PF C'],
+                'display_matrix': ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'Util'],
+                'salary_cap': 50000
+            }
         }
     }
 }

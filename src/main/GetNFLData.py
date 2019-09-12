@@ -63,7 +63,7 @@ def get_projections(week):
     return proj_responses
 
 
-def get_offense_projections(projections):
+def get_offense_projections(projections, slate):
     offense_list = projections.get('offensiveProjections')
     offense_projections = {
         player.get('player').get('firstName') + ' ' + player.get('player').get('lastName'):
@@ -72,7 +72,7 @@ def get_offense_projections(projections):
             'team': player.get('team').get('abbreviation'),
             'projection': player.get('fantasyProjections')
         }
-        for player in offense_list if player.get('position') != 'K'
+        for player in offense_list if slate == 'thurs' or player.get('position') != 'K'
     }
     return offense_projections
 
@@ -91,10 +91,10 @@ def get_defense_projections(projections):
     return defense_projections
 
 
-def get_projections_from_week(week):
+def get_projections_from_week(week, slate):
     projections_data = get_projections(week)
     projections_from_week = {}
-    projections_from_week.update(get_offense_projections(projections_data))
+    projections_from_week.update(get_offense_projections(projections_data, slate))
     projections_from_week.update(get_defense_projections(projections_data))
     return projections_from_week
 
@@ -140,7 +140,7 @@ def get_nfl_projections(slate):
             events, weather_by_event = [], []
         team_info = get_team_info(events)
         week = all_events[0].get('week')
-        projections = get_projections_from_week(week)
+        projections = get_projections_from_week(week, slate)
         nfl_projections = [{
             'name': player,
             'id': projection.get('id') or 'unavailable',
