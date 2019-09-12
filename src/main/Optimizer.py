@@ -1,5 +1,5 @@
 import statistics
-from .GetSalaries import *
+from .GetInjuries import *
 
 
 def remove_ignored_players(player_pools, black_list):
@@ -112,7 +112,8 @@ def optimize(best_lineup, pools, proj_pts_dict, salary_dict, salary_cap):
     return optimal_lineup
 
 
-def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap, team_and_weather_dict):
+def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict, salary_dict, cap,
+                  team_and_weather_dict, injured_dict):
     player_pools = get_player_pools(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict)
     best_lineup = get_best_lineup(player_pools)
     if not best_lineup:
@@ -126,6 +127,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
     lineup_json = [{'Position': display_matrix[optimal_lineup.index(player)],
                     'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
                     'Name': player,
+                    'Status': injured_dict.get(player) or '',
                     'Projected': round(proj_dict.get(player), 1),
                     'Price': '$' + '{:,}'.format(salary_dict.get(player)),
                     'Opp': team_and_weather_dict.get(player).get('opponent') or 'unavailable',
@@ -134,6 +136,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
                   + [{'Position': '',
                       'Team': '',
                       'Name': 'Total',
+                      'Status': '',
                       'Projected': total_pts,
                       'Price': '$' + '{:,}'.format(total_salary),
                       'Opp': '',
@@ -142,6 +145,7 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
                   + [{'Position': '',
                       'Team': '',
                       'Name': 'Percent of Max Points',
+                      'Status': '',
                       'Projected': str(round(100 * (total_pts / max_pts))) + '%',
                       'Price': '',
                       'Opp': '',
@@ -150,18 +154,26 @@ def output_lineup(lineup_matrix, display_matrix, black_list, proj_dict, pos_dict
     return lineup_json
 
 
-def get_dfs_lineup(site, sport, projections, black_list):
+def get_dfs_lineup(site, sport, projections, dfs_info, black_list):
     lineup_matrix = dfs_configs.get(site).get(sport).get('lineup_matrix')
     display_matrix = dfs_configs.get(site).get(sport).get('display_matrix')
     salary_cap = dfs_configs.get(site).get(sport).get('salary_cap')
     site_id = 1 if site == 'dk' else 2
     if sport == 'nfl':
-        raw_salary_dict = get_fd_salaries() if site == 'fd' else get_dk_salaries()
-        salary_dict = {player_dict.get('name'): raw_salary_dict.get(player_dict.get('id'))
+        pos_dict = {player_dict.get('name'): dfs_info.get(player_dict.get('id')).get('position')
+                    for player_dict in projections
+                    for site_projection in player_dict.get('projection')
+                    if site_projection.get('siteId') == site_id and dfs_info.get(player_dict.get('id'))}
+        salary_dict = {player_dict.get('name'): dfs_info.get(player_dict.get('id')).get('salary')
                        for player_dict in projections
                        for site_projection in player_dict.get('projection')
-                       if site_projection.get('siteId') == site_id and raw_salary_dict.get(player_dict.get('id'))}
+                       if site_projection.get('siteId') == site_id and dfs_info.get(player_dict.get('id'))}
     else:
+        pos_dict = {player_dict.get('name'): site_projection.get('position')
+                    for player_dict in projections
+                    for site_projection in player_dict.get('projection')
+                    if site_projection.get('position')
+                    if site_projection.get('siteId') == site_id}
         salary_dict = {player_dict.get('name'): int(site_projection.get('salary'))
                        for player_dict in projections
                        for site_projection in player_dict.get('projection')
@@ -170,21 +182,23 @@ def get_dfs_lineup(site, sport, projections, black_list):
                         for player_dict in projections
                         for site_projection in player_dict.get('projection')
                         if site_projection.get('siteId') == site_id}
-    pos_dict = {player_dict.get('name'): site_projection.get('position')
-                for player_dict in projections
-                for site_projection in player_dict.get('projection')
-                if site_projection.get('position')
-                if site_projection.get('siteId') == site_id}
     team_and_weather_dict = {player_dict.get('name'): {'team': player_dict.get('team'),
                                                        'opponent': player_dict.get('opponent'),
                                                        'weather': player_dict.get('weather')}
                              for player_dict in projections}
+    injury_info_dict = get_injury_info()
+    injured_dict = {
+        player: injury_info_dict.get(player.split(' ')[0] + ' ' + player.split(' ')[1]).get('status')
+        for player in proj_points_dict.keys()
+        if injury_info_dict.get(player.split(' ')[0] + ' ' + player.split(' ')[1])
+        and pos_dict.get(player) == injury_info_dict.get(player.split(' ')[0] + ' ' + player.split(' ')[1]).get('position')
+    }
     dfs_lineup = output_lineup(lineup_matrix, display_matrix, black_list, proj_points_dict, pos_dict, salary_dict,
-                               salary_cap, team_and_weather_dict)
+                               salary_cap, team_and_weather_dict, injured_dict)
     return dfs_lineup
 
 
-def get_dfs_lineups(sport, projections, fd_black_list, dk_black_list):
+def get_dfs_lineups(sport, projections, dfs_info, fd_black_list, dk_black_list):
     if projections == 'offseason':
         return ['Warning: \nThis league is currently in the offseason.']
     elif projections == 'Not enough data is available.':
@@ -192,8 +206,8 @@ def get_dfs_lineups(sport, projections, fd_black_list, dk_black_list):
     elif projections == 'Error obtaining projection data.':
         return ['Warning: \nError obtaining projection data.']
     else:
-        fd_lineup = get_dfs_lineup('fd', sport, projections, fd_black_list)
-        dk_lineup = get_dfs_lineup('dk', sport, projections, dk_black_list)
+        fd_lineup = get_dfs_lineup('fd', sport, projections, dfs_info.get('fd'), fd_black_list)
+        dk_lineup = get_dfs_lineup('dk', sport, projections, dfs_info.get('dk'), dk_black_list)
         return [fd_lineup, dk_lineup]
 
 

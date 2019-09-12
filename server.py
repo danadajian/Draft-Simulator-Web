@@ -3,6 +3,7 @@ from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.GetMLBData import get_mlb_projections
 from src.main.GetNBAData import get_nba_projections
 from src.main.GetNFLData import get_nfl_projections
+from src.main.GetDFSInfo import *
 from src.main.Optimizer import *
 from src.main.Simulator import *
 from flask import *
@@ -210,16 +211,16 @@ def optimize():
     return render_template("index.html")
 
 
-@app.route("/optimize/projections/<sport>/<slate>")
+@app.route("/optimize/data/<sport>/<slate>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 @cache.cached(timeout=3600)
-def cached_dfs_projections(sport, slate):
+def cached_dfs_data(sport, slate):
     if sport == 'mlb':
-        return get_mlb_projections()
+        return {'projections': get_mlb_projections(), 'info': {'fd': None, 'dk': None}}
     elif sport == 'nfl':
-        return get_nfl_projections(slate)
+        return {'projections': get_nfl_projections(slate), 'info': {'fd': get_fd_info(), 'dk': get_dk_info()}}
     elif sport == 'nba':
-        return get_nba_projections()
+        return {'projections': get_nba_projections(), 'info': {'fd': None, 'dk': None}}
     else:
         return 'Invalid sport.'
 
@@ -227,7 +228,8 @@ def cached_dfs_projections(sport, slate):
 @app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def optimized_team(sport, slate):
-    projections = cached_dfs_projections(sport, slate)
+    dfs_data = cached_dfs_data(sport, slate)
+    projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info')
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
@@ -240,7 +242,7 @@ def optimized_team(sport, slate):
     else:
         fd_black_list, dk_black_list = [], []
     session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
-    dfs_lineups = get_dfs_lineups(sport, projections, fd_black_list, dk_black_list)
+    dfs_lineups = get_dfs_lineups(sport, projections, dfs_info, fd_black_list, dk_black_list)
     return jsonify(dfs_lineups)
 
 
