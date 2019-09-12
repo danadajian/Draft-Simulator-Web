@@ -4,6 +4,7 @@ interface playerAttributes {
     Position: string,
     Team: string,
     Name: string,
+    Status: string,
     Projected: number,
     Price: string,
     Opp: string,
@@ -40,9 +41,12 @@ const Player = (props: playerProps) => {
             </td>
             <td>{props.player.Position}</td>
             <td>{props.player.Team}</td>
-            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Name}</td>
-            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Projected}</td>
-            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>{props.player.Price}</td>
+            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
+                {props.player.Name} <b style={{color: 'red'}}>{props.player.Status}</b></td>
+            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
+                {props.player.Projected}</td>
+            <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
+                {props.player.Price}</td>
             <td>{props.player.Opp}</td>
             <td style={{display: 'flex', alignItems: 'center'}}>
                 {props.player.Weather.forecast && <img src={weatherImage} alt={"weather"} style={{height: '4vmin'}}/>}
