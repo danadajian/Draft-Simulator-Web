@@ -29,6 +29,7 @@ def get_fd_info(date_string):
 
 
 def get_fd_mvp_info(matchup, date_string):
+    matchup = matchup.replace('JAX', 'JAC')
     url = 'https://www.fanduel.com/api/playerprices?date=' + date_string
     call = requests.get(url).text
     response = call.splitlines()
