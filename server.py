@@ -236,8 +236,7 @@ def cached_dfs_data(sport, slate):
 @app.route("/optimize/save/<sport>/<slate>/<week>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 def save_lineups(sport, slate, week):
-    table = 'mlb_lineups' if sport == 'mlb' else 'nfl_lineups' if sport == 'nfl' else 'nba_lineups' if sport == 'nba' else ''
-    return db.session.execute('SELECT * FROM' + table +
+    return db.session.execute('SELECT * FROM ' + sport + '_lineups' +
                               ' WHERE slate = ' + slate +
                               ' AND week = ' + week +
                               ' ORDER BY week, site, type;')
@@ -260,7 +259,7 @@ def optimized_team(sport, slate):
     else:
         fd_black_list, dk_black_list = [], []
     session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
-    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list)
+    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list, db if is_production else None)
     return jsonify(dfs_lineups)
 
 
