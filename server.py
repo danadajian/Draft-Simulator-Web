@@ -2,7 +2,6 @@ from src.main.GetESPNPlayers import get_espn_players
 from src.main.GetYahooPlayers import get_yahoo_players
 from src.main.GetMLBData import get_mlb_projections
 from src.main.GetNBAData import get_nba_projections
-from src.main.GetNFLData import get_nfl_projections
 from src.main.GetDFSInfo import *
 from src.main.Optimizer import *
 from src.main.Simulator import *
@@ -34,12 +33,12 @@ is_production = True if os.environ.get('IS_HEROKU') else False
 postgres_configured = True
 if not is_production:
     try:
-        database_exists('postgresql://localhost/accounts')
+        database_exists('postgresql://localhost/draftsimulator')
     except Exception as e:
         postgres_configured = False
         print('WARNING: Postgres is not configured, so login functionality cannot be tested.\n', e)
         pass
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/accounts'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/draftsimulator'
 
 
 class Users(UserMixin, db.Model):
@@ -219,17 +218,29 @@ def cached_dfs_data(sport, slate):
         return {'projections': get_mlb_projections(), 'info': {'fd': None, 'dk': None}}
     elif sport == 'nfl':
         projections = get_nfl_projections(slate)
+        date_string = get_date_string('Thurs')
         if slate == 'thurs':
             matchup_player = next(player_dict for player_dict in projections if '@' in player_dict.get('opponent'))
             matchup = (matchup_player.get('team') + ' ' + matchup_player.get('opponent')).upper()
-            info = {'fd': get_fd_mvp_info(matchup), 'dk': get_dk_mvp_info(matchup.replace('@', 'vs'))}
+            info = {'fd': get_fd_mvp_info(matchup, date_string),
+                    'dk': get_dk_mvp_info(matchup.replace('@', 'vs'))}
         else:
-            info = {'fd': get_fd_info(), 'dk': get_dk_info()}
+            info = {'fd': get_fd_info(date_string), 'dk': get_dk_info()}
         return {'projections': projections, 'info': info}
     elif sport == 'nba':
         return {'projections': get_nba_projections(), 'info': {'fd': None, 'dk': None}}
     else:
         return 'Invalid sport.'
+
+
+@app.route("/optimize/save/<sport>/<slate>/<week>")
+@might_need_to_login(login_required, is_production or postgres_configured)
+def save_lineups(sport, slate, week):
+    table = 'mlb_lineups' if sport == 'mlb' else 'nfl_lineups' if sport == 'nfl' else 'nba_lineups' if sport == 'nba' else ''
+    return db.session.execute('SELECT * FROM' + table +
+                              ' WHERE slate = ' + slate +
+                              ' AND week = ' + week +
+                              ' ORDER BY week, site, type;')
 
 
 @app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])

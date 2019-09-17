@@ -12,7 +12,9 @@ Languages/services used:
 
 Heroku Postgres commands:
 * Push local db:
-    * `heroku pg:push accounts DATABASE_URL -a draft-simulator`
+    * `heroku pg:push draftsimulator DATABASE_URL -a draft-simulator`
+* Pull heroku db:
+    * `heroku pg:pull DATABASE_URL draftsimulator -a draft-simulator`
 * Run SQL in heroku db:
     * `heroku pg:psql -a draft-simulator`
 

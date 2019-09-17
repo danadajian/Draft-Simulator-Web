@@ -1,10 +1,9 @@
 import requests
 import json
-from .GetNFLData import get_date_string
 
 
-def get_fd_info():
-    url = 'https://www.fanduel.com/api/playerprices?date=' + get_date_string('Thurs')
+def get_fd_info(date_string):
+    url = 'https://www.fanduel.com/api/playerprices?date=' + date_string
     call = requests.get(url).text
     response = call.splitlines()
     lower_bound = next(i for i in range(len(response))
@@ -29,8 +28,8 @@ def get_fd_info():
     return info_dict
 
 
-def get_fd_mvp_info(matchup):
-    url = 'https://www.fanduel.com/api/playerprices?date=' + get_date_string('Thurs')
+def get_fd_mvp_info(matchup, date_string):
+    url = 'https://www.fanduel.com/api/playerprices?date=' + date_string
     call = requests.get(url).text
     response = call.splitlines()
     lower_bound = next(i for i in range(len(response))
