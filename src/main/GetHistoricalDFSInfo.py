@@ -52,11 +52,11 @@ def find_points_by_position(lineup, display_matrix, points_dict):
 def get_recap_data(lineup, display_matrix, week, site, lineup_type, proj_dict, scores_dict, salary_dict):
     actual_lineup_projected = find_points_by_position(lineup, display_matrix, proj_dict)
     actual_lineup_actual = find_points_by_position(lineup, display_matrix, scores_dict)
-    db_row = (week, site, lineup_type, ','.join(lineup), actual_lineup_projected.get('QB'),
-              actual_lineup_actual.get('QB'), actual_lineup_projected.get('RB'), actual_lineup_actual.get('RB'),
-              actual_lineup_projected.get('WR'), actual_lineup_actual.get('WR'), actual_lineup_projected.get('TE'),
-              actual_lineup_actual.get('TE'), actual_lineup_projected.get('FLEX'), actual_lineup_actual.get('FLEX'),
-              actual_lineup_projected.get('D/ST'), actual_lineup_actual.get('D/ST'),
+    db_row = (week, site, lineup_type, ','.join(lineup),
+              actual_lineup_projected.get('QB'), actual_lineup_actual.get('QB'), actual_lineup_projected.get('RB'),
+              actual_lineup_actual.get('RB'), actual_lineup_projected.get('WR'), actual_lineup_actual.get('WR'),
+              actual_lineup_projected.get('TE'), actual_lineup_actual.get('TE'), actual_lineup_projected.get('FLEX'),
+              actual_lineup_actual.get('FLEX'), actual_lineup_projected.get('D/ST'), actual_lineup_actual.get('D/ST'),
               round(sum([points for points in actual_lineup_projected.values()]), 2),
               round(sum([points for points in actual_lineup_actual.values()]), 2),
               sum([salary_dict.get(player) for player in lineup]))

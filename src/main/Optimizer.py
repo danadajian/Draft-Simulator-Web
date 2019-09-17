@@ -132,14 +132,15 @@ def save_new_lineups(db, sport, slate, week, rows):
                'total_expected', 'total_actual', 'lineup_salary']
     if db.session.execute('SELECT * FROM ' + sport + '_lineups' +
                           ' WHERE week = ' + str(week) +
-                          ' AND slate = ' + slate +
+                          ' AND slate = ' + "'" + slate + "'" +
                           ' ORDER BY week, site, type'):
-        col_list = [columns[i] + ' = ' + str(row[i]) + ', ' for row in rows for i in range(len(columns)) if row]
+        col_list = [columns[i] + ' = ' + (("'" + str(row[i]) + "'") if i in (1, 2, 3) else str(row[i])) + ', '
+                    for row in rows for i in range(len(columns)) if row]
         update_string = ''.join(col_list) + 'updated = CURRENT_TIMESTAMP'
-        db.session.execute('UPDATE ' + sport + '_lineups ' +
+        db.session.execute('UPDATE ' + sport + '_lineups' +
                            ' SET ' + update_string +
                            ' WHERE week = ' + str(week) +
-                           ' AND slate = ' + slate)
+                           ' AND slate = ' + "'" + slate + "'")
     else:
         for row in rows:
             if row:
