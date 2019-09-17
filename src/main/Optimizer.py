@@ -1,6 +1,7 @@
 import statistics
 from .GetInjuries import *
 from .MVPOptimizer import *
+from .GetHistoricalDFSInfo import *
 
 
 def remove_ignored_players(player_pools, black_list):
@@ -118,14 +119,14 @@ def optimize(lineup_matrix, black_list, proj_pts_dict, pos_dict, salary_dict, sa
         return optimal_lineup
     optimal_dict = {
         'lineup': optimal_lineup,
-        'total_pts': sum([proj_pts_dict.get(player) for player in optimal_lineup]),
+        'total_pts': round(sum([proj_pts_dict.get(player) for player in optimal_lineup]), 2),
         'total_salary': sum([salary_dict.get(player) for player in optimal_lineup]),
-        'max_pts': sum([proj_pts_dict.get(player) for player in best_lineup])
+        'max_pts': round(sum([proj_pts_dict.get(player) for player in best_lineup]), 2)
     }
     return optimal_dict
 
 
-def output_lineup(lineup_matrix, display_matrix, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
+def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
                   team_and_weather_dict, injured_dict):
     if slate == 'mvp':
         optimal_dict = optimize_mvp(black_list, proj_dict, salary_dict, len(display_matrix), cap)
@@ -137,6 +138,12 @@ def output_lineup(lineup_matrix, display_matrix, slate, black_list, proj_dict, p
     total_pts = round(optimal_dict.get('total_pts'), 1)
     total_salary = optimal_dict.get('total_salary')
     max_pts = optimal_dict.get('max_pts')
+    if sport == 'nfl':
+        week = get_all_events()[0].get('week')
+        scores_dict = {player: item.get('points') for player, item in get_historical_dfs_info(week, site).items()}
+        actual_optimal_dict = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap)
+        get_recap_data(optimal_lineup, display_matrix, week, site, 'projected', proj_dict, scores_dict, salary_dict)
+        get_recap_data(actual_optimal_dict.get('lineup'), display_matrix, week, site, 'optimal', proj_dict, scores_dict, salary_dict)
     lineup_json = [{'Position': display_matrix[optimal_lineup.index(player)],
                     'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
                     'Name': player,
@@ -208,7 +215,7 @@ def get_dfs_lineup(site, sport, slate, projections, dfs_info, black_list):
         and pos_dict.get(player) == injury_info_dict.get(player.split(' ')[0]
                                                          + ' ' + player.split(' ')[1]).get('position')
     }
-    dfs_lineup = output_lineup(lineup_matrix, display_matrix, slate, black_list, proj_points_dict, pos_dict,
+    dfs_lineup = output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_points_dict, pos_dict,
                                salary_dict, salary_cap, team_and_weather_dict, injured_dict)
     return dfs_lineup
 

@@ -27,7 +27,7 @@ const Player = (props: playerProps) => {
     const forecast = (props.player.Weather.forecast) ? props.player.Weather.forecast.toLowerCase() : null;
     const weatherImage = (props.player.Weather.forecast) ?
         (forecast.includes('partly')) ? partlyCloudy :
-        (forecast.includes('cloud')) ? cloudy :
+        (forecast.includes('cloud') || forecast.includes('fog')) ? cloudy :
         (forecast.includes('storm') || forecast.includes('thunder')) ? stormy :
         (forecast.includes('rain') || forecast.includes('shower')) ? rainy :
         (forecast.includes('snow') || forecast.includes('flurr')) ? snowy :

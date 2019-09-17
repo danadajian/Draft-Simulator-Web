@@ -1,4 +1,4 @@
-from .DFSFunctions import *
+from src.main.DFSFunctions import *
 import datetime
 
 
@@ -15,7 +15,8 @@ def get_dow_string(dow_number):
 
 def get_date_string(day):
     days_of_week = ['Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun', 'Mon']
-    dow_dict = {day: num for num, day in enumerate(days_of_week, 1)}
+    current_day = datetime.datetime.today().weekday()
+    dow_dict = {day: (num if current_day > 0 else num - 7) for num, day in enumerate(days_of_week, 1)}
     return get_dow_string(dow_dict.get(day))
 
 
