@@ -259,7 +259,8 @@ def optimized_team(sport, slate):
     else:
         fd_black_list, dk_black_list = [], []
     session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
-    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list, db if is_production else None)
+    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list,
+                                  db if is_production or postgres_configured else None)
     return jsonify(dfs_lineups)
 
 

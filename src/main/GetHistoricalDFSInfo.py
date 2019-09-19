@@ -49,10 +49,10 @@ def find_points_by_position(lineup, display_matrix, points_dict):
     return points_by_position
 
 
-def get_recap_data(lineup, display_matrix, week, site, lineup_type, proj_dict, scores_dict, salary_dict):
+def get_recap_data(lineup, display_matrix, week, site, slate, lineup_type, proj_dict, scores_dict, salary_dict):
     actual_lineup_projected = find_points_by_position(lineup, display_matrix, proj_dict)
     actual_lineup_actual = find_points_by_position(lineup, display_matrix, scores_dict)
-    db_row = (week, site, lineup_type, ','.join(lineup),
+    db_row = (week, site, slate, lineup_type, ','.join(lineup),
               actual_lineup_projected.get('QB'), actual_lineup_actual.get('QB'), actual_lineup_projected.get('RB'),
               actual_lineup_actual.get('RB'), actual_lineup_projected.get('WR'), actual_lineup_actual.get('WR'),
               actual_lineup_projected.get('TE'), actual_lineup_actual.get('TE'), actual_lineup_projected.get('FLEX'),
