@@ -49,15 +49,42 @@ def find_points_by_position(lineup, display_matrix, points_dict):
     return points_by_position
 
 
-def get_recap_data(lineup, display_matrix, week, site, slate, lineup_type, proj_dict, scores_dict, salary_dict):
-    actual_lineup_projected = find_points_by_position(lineup, display_matrix, proj_dict)
-    actual_lineup_actual = find_points_by_position(lineup, display_matrix, scores_dict)
-    db_row = (week, site, slate, lineup_type, ','.join(lineup),
-              actual_lineup_projected.get('QB'), actual_lineup_actual.get('QB'), actual_lineup_projected.get('RB'),
-              actual_lineup_actual.get('RB'), actual_lineup_projected.get('WR'), actual_lineup_actual.get('WR'),
-              actual_lineup_projected.get('TE'), actual_lineup_actual.get('TE'), actual_lineup_projected.get('FLEX'),
-              actual_lineup_actual.get('FLEX'), actual_lineup_projected.get('D/ST'), actual_lineup_actual.get('D/ST'),
-              round(sum([points for points in actual_lineup_projected.values()]), 2),
-              round(sum([points for points in actual_lineup_actual.values()]), 2),
-              sum([salary_dict.get(player) for player in lineup]))
+def get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, site, slate, proj_dict, scores_dict):
+    projected_lineup_projected = find_points_by_position(projected_lineup, display_matrix, proj_dict)
+    projected_lineup_actual = find_points_by_position(projected_lineup, display_matrix, scores_dict)
+    optimal_lineup_actual = find_points_by_position(optimal_lineup, display_matrix, scores_dict)
+    db_row = (
+        week, site, slate, ','.join(projected_lineup), ','.join(optimal_lineup),
+        projected_lineup_projected.get('QB'), projected_lineup_actual.get('QB'), optimal_lineup_actual.get('QB'),
+        projected_lineup_projected.get('RB'), projected_lineup_actual.get('RB'), optimal_lineup_actual.get('RB'),
+        projected_lineup_projected.get('WR'), projected_lineup_actual.get('WR'), optimal_lineup_actual.get('WR'),
+        projected_lineup_projected.get('TE'), projected_lineup_actual.get('TE'), optimal_lineup_actual.get('TE'),
+        projected_lineup_projected.get('FLEX'), projected_lineup_actual.get('FLEX'), optimal_lineup_actual.get('FLEX'),
+        projected_lineup_projected.get('DST'), projected_lineup_actual.get('DST'), optimal_lineup_actual.get('DST')
+    )
     return db_row
+
+
+def aggregate_reporting_data(query_result):
+    positions = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'D/ST']
+
+    aggregated_data = [{
+        'week': row[0],
+        'site': row[1],
+        'slate': row[2],
+        'data': [
+            {
+                'position': pos,
+                'expected': row[3*(positions.index(pos)) + 5],
+                'actual': row[3*(positions.index(pos)) + 6],
+                'optimal': row[3*(positions.index(pos)) + 7],
+                'expected_v_actual': (row[3*(positions.index(pos)) + 5] - row[6]) / row[6],
+                'actual_v_optimal': (row[6] - row[7]) / row[7],
+                'expected_v_optimal': (row[5] - row[7]) / row[7]
+            }
+            for pos in positions],
+        'qb_expected': row[5],
+        'qb_actual': row[6],
+        'qb_optimal': row[7]
+    } for row in query_result]
+    return aggregated_data

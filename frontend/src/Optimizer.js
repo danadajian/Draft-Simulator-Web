@@ -81,6 +81,27 @@ export class Optimizer extends Component {
         });
     };
 
+    fetchReportingData = (sport, slate) => {
+        if (!sport) {
+            alert('Please select a sport.');
+        } else {
+            let prevSport = this.state.sport;
+            this.setState({isLoading: true, sport: sport, slate: slate});
+            fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + slate)
+                .then(response => {
+                    if (response.status !== 200) {
+                        alert('Failed to generate report.');
+                    } else {
+                        response.json()
+                            .then((reportJson) => {
+                                console.log(reportJson);
+                            });
+                    }
+                });
+        }
+
+    };
+
     render() {
         const {isLoading, sport, slate, fdLineup, dkLineup} = this.state;
         let gridSection;
@@ -132,6 +153,8 @@ export class Optimizer extends Component {
                                           </select>}
                     <button style={{marginTop: '10px'}}
                             onClick={() => this.fetchOptimalLineups(sport, slate)}>Reset</button>
+                    <button style={{marginTop: '10px'}}
+                            onClick={() => this.fetchReportingData(sport, slate)}>Report</button>
                 </div>
                 {gridSection}
             </Container>
