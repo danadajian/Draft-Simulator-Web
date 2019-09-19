@@ -233,13 +233,13 @@ def cached_dfs_data(sport, slate):
         return 'Invalid sport.'
 
 
-@app.route("/optimize/save/<sport>/<slate>/<week>")
+@app.route("/optimize/reporting/<sport>/<slate>")
 @might_need_to_login(login_required, is_production or postgres_configured)
-def save_lineups(sport, slate, week):
-    return db.session.execute('SELECT * FROM ' + sport + '_lineups' +
-                              ' WHERE slate = ' + slate +
-                              ' AND week = ' + week +
-                              ' ORDER BY week, site, type;')
+def save_lineups(sport, slate):
+    query_result = [row for row in db.session.execute('SELECT * FROM ' + sport + '_lineups' +
+                                                      ' WHERE slate = ' + slate +
+                                                      ' ORDER BY week, site, type')]
+    return jsonify(aggregate_reporting_data(query_result))
 
 
 @app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
