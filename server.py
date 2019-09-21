@@ -1,10 +1,10 @@
-from src.main.GetESPNPlayers import get_espn_players
-from src.main.GetYahooPlayers import get_yahoo_players
-from src.main.GetMLBData import get_mlb_projections
-from src.main.GetNBAData import get_nba_projections
-from src.main.GetDFSInfo import *
-from src.main.Optimizer import *
-from src.main.Simulator import *
+from src.main.simulator.GetESPNPlayers import get_espn_players
+from src.main.simulator.GetYahooPlayers import get_yahoo_players
+from src.main.optimizer.GetMLBData import get_mlb_projections
+from src.main.optimizer.GetNBAData import get_nba_projections
+from src.main.optimizer.GetDFSInfo import *
+from src.main.optimizer.Optimizer import *
+from src.main.simulator.Simulator import *
 from flask import *
 from flask_bootstrap import Bootstrap
 from flask_caching import Cache
@@ -215,31 +215,33 @@ def optimize():
 @cache.cached(timeout=3600)
 def cached_dfs_data(sport, slate):
     if sport == 'mlb':
-        return {'projections': get_mlb_projections(), 'info': {'fd': None, 'dk': None}}
+        return {'projections': get_mlb_projections(), 'info': {'fd': {}, 'dk': {}}}
     elif sport == 'nfl':
         projections = get_nfl_projections(slate)
         date_string = get_date_string('Thurs')
         if slate == 'thurs':
-            matchup_player = next(player_dict for player_dict in projections if '@' in player_dict.get('opponent'))
-            matchup = (matchup_player.get('team') + ' ' + matchup_player.get('opponent')).upper()
-            info = {'fd': get_fd_mvp_info(matchup, date_string),
-                    'dk': get_dk_mvp_info(matchup.replace('@', 'vs'))}
+            contest_player = next(player_dict for player_dict in projections if '@' in player_dict.get('opponent'))
+            fd_contest = (contest_player.get('team') + ' ' + contest_player.get('opponent')).upper()
+            dk_contest = fd_contest.replace('@', 'vs').replace('JAX', 'JAC')
+            dk_game_type = 'Showdown Captain Mode'
         else:
-            info = {'fd': get_fd_info(date_string), 'dk': get_dk_info()}
+            fd_contest, dk_contest, dk_game_type = 'Thu-Mon', 'Thu-Mon', 'Classic'
+        info = {'fd': get_fd_info(fd_contest, date_string), 'dk': get_dk_info(dk_contest, dk_game_type)}
         return {'projections': projections, 'info': info}
     elif sport == 'nba':
-        return {'projections': get_nba_projections(), 'info': {'fd': None, 'dk': None}}
+        return {'projections': get_nba_projections(), 'info': {'fd': {}, 'dk': {}}}
     else:
         return 'Invalid sport.'
 
 
-@app.route("/optimize/save/<sport>/<slate>/<week>")
+@app.route("/optimize/reporting/<sport>/<slate>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
-def save_lineups(sport, slate, week):
-    return db.session.execute('SELECT * FROM ' + sport + '_lineups' +
-                              ' WHERE slate = ' + slate +
-                              ' AND week = ' + week +
-                              ' ORDER BY week, site, type;')
+def save_lineups(sport, slate):
+    data = request.get_data()
+    data_tuple = tuple(str(data)[2:-1].split('|'))
+    site, weeks = data_tuple
+    query_results = get_query_results(sport, slate, site, weeks, db)
+    return jsonify(aggregate_reporting_data(query_results, slate))
 
 
 @app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
@@ -250,7 +252,7 @@ def optimized_team(sport, slate):
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
-        removed_player, site = data_tuple[0], data_tuple[1]
+        removed_player, site = data_tuple
         fd_black_list, dk_black_list = session.get('fd_black_list'), session.get('dk_black_list')
         if site == 'fd' and removed_player not in fd_black_list:
             fd_black_list.append(removed_player)
