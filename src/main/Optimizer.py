@@ -109,45 +109,49 @@ def maximize_improvement(lineup, pools, proj_pts_dict, salary_dict, salary_cap):
 def optimize(lineup_matrix, black_list, proj_pts_dict, pos_dict, salary_dict, salary_cap):
     player_pools = get_player_pools(lineup_matrix, black_list, proj_pts_dict, pos_dict, salary_dict)
     best_lineup = get_best_lineup(player_pools)
-    if not best_lineup:
-        return None
-    initial_lineup = best_first_downgrade(best_lineup, player_pools, proj_pts_dict, salary_dict, salary_cap)
-    if not initial_lineup:
-        return initial_lineup
-    optimal_lineup = maximize_improvement(initial_lineup, player_pools, proj_pts_dict, salary_dict, salary_cap)
-    if not optimal_lineup:
-        return optimal_lineup
+    initial_lineup, optimal_lineup = [], []
+    if best_lineup:
+        initial_lineup = best_first_downgrade(best_lineup, player_pools, proj_pts_dict, salary_dict, salary_cap)
+    if initial_lineup:
+        optimal_lineup = maximize_improvement(initial_lineup, player_pools, proj_pts_dict, salary_dict, salary_cap)
     optimal_dict = {
         'lineup': optimal_lineup,
-        'total_pts': round(sum([proj_pts_dict.get(player) for player in optimal_lineup]), 2),
-        'total_salary': sum([salary_dict.get(player) for player in optimal_lineup]),
-        'max_pts': round(sum([proj_pts_dict.get(player) for player in best_lineup]), 2)
+        'total_pts': round(sum([proj_pts_dict.get(player) for player in optimal_lineup]), 2) if optimal_lineup else 0,
+        'total_salary': sum([salary_dict.get(player) for player in optimal_lineup]) if optimal_lineup else 0,
+        'max_pts': round(sum([proj_pts_dict.get(player) for player in best_lineup]), 2) if optimal_lineup else 0
     }
     return optimal_dict
 
 
 def save_new_lineups(sport, week, site, slate, row, db):
-    columns = ['week', 'site', 'slate', 'projected_lineup', 'optimal_lineup', 'qb_expected', 'qb_actual',
-               'qb_optimal', 'rb_expected', 'rb_actual', 'rb_optimal', 'wr_expected', 'wr_actual', 'wr_optimal',
-               'te_expected', 'te_actual', 'te_optimal', 'flex_expected', 'flex_actual', 'flex_optimal', 'dst_expected',
-               'dst_actual', 'dst_optimal']
-    result = db.session.execute('SELECT * FROM ' + sport + '_lineups' +
+    if slate == 'mvp':
+        table = sport + '_mvp_lineups'
+        columns = ['week', 'site', 'slate', 'projected_lineup', 'optimal_lineup', 'mvp_expected', 'mvp_actual',
+                   'mvp_optimal', 'flex_expected', 'flex_actual', 'flex_optimal']
+    else:
+        table = sport + '_lineups'
+        columns = ['week', 'site', 'slate', 'projected_lineup', 'optimal_lineup', 'qb_expected', 'qb_actual',
+                   'qb_optimal', 'rb_expected', 'rb_actual', 'rb_optimal', 'wr_expected', 'wr_actual', 'wr_optimal',
+                   'te_expected', 'te_actual', 'te_optimal', 'flex_expected', 'flex_actual', 'flex_optimal',
+                   'dst_expected', 'dst_actual', 'dst_optimal']
+    result = db.session.execute('SELECT * FROM ' + table +
                                 ' WHERE week = ' + str(week) +
                                 ' AND site = ' + "'" + site + "'" +
                                 ' AND slate = ' + "'" + slate + "'" +
-                                ' ORDER BY week, site, type')
+                                ' ORDER BY week, site')
     existing_rows = [row for row in result]
     if existing_rows:
         col_list = [columns[i] + ' = ' + (("'" + str(row[i]) + "'") if i in (1, 2, 3, 4) else str(row[i])) + ', '
                     for i in range(len(columns))]
         update_string = ''.join(col_list) + 'updated = CURRENT_TIMESTAMP'
-        db.session.execute('UPDATE ' + sport + '_lineups' +
+        db.session.execute('UPDATE ' + table +
                            ' SET ' + update_string +
                            ' WHERE week = ' + str(week) +
                            ' AND site = ' + "'" + site + "'" +
                            ' AND slate = ' + "'" + slate + "'")
     else:
-        db.session.execute('INSERT INTO ' + sport + '_lineups VALUES ' + str(row)[:-1] + ', CURRENT_TIMESTAMP)')
+        db.session.execute('INSERT INTO ' + table + ' VALUES ' +
+                           str(row)[:-1].replace("'NULL'", 'NULL') + ', CURRENT_TIMESTAMP)')
     db.session.commit()
 
 
@@ -157,7 +161,7 @@ def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list,
         optimal_dict = optimize_mvp(black_list, proj_dict, salary_dict, len(display_matrix), cap)
     else:
         optimal_dict = optimize(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict, cap)
-    if not optimal_dict:
+    if not optimal_dict.get('lineup'):
         return 'Warning: \nNot enough data available to generate lineup.'
     projected_lineup = optimal_dict.get('lineup')
     total_pts = round(optimal_dict.get('total_pts'), 1)
@@ -166,7 +170,10 @@ def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list,
     if sport == 'nfl' and db:
         week = get_all_events()[0].get('week')
         scores_dict = {player: item.get('points') for player, item in get_historical_dfs_info(week, site).items()}
-        optimal_lineup = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap).get('lineup')
+        if slate == 'mvp':
+            optimal_lineup = optimize_mvp(black_list, scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
+        else:
+            optimal_lineup = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap).get('lineup')
         new_row = get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, site, slate, proj_dict,
                                      scores_dict)
         save_new_lineups(sport, week, site, slate, new_row, db)

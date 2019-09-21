@@ -233,13 +233,14 @@ def cached_dfs_data(sport, slate):
         return 'Invalid sport.'
 
 
-@app.route("/optimize/reporting/<sport>/<slate>")
+@app.route("/optimize/reporting/<sport>/<slate>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def save_lineups(sport, slate):
-    query_result = [row for row in db.session.execute('SELECT * FROM ' + sport + '_lineups' +
-                                                      ' WHERE slate = ' + slate +
-                                                      ' ORDER BY week, site, type')]
-    return jsonify(aggregate_reporting_data(query_result))
+    data = request.get_data()
+    data_tuple = tuple(str(data)[2:-1].split('|'))
+    site, weeks = data_tuple
+    query_results = get_query_results(sport, slate, site, weeks, db)
+    return jsonify(aggregate_reporting_data(query_results, slate))
 
 
 @app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
@@ -250,7 +251,7 @@ def optimized_team(sport, slate):
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
-        removed_player, site = data_tuple[0], data_tuple[1]
+        removed_player, site = data_tuple
         fd_black_list, dk_black_list = session.get('fd_black_list'), session.get('dk_black_list')
         if site == 'fd' and removed_player not in fd_black_list:
             fd_black_list.append(removed_player)

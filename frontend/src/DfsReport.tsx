@@ -5,15 +5,16 @@ interface rowAttributes {
     expected: number,
     actual: number,
     optimal: number,
-    expected_v_actual: string,
-    actual_v_optimal: string,
-    expected_v_optimal: string
+    expected_v_actual: number,
+    actual_v_optimal: number,
+    expected_v_optimal: number
 }
 
-export const reportingTable = (props: {
+export const DfsReport = (props: {
     reportingData: rowAttributes[]}) =>
     <table>
         <tr>
+            <th>Position</th>
             <th>Projected</th>
             <th>Actual</th>
             <th>Optimal</th>
@@ -23,14 +24,14 @@ export const reportingTable = (props: {
         </tr>
         {props.reportingData.map(
             (row) => (
-                <tr>
+                <tr style={{fontWeight: (row.position === 'Total') ? 'bold' : 'normal'}}>
                     <td>{row.position}</td>
                     <td>{row.expected}</td>
                     <td>{row.actual}</td>
                     <td>{row.optimal}</td>
-                    <td>{row.expected_v_actual}</td>
-                    <td>{row.actual_v_optimal}</td>
-                    <td>{row.expected_v_optimal}</td>
+                    <td>{(100 * row.expected_v_actual).toFixed(2).toString().concat('%')}</td>
+                    <td>{(100 * row.actual_v_optimal).toFixed(2).toString().concat('%')}</td>
+                    <td>{(100 * row.expected_v_optimal).toFixed(2).toString().concat('%')}</td>
                 </tr>
             )
         )}
