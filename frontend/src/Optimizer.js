@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import { DfsGrid } from './DfsGrid.tsx';
+import { DfsReport } from './DfsReport.tsx';
 import football2 from './icons/football2.svg';
 
 export class Optimizer extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: false, sport: '', slate: 'main', fdLineup: [], dkLineup: []};
+        this.state = {isLoading: false, isReporting: false, sport: '', slate: 'main', fdLineup: [], dkLineup: [],
+        reportingData: {}, weeks: [], site: ''};
     }
 
     dfsSportChange = (event) => {
@@ -81,30 +83,57 @@ export class Optimizer extends Component {
         });
     };
 
-    fetchReportingData = (sport, slate) => {
+    fetchReportingData = (sport, slate, site, weeks) => {
+        sport = 'nfl';
         if (!sport) {
             alert('Please select a sport.');
         } else {
-            let prevSport = this.state.sport;
-            this.setState({isLoading: true, sport: sport, slate: slate});
-            fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + slate)
-                .then(response => {
+            fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + slate, {
+                method: 'POST',
+                body: site + '|' + weeks
+            }).then(response => {
                     if (response.status !== 200) {
                         alert('Failed to generate report.');
                     } else {
                         response.json()
                             .then((reportJson) => {
-                                console.log(reportJson);
+                                this.setState({
+                                    isReporting: true,
+                                    sport: sport,
+                                    slate: slate,
+                                    site: site,
+                                    weeks: weeks,
+                                    reportingData: reportJson});
                             });
                     }
                 });
         }
+    };
 
+    toggleSite = (selectedSite) => {
+        let {sport, slate, site, weeks} = this.state;
+        site = (selectedSite) ? ((site === selectedSite) ? '' : selectedSite) : '';
+        this.fetchReportingData(sport, slate, site, weeks);
+    };
+
+    toggleWeek = (selectedWeek) => {
+        let {sport, slate, site, weeks} = this.state;
+        if (weeks.includes(selectedWeek)) {
+            weeks.splice(weeks.indexOf(selectedWeek), 1);
+        } else {
+            weeks.push(selectedWeek);
+        }
+        this.fetchReportingData(sport, slate, site, weeks);
     };
 
     render() {
-        const {isLoading, sport, slate, fdLineup, dkLineup} = this.state;
+        const {isLoading, isReporting, sport, slate, fdLineup, dkLineup, reportingData, site, weeks} = this.state;
+
         let gridSection;
+        let weekArray = [];
+        for (let i = 1; i <= reportingData.maxWeek; i++) {
+            weekArray.push(i);
+        }
 
         if (isLoading) {
             gridSection =
@@ -112,6 +141,35 @@ export class Optimizer extends Component {
                     <div><p className={"Optimizing-text"}>Optimizing . . .</p></div>
                     <div><img src={football2} className={"App-logo2"} alt="football2"/></div>
                 </div>;
+        } else if (isReporting) {
+            gridSection =
+                <div className={"Dfs-grid-section"}>
+                    <div>
+                        <DfsReport reportingData={reportingData.data}/>
+                    </div>
+                    <div>
+                        <div className={'Dfs-sport'}>
+                            <h3>Site</h3>
+                            <div className={"Dfs-grid-section"}>
+                                <button style={{backgroundColor: (site === 'fd') ? 'blue' : 'white'}}
+                                        onClick={() => this.toggleSite('fd')}>Fanduel</button>
+                                <button style={{backgroundColor: (site === 'dk') ? 'blue' : 'white'}}
+                                        onClick={() => this.toggleSite('dk')}>Draftkings</button>
+                            </div>
+                        </div>
+                        <div className={'Dfs-sport'}>
+                            <h3>Week</h3>
+                            <div className={"Dfs-grid-section"}>
+                            {weekArray.map(
+                                (weekNumber) => (
+                                    <button style={{backgroundColor: (weeks.includes(weekNumber)) ? 'blue' : 'white'}}
+                                            onClick={() => this.toggleWeek(weekNumber)}>{weekNumber}</button>
+                                )
+                            )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
         } else {
             gridSection =
                 <div className={"Dfs-grid-section"}>
@@ -154,7 +212,7 @@ export class Optimizer extends Component {
                     <button style={{marginTop: '10px'}}
                             onClick={() => this.fetchOptimalLineups(sport, slate)}>Reset</button>
                     <button style={{marginTop: '10px'}}
-                            onClick={() => this.fetchReportingData(sport, slate)}>Report</button>
+                            onClick={() => this.fetchReportingData(sport, slate, site, weekArray)}>Report</button>
                 </div>
                 {gridSection}
             </Container>
