@@ -44,9 +44,10 @@ def find_points_by_position(lineup, display_matrix, points_dict):
     points_by_position = {pos: 0 for pos in positions}
     if points_dict:
         for player in lineup:
-            spot = display_matrix[lineup.index(player)]
-            points_by_position[spot] += points_dict.get(player)
-            points_by_position[spot] = round(points_by_position[spot], 2)
+            if points_dict.get(player):
+                spot = display_matrix[lineup.index(player)]
+                points_by_position[spot] += points_dict.get(player)
+                points_by_position[spot] = round(points_by_position[spot], 2)
     return points_by_position
 
 
