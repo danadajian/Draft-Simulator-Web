@@ -166,7 +166,10 @@ def ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate
         optimal_lineup = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap).get('lineup')
     new_row = get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, site, slate, proj_dict,
                                  scores_dict)
-    save_new_lineups(sport, week, site, slate, new_row, db)
+    if db:
+        save_new_lineups(sport, week, site, slate, new_row, db)
+    else:
+        print(new_row)
 
 
 def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
@@ -181,7 +184,7 @@ def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list,
     total_pts = round(optimal_dict.get('total_pts'), 1)
     total_salary = optimal_dict.get('total_salary')
     max_pts = optimal_dict.get('max_pts')
-    if sport == 'nfl' and db:
+    if sport == 'nfl':
         ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict,
                                    salary_dict, cap, projected_lineup, db)
     lineup_json = [
@@ -219,10 +222,10 @@ def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list,
 
 
 def get_dfs_lineup(site, sport, slate, projections, dfs_info, black_list, db):
-    slate = 'mvp' if slate == 'thurs' else 'main'
-    lineup_matrix = dfs_configs.get(site).get(sport).get(slate).get('lineup_matrix')
-    display_matrix = dfs_configs.get(site).get(sport).get(slate).get('display_matrix')
-    salary_cap = dfs_configs.get(site).get(sport).get(slate).get('salary_cap')
+    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    lineup_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('lineup_matrix')
+    display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
+    salary_cap = dfs_configs.get(site).get(sport).get(lineup_type).get('salary_cap')
     site_id = 1 if site == 'dk' else 2
     if sport == 'nfl':
         pos_dict = {player_dict.get('name'): dfs_info.get(player_dict.get('id')).get('position')
