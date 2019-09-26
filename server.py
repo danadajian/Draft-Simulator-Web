@@ -142,7 +142,7 @@ def guest():
                        user_espn_ranking='No ranking specified.', user_yahoo_ranking='No ranking specified.')
     user_exists = Users.query.filter_by(username='guest').first()
     if not user_exists:
-        db.session.update(guest_user)
+        db.session.add(guest_user)
         db.session.commit()
     user = Users.query.filter_by(username='guest').first()
     login_user(user, remember=True)
@@ -177,7 +177,7 @@ def save_ranking(site):
     else:
         user.user_yahoo_ranking = player_list_string
     db.session.commit()
-    return 'User ranking saved.'
+    return jsonify(['User ranking saved.'])
 
 
 @app.route("/cached-espn-players")

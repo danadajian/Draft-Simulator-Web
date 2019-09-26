@@ -30,11 +30,16 @@ export class Simulator extends Component {
                 } else {
                     response.json()
                         .then((players) => {
-                            this.setState({
-                                isLoading: false,
-                                players: players,
-                                site: site
-                            });
+                            if (typeof players[0] === "string") {
+                                this.setState({isLoading: false});
+                                alert(players[0]);
+                            } else {
+                                this.setState({
+                                    isLoading: false,
+                                    players: players,
+                                    site: site
+                                });
+                            }
                         })
                 }
             });
@@ -75,11 +80,7 @@ export class Simulator extends Component {
                 } else {
                     response.json()
                         .then((responseJson) => {
-                            if (typeof responseJson[0] === "string") {
-                                alert(responseJson[0])
-                            } else {
-                                alert('User ranking saved successfully.');
-                            }
+                            alert(responseJson[0])
                         })
                 }
             })

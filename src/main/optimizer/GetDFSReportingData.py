@@ -55,7 +55,7 @@ def get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, s
     projected_lineup_projected = find_points_by_position(projected_lineup, display_matrix, proj_dict)
     projected_lineup_actual = find_points_by_position(projected_lineup, display_matrix, scores_dict)
     optimal_lineup_actual = find_points_by_position(optimal_lineup, display_matrix, scores_dict)
-    if slate == 'mvp':
+    if slate == 'thurs':
         db_row = (
             week, site, slate,
             ','.join(projected_lineup).replace("'", ''),
@@ -86,7 +86,7 @@ def get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, s
 
 
 def get_query_results(sport, slate, site, weeks, db):
-    if slate == 'mvp':
+    if slate == 'thurs':
         data_result = [row for row in
                        db.session.execute('SELECT SUM(mvp_expected), SUM(mvp_actual), SUM(mvp_optimal),' +
                                           ' SUM(flex_expected), SUM(flex_actual), SUM(flex_optimal)' +
@@ -139,7 +139,7 @@ def aggregate_reporting_data(query_results, slate):
             'expected_v_optimal': 0 if total_optimal == 0 else (total_expected - total_optimal) / total_optimal
         }
     ]
-    positions = ['MVP (1.5x Points)', 'FLEX'] if slate == 'mvp' else ['QB', 'RB', 'WR', 'TE', 'FLEX', 'D/ST']
+    positions = ['MVP (1.5x Points)', 'FLEX'] if slate == 'thurs' else ['QB', 'RB', 'WR', 'TE', 'FLEX', 'D/ST']
     aggregated_data = {
         'data': [
             {
