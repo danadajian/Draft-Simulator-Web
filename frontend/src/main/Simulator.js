@@ -30,11 +30,16 @@ export class Simulator extends Component {
                 } else {
                     response.json()
                         .then((players) => {
-                            this.setState({
-                                isLoading: false,
-                                players: players,
-                                site: site
-                            });
+                            if (typeof players[0] === "string") {
+                                this.setState({isLoading: false});
+                                alert(players[0]);
+                            } else {
+                                this.setState({
+                                    isLoading: false,
+                                    players: players,
+                                    site: site
+                                });
+                            }
                         })
                 }
             });
@@ -70,12 +75,15 @@ export class Simulator extends Component {
                 method: 'POST',
                 body: JSON.stringify(userPlayers)
             }).then(response => {
-                if (response.status === 200) {
-                    alert('User ranking saved successfully.');
-                } else {
+                if (response.status !== 200) {
                     alert('User ranking unable to be saved.');
+                } else {
+                    response.json()
+                        .then((responseJson) => {
+                            alert(responseJson[0])
+                        })
                 }
-            });
+            })
         }
     };
 
@@ -88,7 +96,7 @@ export class Simulator extends Component {
                 }  else {
                     response.json()
                         .then((userRanking) => {
-                            if (userRanking[0] === 'No ranking specified.') {
+                            if (typeof userRanking[0] === "string") {
                                 alert(userRanking[0]);
                             } else {
                                 let {players, userPlayers} = this.state;

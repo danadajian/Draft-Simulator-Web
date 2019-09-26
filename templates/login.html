@@ -30,8 +30,10 @@ Login
     {% endif %}
     {{ wtf.form_field(form.remember) }}
     <button class="btn btn-lg btn-primary btn-block" type="submit" style="margin-top: 10%;">Log In</button>
-    <button class="btn btn-lg btn-primary btn-block" style="margin-top: 5%;"
+    <button class="btn btn-lg btn-primary btn-block" style="margin-top: 5%; margin-bottom: 5%"
             onclick="window.location.pathname = '/signup'">Sign Up</button>
+    <a style="margin-top: 5%; margin-left: 25%; text-align: center"
+       onclick="window.location.href = window.location.origin + '/guest'">Or, continue as guest</a>
   </form>
 
 </div>

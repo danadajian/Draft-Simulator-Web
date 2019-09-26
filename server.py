@@ -136,6 +136,19 @@ def home():
     return render_template("index.html")
 
 
+@app.route("/guest")
+def guest():
+    guest_user = Users(username='guest', email='guest@guest.com', password='guest',
+                       user_espn_ranking='No ranking specified.', user_yahoo_ranking='No ranking specified.')
+    user_exists = Users.query.filter_by(username='guest').first()
+    if not user_exists:
+        db.session.add(guest_user)
+        db.session.commit()
+    user = Users.query.filter_by(username='guest').first()
+    login_user(user, remember=True)
+    return redirect(url_for(session.get('redirect') or 'home'))
+
+
 @app.route("/simulate")
 @might_need_to_login(login_required, is_production or postgres_configured)
 def simulate():
@@ -145,6 +158,8 @@ def simulate():
 @app.route("/load-ranking/<site>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 def load_ranking(site):
+    if current_user.username == 'guest':
+        return jsonify(['You must be logged in to access this feature.'])
     user = Users.query.filter_by(username=current_user.username).first()
     ranking = user.user_espn_ranking if site == 'espn' else user.user_yahoo_ranking
     return jsonify([ranking]) if ranking == 'No ranking specified.' else jsonify(eval(ranking))
@@ -153,6 +168,8 @@ def load_ranking(site):
 @app.route("/save-ranking/<site>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def save_ranking(site):
+    if current_user.username == 'guest':
+        return jsonify(['You must be logged in to access this feature.'])
     player_list_string = str(request.get_data())[2:-1].replace('\\', '')
     user = Users.query.filter_by(username=current_user.username).first()
     if site == 'espn':
@@ -160,7 +177,7 @@ def save_ranking(site):
     else:
         user.user_yahoo_ranking = player_list_string
     db.session.commit()
-    return 'User ranking saved.'
+    return jsonify(['User ranking saved.'])
 
 
 @app.route("/cached-espn-players")

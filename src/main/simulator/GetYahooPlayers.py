@@ -10,7 +10,8 @@ def get_yahoo_players():
     doc = BeautifulSoup(request.content, 'html.parser')
     text_list = str(doc.get_text).splitlines()[4:-1]
     player_list = [item.split('\t')[1:4] for item in text_list]
-
+    if not player_list:
+        return ['This data is no longer available.']
     for player in player_list:
         if player[0][-2:] == 'Jr':
             player[0] = player[0] + '.'
