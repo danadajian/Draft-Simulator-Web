@@ -125,7 +125,7 @@ def optimize(lineup_matrix, black_list, proj_pts_dict, pos_dict, salary_dict, sa
 
 
 def save_new_lineups(sport, week, site, slate, row, db):
-    if slate == 'mvp':
+    if slate == 'thurs':
         table = sport + '_mvp_lineups'
         columns = ['week', 'site', 'slate', 'projected_lineup', 'optimal_lineup', 'mvp_expected', 'mvp_actual',
                    'mvp_optimal', 'flex_expected', 'flex_actual', 'flex_optimal']
@@ -160,7 +160,7 @@ def ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate
                                salary_dict, cap, projected_lineup, db):
     week = get_all_events()[0].get('week')
     scores_dict = {player: item.get('points') for player, item in get_historical_dfs_info(week, site).items()}
-    if slate == 'mvp':
+    if slate == 'thurs':
         optimal_lineup = optimize_mvp(black_list, scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
     else:
         optimal_lineup = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap).get('lineup')
@@ -174,7 +174,7 @@ def ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate
 
 def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
                   team_and_weather_dict, injured_dict, db):
-    if slate == 'mvp':
+    if slate == 'thurs':
         optimal_dict = optimize_mvp(black_list, proj_dict, salary_dict, len(display_matrix), cap)
     else:
         optimal_dict = optimize(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict, cap)
