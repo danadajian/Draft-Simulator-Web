@@ -8,9 +8,7 @@ describe('Draft tests', function () {
         cy.get('[class$=jqx-item]').should('not.exist');
         const stub = cy.stub();
         cy.on ('window:alert', stub);
-        cy
-        .get('button').get('[class=Draft-button]').click()
-        .then(() => {
+        cy.get('button').get('[class=Draft-button]').click().then(() => {
           expect(stub.getCall(0)).to.be.calledWith('Please select at least one player to draft.')
         });
         cy.get('[class$=jqx-item]').should('not.exist');
