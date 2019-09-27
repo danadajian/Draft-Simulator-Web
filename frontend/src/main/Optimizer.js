@@ -183,7 +183,7 @@ export class Optimizer extends Component {
                     <Nav className="Nav-bar">
                         <Nav.Link href="/home">Home</Nav.Link>
                         <Nav.Link href="/simulate">Back to Draft Simulator</Nav.Link>
-                        <Nav.Link href="/logout">Logout</Nav.Link>
+                        <Nav.Link href="/logout">Log Out</Nav.Link>
                     </Nav>
                 </Navbar>
                 <h1 className={"App-header"}>DFS Optimizer</h1>

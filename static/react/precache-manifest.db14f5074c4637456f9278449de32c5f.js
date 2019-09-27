@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "5c1ad8ea9a6bfa7baffd",
+    "revision": "941512d5a7c990276ac8",
     "url": "/static/react/css/main.6a05fa3d.chunk.css"
   },
   {
-    "revision": "5c1ad8ea9a6bfa7baffd",
-    "url": "/static/react/js/main.263e4410.chunk.js"
+    "revision": "941512d5a7c990276ac8",
+    "url": "/static/react/js/main.b00ee21b.chunk.js"
   },
   {
     "revision": "dacd178ce7b78af49829",
@@ -80,7 +80,7 @@ self.__precacheManifest = [
     "url": "/static/react/media/down.61889039.ico"
   },
   {
-    "revision": "ea9c6928b3ff7f969d37c9e3858aefd7",
+    "revision": "366166d860e26102f192e94ee3010340",
     "url": "/static/react/../../templates/index.html"
   }
 ];

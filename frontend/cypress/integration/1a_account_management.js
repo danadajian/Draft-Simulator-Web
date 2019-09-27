@@ -1,5 +1,5 @@
-describe('Home page tests', function () {
-    it('Lets you login', function () {
+describe('Account management tests', function () {
+    it('Lets you login and logout', function () {
         cy.visit('http://localhost:5000');
         cy.get('[class^=btn]').contains('Log In').click();
         cy.url().should('eq', 'http://localhost:5000/login');
@@ -7,6 +7,7 @@ describe('Home page tests', function () {
         cy.get('#password').type('testing123');
         cy.get('[class^=btn]').contains('Log In').click();
         cy.url().should('eq', 'http://localhost:5000/home');
+        cy.get('[class^=Logout]').contains('Log Out').click();
     });
     it('Lets you signup', function () {
         cy.visit('http://localhost:5000');
