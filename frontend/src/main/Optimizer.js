@@ -8,13 +8,15 @@ export class Optimizer extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: false, isReporting: false, sport: '', slate: 'main', fdLineup: [], dkLineup: [],
+        this.state = {isLoading: false, isReporting: false, sport: '', slate: '', fdLineup: [], dkLineup: [],
         reportingData: {}, weeks: [], site: ''};
     }
 
     fetchOptimalLineups = (sport, slate) => {
         if (!sport) {
             alert('Please select a sport.');
+        } else if (!slate) {
+            this.setState({sport: sport});
         } else {
             let prevSport = this.state.sport;
             this.setState({isLoading: true, isReporting: false, sport: sport, slate: slate});
@@ -189,11 +191,11 @@ export class Optimizer extends Component {
                     <h3>Choose a sport:</h3>
                     <div style={{display: 'flex'}}>
                         <button style={{backgroundColor: (sport === 'mlb') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups('mlb', slate)}>MLB</button>
+                                onClick={() => this.fetchOptimalLineups('mlb', 'main')}>MLB</button>
                         <button style={{backgroundColor: (sport === 'nfl') ? 'dodgerblue' : 'white'}}
                                 onClick={() => this.fetchOptimalLineups('nfl', slate)}>NFL</button>
                         <button style={{backgroundColor: (sport === 'nba') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups('nba', slate)}>NBA</button>
+                                onClick={() => this.fetchOptimalLineups('nba', 'main')}>NBA</button>
                     </div>
                     {(sport === 'nfl') && <h3>Choose a game slate:</h3>}
                     {(sport === 'nfl') &&
@@ -207,9 +209,9 @@ export class Optimizer extends Component {
                             <button style={{backgroundColor: (slate === 'sun-mon') ? 'dodgerblue' : 'white'}}
                                     onClick={() => this.fetchOptimalLineups(sport, 'sun-mon')}>Sun - Mon</button>
                         </div>}
-                    {sport && <button style={{marginTop: '10px'}}
+                    {sport && slate && <button style={{marginTop: '10px'}}
                                       onClick={() => this.fetchOptimalLineups(sport, slate)}>Reset Lineups</button>}
-                    {(sport === 'nfl') && <button style={{marginTop: '10px'}}
+                    {(sport === 'nfl' && slate) && <button style={{marginTop: '10px'}}
                                       onClick={() =>
                                           this.fetchReportingData(sport, slate, site, weekArray)}>Generate Report</button>}
                 </div>

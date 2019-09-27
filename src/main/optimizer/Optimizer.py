@@ -161,7 +161,7 @@ def ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate
     week = get_all_events()[0].get('week')
     scores_dict = {player: item.get('points') for player, item in get_historical_dfs_info(week, site).items()}
     if slate == 'thurs':
-        optimal_lineup = optimize_mvp(black_list, scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
+        optimal_lineup = optimize_mvp(site, black_list, scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
     else:
         optimal_lineup = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap).get('lineup')
     new_row = get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, site, slate, proj_dict,
@@ -175,14 +175,14 @@ def ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate
 def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
                   team_and_weather_dict, injured_dict, db):
     if slate == 'thurs':
-        optimal_dict = optimize_mvp(black_list, proj_dict, salary_dict, len(display_matrix), cap)
+        optimal_dict = optimize_mvp(site, black_list, proj_dict, salary_dict, len(display_matrix), cap)
     else:
         optimal_dict = optimize(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict, cap)
     if not optimal_dict.get('lineup'):
         return 'Warning: \nNot enough data available to generate lineup.'
     projected_lineup = optimal_dict.get('lineup')
     total_pts = round(optimal_dict.get('total_pts'), 1)
-    total_salary = optimal_dict.get('total_salary')
+    total_salary = round(optimal_dict.get('total_salary'))
     max_pts = optimal_dict.get('max_pts')
     if sport == 'nfl':
         ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict,
@@ -193,7 +193,9 @@ def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list,
                        'Name': player,
                        'Status': injured_dict.get(player) or '',
                        'Projected': round(proj_dict.get(player), 1),
-                       'Price': '$' + '{:,}'.format(salary_dict.get(player)),
+                       'Price': '$' + '{:,}'.format(round(salary_dict.get(player) *
+                                                          (1.5 if projected_lineup.index(player) == 0 else 1))
+                                                    if slate == 'thurs' and site == 'dk' else salary_dict.get(player)),
                        'Opp': team_and_weather_dict.get(player).get('opponent') or 'unavailable',
                        'Weather': team_and_weather_dict.get(player).get('weather') or 'unavailable'
                        } for player in projected_lineup
