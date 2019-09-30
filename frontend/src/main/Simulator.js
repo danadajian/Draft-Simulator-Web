@@ -286,7 +286,7 @@ export class Simulator extends Component {
             <Container fluid={true}>
                 <Navbar bg="primary" variant="dark">
                     <Nav className="Nav-bar">
-                      <Nav.Link href="/">Home</Nav.Link>
+                      <Nav.Link href="/home">Home</Nav.Link>
                       <Nav.Link href="#about">About</Nav.Link>
                       <Nav.Link href="#instructions">Instructions</Nav.Link>
                       <Nav.Link href="/optimize">DFS Optimizer</Nav.Link>

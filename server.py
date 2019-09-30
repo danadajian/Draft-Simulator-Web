@@ -3,7 +3,7 @@ from src.main.simulator.GetYahooPlayers import get_yahoo_players
 from src.main.optimizer.GetMLBData import get_mlb_projections
 from src.main.optimizer.GetNBAData import get_nba_projections
 from src.main.optimizer.GetDFSInfo import *
-from src.main.optimizer.Optimizer import *
+from src.main.optimizer.OutputLineups import *
 from src.main.simulator.Simulator import *
 from flask import *
 from flask_bootstrap import Bootstrap

@@ -2,7 +2,7 @@ import unittest
 from src.main.optimizer.Optimizer import *
 
 
-class OptimizerTests(unittest.TestCase):
+class TestOptimizer(unittest.TestCase):
     def test_ignore_player(self):
         black_list = ['QB3']
         pools = [['QB2', 'QB3', 'QB1'], ['RB2', 'RB3', 'RB1'], ['QB3', 'WR1', 'WR3']]
@@ -117,7 +117,3 @@ class OptimizerTests(unittest.TestCase):
         salary_cap = 3000
         result = optimize(position_matrix, [], proj_dict, pos_dict, salary_dict, salary_cap)
         self.assertEqual([], result.get('lineup'))
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -19,9 +19,9 @@ Heroku Postgres commands:
     * `heroku pg:psql -a draft-simulator`
 
 Cypress commands:
-* `cd frontend`
 * `npm install cypress`
-* `node_modules/.bin/cypress open`
+* `cd frontend/node_modules/.bin/`
+* `cypress open`
 
 Docker Commands:
 * in concourse-setup:

@@ -2,7 +2,7 @@ import unittest
 from src.main.simulator.Simulator import *
 
 
-class SimulateDraftTests(unittest.TestCase):
+class TestSimulator(unittest.TestCase):
     pos_dict = {'Saquon Barkley': 'RB', 'Christian McCaffrey': 'RB', 'Alvin Kamara': 'RB', 'Ezekiel Elliott': 'RB',
                 "Le'Veon Bell": 'RB', 'David Johnson': 'RB', 'Davante Adams': 'WR', 'DeAndre Hopkins': 'WR',
                 'Julio Jones': 'WR', 'Odell Beckham Jr': 'WR', 'Todd Gurley II': 'RB', 'Melvin Gordon': 'RB',

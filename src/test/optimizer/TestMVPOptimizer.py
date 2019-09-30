@@ -7,7 +7,7 @@ dk_proj_dict = {'Aaron Rodgers': 20.235346146400968, 'Carson Wentz': 18.41531954
 dk_salary_dict = {'Aaron Rodgers': 10800, 'Carson Wentz': 10000, 'Davante Adams': 11000, 'Zach Ertz': 9200, 'Marquez Valdes-Scantling': 7600, 'Aaron Jones': 9000, 'Mason Crosby': 3600, 'Alshon Jeffery': 8200, 'Nelson Agholor': 7800, 'Jamaal Williams': 5000, 'Jake Elliott': 3400, 'Miles Sanders': 6200, 'Mack Hollins': 2400, 'Jordan Howard': 4600, 'Geronimo Allison': 4200, 'Jimmy Graham': 4400, 'Darren Sproles': 2800, 'Dallas Goedert': 1000, 'JJ Arcega-Whiteside': 1800, 'Marcedes Lewis': 600, 'Corey Clement': 200, 'Robert Tonyan': 200, 'Danny Vitale': 400, 'Allen Lazard': 200, 'Darrius Shepherd': 200, 'Evan Baylis': 200, 'Alex Ellis': 200, 'Packers D/ST': 4800, 'Eagles D/ST': 3200}
 
 
-class MVPOptimizerTests(unittest.TestCase):
+class TestMVPOptimizer(unittest.TestCase):
     def test_get_total(self):
         test_list = ['player1', 'player2', 'player3']
         test_dict = {'player1': 10, 'player2': 20, 'player3': 30}
