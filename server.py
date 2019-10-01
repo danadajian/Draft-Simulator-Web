@@ -120,6 +120,7 @@ def might_need_to_login(login_decorator, boolean):
         if not boolean:
             return func
         return login_decorator(func)
+
     return decorator
 
 
@@ -251,36 +252,35 @@ def cached_dfs_data(sport, slate):
         return 'Invalid sport.'
 
 
-@app.route("/optimize/reporting/<sport>/<slate>", methods=['POST'])
+@app.route("/optimize/reporting/<sport>/<site>/<slate>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
-def save_lineups(sport, slate):
+def save_lineups(sport, site, slate):
     data = request.get_data()
-    data_tuple = tuple(str(data)[2:-1].split('|'))
-    site, weeks = data_tuple
+    weeks = str(data)[2:-1]
     query_results = get_query_results(sport, slate, site, weeks, db)
     return jsonify(aggregate_reporting_data(query_results, slate))
 
 
-@app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
+@app.route("/optimize/generate/<sport>/<site>/<slate>", methods=['GET', 'POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
-def optimized_team(sport, slate):
+def optimized_team(sport, site, slate):
     dfs_data = cached_dfs_data(sport, slate)
     projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info')
     if request.method == 'POST':
         data = request.get_data()
         data_tuple = tuple(str(data)[2:-1].split('|'))
-        removed_player, site = data_tuple
-        fd_black_list, dk_black_list = session.get('fd_black_list'), session.get('dk_black_list')
-        if site == 'fd' and removed_player not in fd_black_list:
-            fd_black_list.append(removed_player)
-        elif site == 'dk' and removed_player not in dk_black_list:
-            dk_black_list.append(removed_player)
+        whitelisted_player, removed_player = data_tuple
+        white_list, black_list = session.get('white_list'), session.get('black_list')
+        if whitelisted_player and whitelisted_player not in black_list:
+            white_list.append(whitelisted_player)
+        elif removed_player and removed_player not in black_list:
+            black_list.append(removed_player)
     else:
-        fd_black_list, dk_black_list = [], []
-    session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
-    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list,
-                                  db if is_production or postgres_configured else None)
-    return jsonify(dfs_lineups)
+        white_list, black_list = [], []
+    session['white_list'], session['black_list'] = white_list, black_list
+    dfs_lineup = get_dfs_lineup(sport, site, slate, projections, dfs_info.get(site), white_list, black_list,
+                                db if is_production or postgres_configured else None)
+    return jsonify(dfs_lineup)
 
 
 if __name__ == "__main__":

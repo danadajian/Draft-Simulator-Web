@@ -58,7 +58,7 @@ const Player = (props: playerProps) => {
 
 export const DfsGrid = (props: {
         dfsLineup: playerAttributes[],
-        removePlayer: (playerIndex: number, site: string) => void,
+        removePlayer: (playerIndex: number) => void,
         site: string}) =>
     <table className={'Dfs-grid'}>
         <tr style={{backgroundColor: (props.site === 'fd') ? 'dodgerblue' : 'black'}}>
@@ -73,7 +73,7 @@ export const DfsGrid = (props: {
         </tr>
         {props.dfsLineup.map(
             (player, playerIndex) => (
-                <Player player={player} onRemove={() => props.removePlayer(playerIndex, props.site)}/>
+                <Player player={player} onRemove={() => props.removePlayer(playerIndex)}/>
             )
         )}
     </table>;
