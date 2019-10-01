@@ -4,7 +4,7 @@ __pycache__/
 
 src/main/__pycache__/
 
-src/main/apiCredentials.py
+src/main/optimizer/apiCredentials.py
 
 ci/credentials.yml
 
