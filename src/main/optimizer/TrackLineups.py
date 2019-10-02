@@ -35,14 +35,16 @@ def save_new_lineups(sport, week, site, slate, row, db):
     db.session.commit()
 
 
-def ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict,
-                               salary_dict, cap, projected_lineup, db):
+def ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict,
+                               pos_dict, salary_dict, cap, projected_lineup, db):
     week = get_all_events()[0].get('week')
     scores_dict = {player: item.get('points') for player, item in get_historical_dfs_info(week, site).items()}
     if slate == 'thurs':
-        optimal_lineup = optimize_mvp(site, black_list, scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
+        optimal_lineup = optimize_mvp(site, [], scores_dict, salary_dict, len(display_matrix),
+                                      cap).get('lineup')
     else:
-        optimal_lineup = optimize(lineup_matrix, black_list, scores_dict, pos_dict, salary_dict, cap).get('lineup')
+        optimal_lineup = optimize(lineup_matrix, [], [], scores_dict, pos_dict, salary_dict,
+                                  cap).get('lineup')
     new_row = get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, site, slate, proj_dict,
                                  scores_dict)
     if db:

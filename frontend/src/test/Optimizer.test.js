@@ -1,4 +1,4 @@
-import { Optimizer } from '../main/Optimizer'
+import { Optimizer } from '../main/optimizer/Optimizer'
 
 describe('Lineup Ingestion', () => {
     it('can ingest dfs lineup', () => {

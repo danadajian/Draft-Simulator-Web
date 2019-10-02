@@ -1,11 +1,11 @@
 import React, {Component} from 'react'
 import { Container, Nav, Navbar } from 'react-bootstrap'
-import './App.css';
-import JqxPopover from '../jqxwidgets/react_jqxpopover'
+import '../App.css';
+import JqxPopover from '../../jqxwidgets/react_jqxpopover'
 import { PlayerListBox, UserListBox } from "./PlayerListBox.tsx"
 import { DraftResultsTable } from "./DraftResultsTable.tsx";
-import football from '../icons/football.ico'
-import search from '../icons/search.ico'
+import football from '../../icons/football.ico'
+import search from '../../icons/search.ico'
 
 export class Simulator extends Component {
 

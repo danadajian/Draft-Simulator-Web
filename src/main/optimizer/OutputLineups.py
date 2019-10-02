@@ -3,21 +3,21 @@ from .TrackLineups import *
 from src.main.optimizer.DfsConfigs import *
 
 
-def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict, salary_dict, cap,
-                  team_and_weather_dict, injured_dict, db):
+def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list, black_list, proj_dict, pos_dict,
+                  salary_dict, cap, team_and_weather_dict, injured_dict, db):
     if slate == 'thurs':
         optimal_dict = optimize_mvp(site, black_list, proj_dict, salary_dict, len(display_matrix), cap)
     else:
-        optimal_dict = optimize(lineup_matrix, black_list, proj_dict, pos_dict, salary_dict, cap)
+        optimal_dict = optimize(lineup_matrix, white_list, black_list, proj_dict, pos_dict, salary_dict, cap)
     if not optimal_dict.get('lineup'):
-        return 'Warning: \nNot enough data available to generate lineup.'
+        return 'Warning: \nUnable to generate lineup with available data.'
     projected_lineup = optimal_dict.get('lineup')
     total_pts = round(optimal_dict.get('total_pts'), 1)
     total_salary = round(optimal_dict.get('total_salary'))
     max_pts = optimal_dict.get('max_pts')
-    if sport == 'nfl':
-        ingest_actual_optimal_data(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_dict, pos_dict,
-                                   salary_dict, cap, projected_lineup, db)
+    if sport == 'nfl' and not white_list and not black_list:
+        ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict, pos_dict, salary_dict,
+                                   cap, projected_lineup, db)
     lineup_json = [
                       {'Position': display_matrix[projected_lineup.index(player)],
                        'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
@@ -54,7 +54,15 @@ def output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list,
     return lineup_json
 
 
-def get_dfs_lineup(site, sport, slate, projections, dfs_info, black_list, db):
+def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_list, db):
+    if projections == 'offseason':
+        return ['Warning: \nThis league is currently in the offseason.']
+    if projections == 'Not enough data is available.':
+        return ['Warning: \nThere are currently no games or projections for this league.']
+    if projections == 'Error obtaining projection data.':
+        return ['Warning: \nError obtaining projection data.']
+    if sport == 'nfl' and not dfs_info:
+        return ['Warning: \nThis contest is no longer available.']
     lineup_type = 'mvp' if slate == 'thurs' else 'standard'
     lineup_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('lineup_matrix')
     display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
@@ -95,21 +103,21 @@ def get_dfs_lineup(site, sport, slate, projections, dfs_info, black_list, db):
         and pos_dict.get(player) == injury_info_dict.get(player.split(' ')[0]
                                                          + ' ' + player.split(' ')[1]).get('position')
     }
-    dfs_lineup = output_lineup(lineup_matrix, display_matrix, site, sport, slate, black_list, proj_points_dict, pos_dict,
-                               salary_dict, salary_cap, team_and_weather_dict, injured_dict, db)
+    dfs_lineup = output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list, black_list,
+                               proj_points_dict, pos_dict, salary_dict, salary_cap, team_and_weather_dict,
+                               injured_dict, db)
     return dfs_lineup
 
 
-def get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list, db):
-    if projections == 'offseason':
-        return ['Warning: \nThis league is currently in the offseason.']
-    elif projections == 'Not enough data is available.':
-        return ['Warning: \nThere are currently no games or projections for this league.']
-    elif projections == 'Error obtaining projection data.':
-        return ['Warning: \nError obtaining projection data.']
-    elif sport == 'nfl' and (not dfs_info.get('fd') or not dfs_info.get('dk')):
-        return ['Warning: \nThis contest is no longer available.']
-    else:
-        fd_lineup = get_dfs_lineup('fd', sport, slate, projections, dfs_info.get('fd'), fd_black_list, db)
-        dk_lineup = get_dfs_lineup('dk', sport, slate, projections, dfs_info.get('dk'), dk_black_list, db)
-        return [fd_lineup, dk_lineup]
+def get_empty_lineup(sport, site, slate):
+    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
+    empty_lineup = [
+                       {'Position': position, 'Team': '', 'Name': '', 'Status': '', 'Projected': '', 'Price': '',
+                        'Opp': '', 'Weather': ''}
+                       for position in display_matrix
+                   ] + [
+        {'Position': '', 'Team': '', 'Name': 'Total', 'Status': '', 'Projected': '', 'Price': '', 'Opp': '',
+         'Weather': {'forecast': '', 'details': ''}}
+    ]
+    return empty_lineup

@@ -16,12 +16,12 @@ interface playerProps {
     onRemove: () => void
 }
 
-const cloudy = require("../icons/cloudy.ico") as any;
-const partlyCloudy = require("../icons/partlycloudy.ico") as any;
-const rainy = require("../icons/rainy.ico") as any;
-const snowy = require("../icons/snowy.ico") as any;
-const stormy = require("../icons/stormy.ico") as any;
-const sunny = require("../icons/sunny.ico") as any;
+const cloudy = require("../../icons/cloudy.ico") as any;
+const partlyCloudy = require("../../icons/partlycloudy.ico") as any;
+const rainy = require("../../icons/rainy.ico") as any;
+const snowy = require("../../icons/snowy.ico") as any;
+const stormy = require("../../icons/stormy.ico") as any;
+const sunny = require("../../icons/sunny.ico") as any;
 
 const Player = (props: playerProps) => {
     const forecast = (props.player.Weather.forecast) ? props.player.Weather.forecast.toLowerCase() : null;
@@ -37,7 +37,7 @@ const Player = (props: playerProps) => {
     return (
         <tr>
             <td>
-                {props.player.Position && <button onClick={props.onRemove} style={{fontWeight: 'bold'}}>X</button>}
+                {props.player.Position && props.player.Name && <button onClick={props.onRemove} style={{fontWeight: 'bold'}}>X</button>}
             </td>
             <td>{props.player.Position}</td>
             <td>{props.player.Team}</td>
@@ -58,7 +58,7 @@ const Player = (props: playerProps) => {
 
 export const DfsGrid = (props: {
         dfsLineup: playerAttributes[],
-        removePlayer: (playerIndex: number, site: string) => void,
+        removePlayer: (playerIndex: number) => void,
         site: string}) =>
     <table className={'Dfs-grid'}>
         <tr style={{backgroundColor: (props.site === 'fd') ? 'dodgerblue' : 'black'}}>
@@ -73,7 +73,7 @@ export const DfsGrid = (props: {
         </tr>
         {props.dfsLineup.map(
             (player, playerIndex) => (
-                <Player player={player} onRemove={() => props.removePlayer(playerIndex, props.site)}/>
+                <Player player={player} onRemove={() => props.removePlayer(playerIndex)}/>
             )
         )}
     </table>;
