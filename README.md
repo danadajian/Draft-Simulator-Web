@@ -4,11 +4,22 @@ https://www.draftsimulator.app/
 
 Languages/services used:
 * Backend: Python
-* Frontend: Javascript, React
+* Frontend: Javascript, Typescript, React
 * Frontend testing: Cypress
 * Database: PostgreSQL
 * Web hosting: Heroku
 * Deployment pipeline: Concourse, Docker
+
+Building frontend:
+* `cd frontend`
+* `npm install chalk`
+* `npm run build`
+
+Running Cypress:
+* `cd frontend`
+* `npm install cypress`
+* `cd node_modules/.bin/`
+* `cypress open`
 
 Heroku Postgres commands:
 * Push local db:
@@ -17,11 +28,6 @@ Heroku Postgres commands:
     * `heroku pg:pull DATABASE_URL draftsimulator -a draft-simulator`
 * Run SQL in heroku db:
     * `heroku pg:psql -a draft-simulator`
-
-Cypress commands:
-* `npm install cypress`
-* `cd frontend/node_modules/.bin/`
-* `cypress open`
 
 Docker Commands:
 * in concourse-setup:
@@ -32,7 +38,7 @@ Docker Commands:
     * `fly pause-pipeline -p ds-pipeline -t ci`
     * `fly unpause-pipeline -p ds-pipeline -t ci`
 
-To refresh SSL certificate post deployment:
+Refresh SSL certificate post deployment:
 * `heroku certs:auto:refresh`
 
 Skills Learned and/or Developed:

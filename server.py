@@ -264,10 +264,13 @@ def save_lineups(sport, site, slate):
 @app.route("/optimize/clear/<sport>/<site>/<slate>")
 @might_need_to_login(login_required, is_production or postgres_configured)
 def clear_lineup(sport, site, slate):
+    dfs_data = cached_dfs_data(sport, slate)
+    master_list = aggregate_player_info(sport, site, dfs_data.get('projections'), dfs_data.get('info').get(site)).get('master_dict')
     white_list, black_list = [], []
     session['white_list'], session['black_list'] = white_list, black_list
     empty_lineup = get_empty_lineup(sport, site, slate)
-    return jsonify(empty_lineup)
+    data_dict = {'playerPool': master_list, 'lineup': empty_lineup}
+    return jsonify(data_dict)
 
 
 @app.route("/optimize/generate/<sport>/<site>/<slate>")

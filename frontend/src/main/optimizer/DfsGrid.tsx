@@ -6,7 +6,7 @@ interface playerAttributes {
     Name: string,
     Status: string,
     Projected: number,
-    Price: string,
+    Price: number,
     Opp: string,
     Weather: any
 }
@@ -36,9 +36,6 @@ const Player = (props: playerProps) => {
 
     return (
         <tr>
-            <td>
-                {props.player.Position && props.player.Name && <button onClick={props.onRemove} style={{fontWeight: 'bold'}}>X</button>}
-            </td>
             <td>{props.player.Position}</td>
             <td>{props.player.Team}</td>
             <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
@@ -46,34 +43,51 @@ const Player = (props: playerProps) => {
             <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
                 {props.player.Projected}</td>
             <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
-                {props.player.Price}</td>
+                {props.player.Price && '$'.concat(props.player.Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))}</td>
             <td>{props.player.Opp}</td>
             <td style={{display: 'flex', alignItems: 'center'}}>
                 {props.player.Weather.forecast && <img src={weatherImage} alt={"weather"} style={{height: '4vmin'}}/>}
                 <p>{props.player.Weather.details}</p>
+            </td>
+            <td>
+                {props.player.Position && props.player.Name && <button onClick={props.onRemove} style={{fontWeight: 'bold'}}>X</button>}
             </td>
         </tr>
     );
 };
 
 export const DfsGrid = (props: {
-        dfsLineup: playerAttributes[],
-        removePlayer: (playerIndex: number) => void,
-        site: string}) =>
-    <table className={'Dfs-grid'}>
-        <tr style={{backgroundColor: (props.site === 'fd') ? 'dodgerblue' : 'black'}}>
-            <th>Exclude</th>
-            <th>Position</th>
-            <th>Team</th>
-            <th>Player</th>
-            <th>Projected</th>
-            <th>Price</th>
-            <th>Opp</th>
-            <th>Weather</th>
-        </tr>
-        {props.dfsLineup.map(
-            (player, playerIndex) => (
-                <Player player={player} onRemove={() => props.removePlayer(playerIndex)}/>
-            )
-        )}
-    </table>;
+    dfsLineup: playerAttributes[],
+    removePlayer: (playerIndex: number) => void,
+    site: string,
+    pointSum: number
+    salarySum: number}) =>
+        <table className={'Dfs-grid'}>
+            <tr style={{backgroundColor: (props.site === 'fd') ? 'dodgerblue' : 'black'}}>
+                <th>Position</th>
+                <th>Team</th>
+                <th>Player</th>
+                <th>Projected</th>
+                <th>Price</th>
+                <th>Opp</th>
+                <th>Weather</th>
+                <th>Exclude</th>
+            </tr>
+            {props.dfsLineup.map(
+                (player, playerIndex) => (
+                    <Player player={player} onRemove={() => props.removePlayer(playerIndex)}/>
+                )
+            )}
+            <tr style={{fontWeight: 'bold'}}>
+                <td>{null}</td>
+                <td>{null}</td>
+                <td>Total</td>
+                <td>{props.pointSum.toFixed(1)}</td>
+                <td>
+                    {'$'.concat(props.salarySum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))}
+                </td>
+                <td>{null}</td>
+                <td>{null}</td>
+                <td>{null}</td>
+            </tr>
+        </table>;

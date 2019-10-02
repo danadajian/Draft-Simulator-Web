@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import { DfsGrid } from './DfsGrid.tsx';
 import { DfsReport } from './DfsReport.tsx';
+import { DfsPlayerBox } from './DfsPlayerListBox.tsx'
 import football2 from '../../icons/football2.svg';
+import search from "../../icons/search.ico";
 
 export class Optimizer extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: false, isReporting: false, sport: '', site: '', slate: '', lineup: [],
-                      reportingData: {}, weeks: []};
+        this.state = {isLoading: false, isReporting: false, sport: '', site: '', slate: '', lineup: [], playerPool: [],
+                      filteredPool: [], searchText: '', blackList: [], reportingData: {}, weeks: []};
     }
 
     generateLineup = (sport, site, slate) => {
@@ -62,12 +64,49 @@ export class Optimizer extends Component {
                         alert('An error occurred.');
                     } else {
                         response.json()
-                            .then((lineupJson) => {
+                            .then((data) => {
                                 this.setState({
-                                lineup: lineupJson});
+                                    playerPool: data.playerPool,
+                                    lineup: data.lineup});
                             });
                     }
                 });
+        }
+    };
+
+    filterPlayers = (event) => {
+        let text = event.target.value.toLowerCase();
+        let players = this.state.players;
+        let filteredPool = players.filter(
+            (player) =>
+                player.Name.toLowerCase().includes(text)
+                || player.Position.toLowerCase().includes(text)
+                || player.Team.toLowerCase().includes(text)
+        );
+        this.setState({
+            searchText: text,
+            filteredPool: filteredPool});
+    };
+
+    addToLineup = (playerIndex) => {
+        let {playerPool, lineup} = this.state;
+        let playerToAdd = playerPool[playerIndex];
+        let spotToReplace;
+        let spotsToReplace = lineup.filter(
+            (player) =>
+                (playerToAdd.Position === player.Position && !player.Name)
+                || (['RB', 'WR', 'TE'].includes(playerToAdd.Position) && player.Position === 'FLEX' && !player.Name)
+        );
+        if (spotsToReplace.length > 0) {
+            spotToReplace = spotsToReplace[0];
+            let lineupIndex = lineup.indexOf(spotToReplace);
+            lineup[lineupIndex] = playerToAdd;
+            playerPool.splice(playerIndex, 1);
+            this.setState({
+                playerPool: playerPool,
+                lineup: lineup});
+        } else {
+            alert('Not enough room in lineup to add player.');
         }
     };
 
@@ -146,13 +185,20 @@ export class Optimizer extends Component {
     };
 
     render() {
-        const {isLoading, isReporting, sport, site, slate, lineup, reportingData, weeks} = this.state;
+        const {isLoading, isReporting, sport, site, slate, lineup, playerPool, filteredPool, searchText, blackList,
+            reportingData, weeks} = this.state;
 
         let gridSection;
         let weekArray = [];
         for (let i = 1; i <= reportingData.maxWeek; i++) {
             weekArray.push(i);
         }
+
+        const pointSum = lineup.map((player) => ((player.Projected) ?
+            parseFloat(player.Projected) : 0)).reduce((a,b) => a + b, 0);
+
+        const salarySum = lineup.map((player) => ((player.Price) ?
+            parseInt(player.Price) : 0)).reduce((a,b) => a + b, 0);
 
         if (isLoading) {
             gridSection =
@@ -183,10 +229,25 @@ export class Optimizer extends Component {
         } else {
             gridSection =
                 <div className={"Dfs-grid-section"}>
+                    <div className={"Player-list-box"}>
+                        <div>
+                            {filteredPool.length === 0 &&
+                                <img src={search} style={{height: '3vmin', position: 'absolute'}}
+                                     alt="search"/>}
+                            <input type="text" style={{height: '25px', width: '90%'}}
+                                   value={searchText}
+                                   onClick={this.filterPlayers}
+                                   onChange={this.filterPlayers}>{null}</input>
+                        </div>
+                        <DfsPlayerBox playerList={playerPool} filterList={filteredPool}
+                                      playerFunction={this.addToLineup} isPlayerPool={true}/>
+                    </div>
                     <div>
                         <h2 className={"Dfs-header"}>{(site === 'fd') ? 'Fanduel' : 'Draftkings'}</h2>
-                        <DfsGrid dfsLineup={lineup} removePlayer={this.addToBlackList} site={site}/>
+                        <DfsGrid dfsLineup={lineup} removePlayer={this.addToBlackList} site={site}
+                                 pointSum={pointSum} salarySum={salarySum}/>
                     </div>
+                    {/*<DfsPlayerBox playerList={blackList} playerFunction={} isPlayerPool={false}/>*/}
                 </div>;
         }
 
