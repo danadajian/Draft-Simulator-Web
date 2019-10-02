@@ -14,10 +14,10 @@ interface playerProps {
     onMove: (direction: string) => void
 }
 
-const plus = require("../icons/plus.ico") as any;
-const minus = require("../icons/minus.ico") as any;
-const up = require("../icons/up.ico") as any;
-const down = require("../icons/down.ico") as any;
+const plus = require("../../icons/plus.ico") as any;
+const minus = require("../../icons/minus.ico") as any;
+const up = require("../../icons/up.ico") as any;
+const down = require("../../icons/down.ico") as any;
 
 const Player = (props: playerProps) =>
     <tr>

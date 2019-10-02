@@ -15,9 +15,9 @@ def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list,
     total_pts = round(optimal_dict.get('total_pts'), 1)
     total_salary = round(optimal_dict.get('total_salary'))
     max_pts = optimal_dict.get('max_pts')
-    if sport == 'nfl':
-        ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, white_list, black_list, proj_dict,
-                                   pos_dict, salary_dict, cap, projected_lineup, db)
+    if sport == 'nfl' and not white_list and not black_list:
+        ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict, pos_dict, salary_dict,
+                                   cap, projected_lineup, db)
     lineup_json = [
                       {'Position': display_matrix[projected_lineup.index(player)],
                        'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
@@ -107,3 +107,17 @@ def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_
                                proj_points_dict, pos_dict, salary_dict, salary_cap, team_and_weather_dict,
                                injured_dict, db)
     return dfs_lineup
+
+
+def get_empty_lineup(sport, site, slate):
+    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
+    empty_lineup = [
+                       {'Position': position, 'Team': '', 'Name': '', 'Status': '', 'Projected': '', 'Price': '',
+                        'Opp': '', 'Weather': ''}
+                       for position in display_matrix
+                   ] + [
+        {'Position': '', 'Team': '', 'Name': 'Total', 'Status': '', 'Projected': '', 'Price': '', 'Opp': '',
+         'Weather': {'forecast': '', 'details': ''}}
+    ]
+    return empty_lineup

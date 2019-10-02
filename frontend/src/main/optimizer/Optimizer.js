@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import { DfsGrid } from './DfsGrid.tsx';
 import { DfsReport } from './DfsReport.tsx';
-import football2 from '../icons/football2.svg';
+import football2 from '../../icons/football2.svg';
 
 export class Optimizer extends Component {
 
@@ -12,29 +12,28 @@ export class Optimizer extends Component {
                       reportingData: {}, weeks: []};
     }
 
-    fetchOptimalLineups = (sport, site, slate) => {
-        if (!sport) {
-            alert('Please select a sport.');
-        } else if (!site || !slate) {
-            this.setState({site: site, slate: slate});
-        } else {
-            let prevSport = this.state.sport;
-            this.setState({isLoading: true, isReporting: false});
-            fetch(window.location.origin + '/optimize/generate/' + sport + '/' + site + '/' + slate)
-                .then(response => {
-                    if (response.status !== 200) {
-                        alert('Failed to generate lineups.');
-                    } else {
-                        response.json()
-                            .then((lineupJson) => {
-                                this.ingestDfsLineup(lineupJson, sport, prevSport, site, slate);
-                            });
-                    }
-                });
-        }
+    generateLineup = (sport, site, slate) => {
+        let prevSport = this.state.sport;
+        this.setState({
+            isLoading: true,
+            isReporting: false,
+            sport: sport,
+            site: site,
+            slate: slate});
+        fetch(window.location.origin + '/optimize/generate/' + sport + '/' + site + '/' + slate)
+            .then(response => {
+                if (response.status !== 200) {
+                    alert('Failed to generate lineups.');
+                } else {
+                    response.json()
+                        .then((lineupJson) => {
+                            this.ingestDfsLineup(lineupJson, sport, prevSport);
+                        });
+                }
+            });
     };
 
-    ingestDfsLineup = (lineupJson, sport, prevSport, site, slate) => {
+    ingestDfsLineup = (lineupJson, sport, prevSport) => {
         if (typeof lineupJson[0] === "string") {
             this.setState({isLoading: false, sport: prevSport});
             alert(lineupJson[0]);
@@ -43,16 +42,40 @@ export class Optimizer extends Component {
         let lineup = (typeof lineupJson[0] === "string") ? [] : lineupJson;
         this.setState({
             isLoading: false,
-            sport: sport,
-            site: site,
-            slate: slate,
             lineup: lineup});
+    };
+
+    clearLineup = (sport, site, slate) => {
+        if (!sport) {
+            alert('Please select a sport.');
+        } else if (!site || !slate) {
+            this.setState({sport: sport, site: site, slate: slate});
+        } else {
+            this.setState({
+                isReporting: false,
+                sport: sport,
+                site: site,
+                slate: slate});
+            fetch(window.location.origin + '/optimize/clear/' + sport + '/' + site + '/' + slate)
+                .then(response => {
+                    if (response.status !== 200) {
+                        alert('An error occurred.');
+                    } else {
+                        response.json()
+                            .then((lineupJson) => {
+                                this.setState({
+                                lineup: lineupJson});
+                            });
+                    }
+                });
+        }
     };
 
     addToBlackList = (lineupIndex) => {
         let {sport, site, slate, lineup} = this.state;
         let removedPlayer = lineup[lineupIndex].Name;
-        fetch(window.location.origin + '/optimize/generate/' + sport + '/' + site + '/' + slate, {
+        this.setState({isLoading: true});
+        fetch(window.location.origin + '/optimize/blacklist/' + sport + '/' + site + '/' + slate, {
             method: 'POST',
             body: removedPlayer
         }).then(response => {
@@ -65,6 +88,23 @@ export class Optimizer extends Component {
                         let alertString = (site === 'fd') ?
                             ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
                         alert('You have removed ' + removedPlayer + alertString);
+                    });
+            }
+        });
+    };
+
+    addToWhiteList = (playerArray) => {
+        let {sport, site, slate} = this.state;
+        fetch(window.location.origin + '/optimize/whitelist/' + sport + '/' + site + '/' + slate, {
+            method: 'POST',
+            body: playerArray
+        }).then(response => {
+            if (response.status !== 200) {
+                alert('Error removing player.');
+            } else {
+                response.json()
+                    .then((lineupJson) => {
+                        this.ingestDfsLineup(lineupJson, sport, sport, site, slate);
                     });
             }
         });
@@ -164,35 +204,37 @@ export class Optimizer extends Component {
                     <h3>Choose a sport:</h3>
                     <div style={{display: 'flex'}}>
                         <button style={{backgroundColor: (sport === 'mlb') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups('mlb', site, 'main')}>MLB</button>
+                                onClick={() => this.clearLineup('mlb', site, 'main')}>MLB</button>
                         <button style={{backgroundColor: (sport === 'nfl') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups('nfl', site, slate)}>NFL</button>
+                                onClick={() => this.clearLineup('nfl', site, slate)}>NFL</button>
                         <button style={{backgroundColor: (sport === 'nba') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups('nba', site, 'main')}>NBA</button>
+                                onClick={() => this.clearLineup('nba', site, 'main')}>NBA</button>
                     </div>
                     {sport && <h3>Choose a game slate:</h3>}
                     {sport &&
                         <div style={{display: 'flex'}}>
                             <button style={{backgroundColor: (slate === 'thurs') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.fetchOptimalLineups(sport, site, 'thurs')}>Thurs only</button>
+                                    onClick={() => this.clearLineup(sport, site, 'thurs')}>Thurs only</button>
                             <button style={{backgroundColor: (slate === 'thurs-mon') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.fetchOptimalLineups(sport, site, 'thurs-mon')}>Thurs - Mon</button>
+                                    onClick={() => this.clearLineup(sport, site, 'thurs-mon')}>Thurs - Mon</button>
                             <button style={{backgroundColor: (slate === 'main') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.fetchOptimalLineups(sport, site, 'main')}>Sun (Main)</button>
+                                    onClick={() => this.clearLineup(sport, site, 'main')}>Sun (Main)</button>
                             <button style={{backgroundColor: (slate === 'sun-mon') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.fetchOptimalLineups(sport, site, 'sun-mon')}>Sun - Mon</button>
+                                    onClick={() => this.clearLineup(sport, site, 'sun-mon')}>Sun - Mon</button>
                         </div>}
                     {sport && <h3>Choose a site:</h3>}
                     {sport &&
                         <div style={{display: 'flex'}}>
                         <button style={{backgroundColor: (site === 'fd') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups(sport, 'fd', slate)}>Fanduel</button>
+                                onClick={() => this.clearLineup(sport, 'fd', slate)}>Fanduel</button>
                         <button style={{backgroundColor: (site === 'dk') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.fetchOptimalLineups(sport, 'dk', slate)}>Draftkings</button>
+                                onClick={() => this.clearLineup(sport, 'dk', slate)}>Draftkings</button>
                         </div>}
-                    {sport && slate && <button style={{marginTop: '10px'}}
-                                      onClick={() => this.fetchOptimalLineups(sport, site, slate)}>Reset Lineup</button>}
-                    {(sport === 'nfl' && slate) && <button style={{marginTop: '10px'}}
+                    {sport && slate && site && <button style={{marginTop: '10px'}}
+                                      onClick={() => this.generateLineup(sport, site, slate)}>Optimize Lineup</button>}
+                    {sport && slate && site && <button style={{marginTop: '10px'}}
+                                      onClick={() => this.clearLineup(sport, site, slate)}>Clear Lineup</button>}
+                    {(sport === 'nfl' && slate && site) && <button style={{marginTop: '10px'}}
                                       onClick={() =>
                                           this.fetchReportingData(sport, slate, site, weekArray)}>Generate Report</button>}
                 </div>
