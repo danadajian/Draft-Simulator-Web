@@ -78,7 +78,7 @@ def aggregate_player_info(sport, site, projections, dfs_info):
         'team_and_weather_dict': team_and_weather_dict,
         'injury_dict': injury_dict,
         'master_dict': [
-                      {'Position': pos_dict.get(player) if pos_dict.get(player) != 'D' else 'D/ST',
+                      {'Position': pos_dict.get(player) if pos_dict.get(player) not in ('D', 'DST') else 'D/ST',
                        'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
                        'Name': player,
                        'Status': injury_dict.get(player) or '',
@@ -111,12 +111,22 @@ def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_
     return dfs_lineup
 
 
-def get_empty_lineup(sport, site, slate):
+def get_dfs_configs(sport, site, slate):
     lineup_type = 'mvp' if slate == 'thurs' else 'standard'
     display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
-    empty_lineup = [
-        {'Position': position, 'Team': '', 'Name': '', 'Status': '', 'Projected': '', 'Price': '',
-         'Opp': '', 'Weather': ''}
-        for position in display_matrix
-    ]
-    return empty_lineup
+    salary_cap = dfs_configs.get(site).get(sport).get(lineup_type).get('salary_cap')
+    return {
+        'empty_lineup': [
+            {'Position': position,
+             'Team': '',
+             'Name': '',
+             'Status': '',
+             'Projected': '',
+             'Price': '',
+             'Opp': '',
+             'Weather': ''
+             }
+            for position in display_matrix
+        ],
+        'salary_cap': salary_cap
+    }

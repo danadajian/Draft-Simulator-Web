@@ -13,7 +13,8 @@ interface playerAttributes {
 
 interface playerProps {
     player: playerAttributes,
-    onRemove: () => void
+    onRemove: () => void,
+    whiteList: playerAttributes[]
 }
 
 const cloudy = require("../../icons/cloudy.ico") as any;
@@ -35,7 +36,8 @@ const Player = (props: playerProps) => {
         : null;
 
     return (
-        <tr>
+        <tr style={{backgroundColor: (props.player.Name && props.whiteList.filter(
+            (player) => player.Name).map((player) => (player.Name)).includes(props.player.Name)) ? 'lightgreen' : null}}>
             <td>{props.player.Position}</td>
             <td>{props.player.Team}</td>
             <td style={{fontWeight: (props.player.Position) ? 'normal' : 'bold'}}>
@@ -60,8 +62,10 @@ export const DfsGrid = (props: {
     dfsLineup: playerAttributes[],
     removePlayer: (playerIndex: number) => void,
     site: string,
-    pointSum: number
-    salarySum: number}) =>
+    whiteList: playerAttributes[],
+    pointSum: number,
+    salarySum: number,
+    cap: number}) =>
         <table className={'Dfs-grid'}>
             <tr style={{backgroundColor: (props.site === 'fd') ? 'dodgerblue' : 'black'}}>
                 <th>Position</th>
@@ -71,11 +75,14 @@ export const DfsGrid = (props: {
                 <th>Price</th>
                 <th>Opp</th>
                 <th>Weather</th>
-                <th>Exclude</th>
+                <th>Remove</th>
             </tr>
             {props.dfsLineup.map(
                 (player, playerIndex) => (
-                    <Player player={player} onRemove={() => props.removePlayer(playerIndex)}/>
+                    <Player player={player}
+                            onRemove={() => props.removePlayer(playerIndex)}
+                            whiteList={props.whiteList}
+                    />
                 )
             )}
             <tr style={{fontWeight: 'bold'}}>
@@ -83,7 +90,7 @@ export const DfsGrid = (props: {
                 <td>{null}</td>
                 <td>Total</td>
                 <td>{props.pointSum.toFixed(1)}</td>
-                <td>
+                <td style={{color: (props.salarySum > props.cap) ? 'indianred' : 'white'}}>
                     {'$'.concat(props.salarySum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))}
                 </td>
                 <td>{null}</td>

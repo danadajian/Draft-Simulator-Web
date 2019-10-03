@@ -3,48 +3,58 @@ import { Container, Nav, Navbar } from 'react-bootstrap'
 import { DfsGrid } from './DfsGrid.tsx';
 import { DfsReport } from './DfsReport.tsx';
 import { DfsPlayerBox } from './DfsPlayerListBox.tsx'
+import { DfsBlackListBox } from './DfsBlackListBox.tsx'
 import football2 from '../../icons/football2.svg';
+import football from '../../icons/football.ico';
 import search from "../../icons/search.ico";
 
 export class Optimizer extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isLoading: false, isReporting: false, sport: '', site: '', slate: '', lineup: [], playerPool: [],
-                      filteredPool: [], searchText: '', blackList: [], reportingData: {}, weeks: []};
+        this.state = {isLoading: false, isOptimizing: false, isReporting: false, sport: '', site: '', slate: '',
+                      lineup: [], cap: 0, playerPool: [], filteredPool: null, searchText: '', whiteList: [],
+                      blackList: [], reportingData: {}, weeks: []};
     }
 
     generateLineup = (sport, site, slate) => {
-        let prevSport = this.state.sport;
+        let {lineup, blackList} = this.state;
+        let whiteListNames = lineup.filter((player) => player.Name).map((player) => (player.Name));
+        let blackListNames = blackList.filter((player) => player.Name).map((player) => (player.Name));
         this.setState({
-            isLoading: true,
+            isOptimizing: true,
             isReporting: false,
             sport: sport,
             site: site,
-            slate: slate});
-        fetch(window.location.origin + '/optimize/generate/' + sport + '/' + site + '/' + slate)
-            .then(response => {
-                if (response.status !== 200) {
-                    alert('Failed to generate lineups.');
-                } else {
-                    response.json()
-                        .then((lineupJson) => {
-                            this.ingestDfsLineup(lineupJson, sport, prevSport);
-                        });
-                }
-            });
+            slate: slate,
+            whiteList: lineup.filter((player) => player.Name)
+        });
+        fetch(window.location.origin + '/optimize/generate/' + sport + '/' + site + '/' + slate, {
+            method: 'POST',
+            body: whiteListNames.toString() + '|' + blackListNames.toString()
+        }).then(response => {
+            if (response.status !== 200) {
+                alert('Error removing player.');
+            } else {
+                response.json()
+                    .then((lineupJson) => {
+                        this.ingestDfsLineup(lineupJson);
+                    });
+            }
+        });
     };
 
-    ingestDfsLineup = (lineupJson, sport, prevSport) => {
-        if (typeof lineupJson[0] === "string") {
-            this.setState({isLoading: false, sport: prevSport});
-            alert(lineupJson[0]);
+    ingestDfsLineup = (lineupJson) => {
+        if (typeof lineupJson === "string") {
+            this.setState({isOptimizing: false});
+            alert(lineupJson);
             return
         }
-        let lineup = (typeof lineupJson[0] === "string") ? [] : lineupJson;
+        let lineup = (typeof lineupJson === "string") ? [] : lineupJson;
         this.setState({
-            isLoading: false,
-            lineup: lineup});
+            isOptimizing: false,
+            lineup: lineup
+        });
     };
 
     clearLineup = (sport, site, slate) => {
@@ -54,10 +64,12 @@ export class Optimizer extends Component {
             this.setState({sport: sport, site: site, slate: slate});
         } else {
             this.setState({
+                isLoading: true,
                 isReporting: false,
                 sport: sport,
                 site: site,
-                slate: slate});
+                slate: slate
+            });
             fetch(window.location.origin + '/optimize/clear/' + sport + '/' + site + '/' + slate)
                 .then(response => {
                     if (response.status !== 200) {
@@ -66,87 +78,153 @@ export class Optimizer extends Component {
                         response.json()
                             .then((data) => {
                                 this.setState({
+                                    isLoading: false,
                                     playerPool: data.playerPool,
-                                    lineup: data.lineup});
+                                    lineup: data.lineup,
+                                    cap: data.cap,
+                                    whiteList: [],
+                                    blackList: []
+                                });
                             });
                     }
                 });
         }
     };
 
-    filterPlayers = (event) => {
+    filterPlayersByText = (event) => {
         let text = event.target.value.toLowerCase();
-        let players = this.state.players;
-        let filteredPool = players.filter(
-            (player) =>
-                player.Name.toLowerCase().includes(text)
-                || player.Position.toLowerCase().includes(text)
-                || player.Team.toLowerCase().includes(text)
+        let playerPool = this.state.playerPool;
+        let filteredPool = playerPool.filter(
+            (player) => player.Name.toLowerCase().includes(text.toLowerCase())
         );
         this.setState({
             searchText: text,
-            filteredPool: filteredPool});
+            filteredPool: filteredPool
+        });
+    };
+
+    filterPlayersByPosition = (position) => {
+        let playerPool = this.state.playerPool;
+        if (position === 'All') {
+            this.setState({
+            searchText: '',
+            filteredPool: playerPool
+        });
+        } else {
+            let filteredPool = playerPool.filter(
+                (player) => player.Position === position
+            );
+            this.setState({
+                searchText: '',
+                filteredPool: filteredPool
+            });
+        }
+    };
+
+    filterPlayersByTeam = (team) => {
+        let playerPool = this.state.playerPool;
+        if (team === 'All') {
+            this.setState({
+            searchText: '',
+            filteredPool: playerPool,
+        });
+        } else {
+            let filteredPool = playerPool.filter(
+                (player) => player.Team === team
+            );
+            this.setState({
+                searchText: '',
+                filteredPool: filteredPool
+            });
+        }
+    };
+
+    handleTeamChange = (event) => {
+        this.filterPlayersByTeam(event.target.value);
     };
 
     addToLineup = (playerIndex) => {
-        let {playerPool, lineup} = this.state;
+        let {playerPool, lineup, whiteList, blackList} = this.state;
         let playerToAdd = playerPool[playerIndex];
+        if (lineup.includes(playerToAdd)) {
+            alert('Player already added to lineup.');
+            return
+        }
         let spotToReplace;
         let spotsToReplace = lineup.filter(
             (player) =>
                 (playerToAdd.Position === player.Position && !player.Name)
                 || (['RB', 'WR', 'TE'].includes(playerToAdd.Position) && player.Position === 'FLEX' && !player.Name)
         );
-        if (spotsToReplace.length > 0) {
+        if (spotsToReplace.length === 0) {
+            alert('Not enough positions available to add player.');
+        } else {
+            whiteList.push(playerToAdd);
+            if (blackList.includes(playerToAdd)) {
+                blackList.splice(blackList.indexOf(playerToAdd), 1)
+            }
             spotToReplace = spotsToReplace[0];
             let lineupIndex = lineup.indexOf(spotToReplace);
             lineup[lineupIndex] = playerToAdd;
-            playerPool.splice(playerIndex, 1);
             this.setState({
-                playerPool: playerPool,
-                lineup: lineup});
-        } else {
-            alert('Not enough room in lineup to add player.');
+                lineup: lineup,
+                whiteList: whiteList,
+                blackList: blackList,
+                filteredPool: null,
+                searchText: ''
+            });
         }
     };
 
-    addToBlackList = (lineupIndex) => {
-        let {sport, site, slate, lineup} = this.state;
-        let removedPlayer = lineup[lineupIndex].Name;
-        this.setState({isLoading: true});
-        fetch(window.location.origin + '/optimize/blacklist/' + sport + '/' + site + '/' + slate, {
-            method: 'POST',
-            body: removedPlayer
-        }).then(response => {
-            if (response.status !== 200) {
-                alert('Error removing player.');
-            } else {
-                response.json()
-                    .then((lineupJson) => {
-                        this.ingestDfsLineup(lineupJson, sport, sport, site, slate);
-                        let alertString = (site === 'fd') ?
-                            ' from your Fanduel lineup.' : ' from your Draftkings lineup.';
-                        alert('You have removed ' + removedPlayer + alertString);
-                    });
-            }
+    removeFromLineup = (playerIndex) => {
+        let {playerPool, lineup, whiteList} = this.state;
+        let playerToRemove = lineup[playerIndex];
+        if (whiteList.includes(playerToRemove)) {
+            whiteList.splice(whiteList.indexOf(playerToRemove), 1)
+        }
+        lineup[playerIndex] = {
+            Position: playerToRemove.Position,
+            Team: '',
+            Name: '',
+            Status: '',
+            Projected: '',
+            Price: '',
+            Opp: '',
+            Weather: ''
+        };
+        this.setState({
+            playerPool: playerPool,
+            lineup: lineup,
+            whiteList: whiteList
         });
     };
 
-    addToWhiteList = (playerArray) => {
-        let {sport, site, slate} = this.state;
-        fetch(window.location.origin + '/optimize/whitelist/' + sport + '/' + site + '/' + slate, {
-            method: 'POST',
-            body: playerArray
-        }).then(response => {
-            if (response.status !== 200) {
-                alert('Error removing player.');
-            } else {
-                response.json()
-                    .then((lineupJson) => {
-                        this.ingestDfsLineup(lineupJson, sport, sport, site, slate);
-                    });
-            }
+    toggleBlackList = (playerIndex) => {
+        let {playerPool, lineup, whiteList, blackList} = this.state;
+        let blackListedPlayer = playerPool[playerIndex];
+        if (lineup.includes(blackListedPlayer)) {
+            this.removeFromLineup(lineup.indexOf(blackListedPlayer));
+        }
+        if (blackList.includes(blackListedPlayer)) {
+            blackList.splice(blackList.indexOf(blackListedPlayer), 1)
+        } else {
+            blackList.push(blackListedPlayer);
+        }
+        this.setState({
+            playerPool: playerPool,
+            whiteList: whiteList,
+            blackList: blackList,
+            filteredPool: null,
+            searchText: ''
         });
+    };
+
+    sumPoints = (lineup) => {
+         return lineup.map((player) => ((player.Projected) ? parseFloat(player.Projected) : 0)).reduce((a,b) => a + b, 0);
+    };
+
+    sumSalary = (lineup) => {
+        return lineup.map((player) => ((player.Price) ? parseInt(player.Price) : 0)).reduce((a, b) => a + b, 0);
     };
 
     fetchReportingData = (sport, slate, site, weeks) => {
@@ -185,8 +263,8 @@ export class Optimizer extends Component {
     };
 
     render() {
-        const {isLoading, isReporting, sport, site, slate, lineup, playerPool, filteredPool, searchText, blackList,
-            reportingData, weeks} = this.state;
+        const {isLoading, isOptimizing, isReporting, sport, site, slate, lineup, cap, playerPool, filteredPool,
+            searchText, whiteList, blackList, reportingData, weeks} = this.state;
 
         let gridSection;
         let weekArray = [];
@@ -194,13 +272,13 @@ export class Optimizer extends Component {
             weekArray.push(i);
         }
 
-        const pointSum = lineup.map((player) => ((player.Projected) ?
-            parseFloat(player.Projected) : 0)).reduce((a,b) => a + b, 0);
-
-        const salarySum = lineup.map((player) => ((player.Price) ?
-            parseInt(player.Price) : 0)).reduce((a,b) => a + b, 0);
-
         if (isLoading) {
+            gridSection =
+                <div className={"Loading"}>
+                    <div><p className={"Loading-text"}>Loading . . .</p></div>
+                    <div><img src={football} className={"App-logo"} alt="football"/></div>
+                </div>;
+        } else if (isOptimizing) {
             gridSection =
                 <div className={"Loading"}>
                     <div><p className={"Optimizing-text"}>Optimizing . . .</p></div>
@@ -230,24 +308,48 @@ export class Optimizer extends Component {
             gridSection =
                 <div className={"Dfs-grid-section"}>
                     <div className={"Player-list-box"}>
-                        <div>
-                            {filteredPool.length === 0 &&
+                        <h2 className={"Dfs-header"}>Blacklist</h2>
+                        <DfsBlackListBox blackList={blackList}/>
+                    </div>
+                    <div>
+                        <h2 className={"Dfs-header"}>Players</h2>
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                            {!filteredPool &&
                                 <img src={search} style={{height: '3vmin', position: 'absolute'}}
                                      alt="search"/>}
                             <input type="text" style={{height: '25px', width: '90%'}}
                                    value={searchText}
-                                   onClick={this.filterPlayers}
-                                   onChange={this.filterPlayers}>{null}</input>
+                                   onClick={this.filterPlayersByText}
+                                   onChange={this.filterPlayersByText}>{null}</input>
                         </div>
-                        <DfsPlayerBox playerList={playerPool} filterList={filteredPool}
-                                      playerFunction={this.addToLineup} isPlayerPool={true}/>
+                        <div style={{display: 'flex'}}>
+                            <button onClick={() => this.filterPlayersByPosition('All')}>All</button>
+                            {
+                                ['QB', 'RB', 'WR', 'TE', 'D/ST']
+                                    .map((position) =>
+                                        <button onClick={() => this.filterPlayersByPosition(position)}>{position}</button>
+                                    )
+                            }
+                            <select onChange={(event) => this.handleTeamChange(event)}>
+                                <option selected={"selected"} value={'All'}>All</option>
+                                {[... new Set(playerPool.map((player) => player.Team))].sort().map((team) =>
+                                    <option value={team}>{team}</option>
+                                )}
+                            </select>
+                        </div>
+                        <div className={"Player-list-box"}>
+                            <DfsPlayerBox playerList={playerPool} filterList={filteredPool}
+                                          whiteListFunction={this.addToLineup} blackListFunction={this.toggleBlackList}
+                                          whiteList={whiteList} blackList={blackList} salarySum={this.sumSalary(lineup)}
+                                          cap={cap}/>
+                        </div>
                     </div>
                     <div>
-                        <h2 className={"Dfs-header"}>{(site === 'fd') ? 'Fanduel' : 'Draftkings'}</h2>
-                        <DfsGrid dfsLineup={lineup} removePlayer={this.addToBlackList} site={site}
-                                 pointSum={pointSum} salarySum={salarySum}/>
+                        <h2 className={"Dfs-header"}>Lineup</h2>
+                        <DfsGrid dfsLineup={lineup} removePlayer={this.removeFromLineup} site={site}
+                                 whiteList={whiteList} pointSum={this.sumPoints(lineup)}
+                                 salarySum={this.sumSalary(lineup)} cap={cap}/>
                     </div>
-                    {/*<DfsPlayerBox playerList={blackList} playerFunction={} isPlayerPool={false}/>*/}
                 </div>;
         }
 
@@ -291,13 +393,15 @@ export class Optimizer extends Component {
                         <button style={{backgroundColor: (site === 'dk') ? 'dodgerblue' : 'white'}}
                                 onClick={() => this.clearLineup(sport, 'dk', slate)}>Draftkings</button>
                         </div>}
-                    {sport && slate && site && <button style={{marginTop: '10px'}}
+                    <div style={{display: 'flex', margin: '2%'}}>
+                        {sport && slate && site && <button style={{marginTop: '10px'}}
                                       onClick={() => this.generateLineup(sport, site, slate)}>Optimize Lineup</button>}
-                    {sport && slate && site && <button style={{marginTop: '10px'}}
-                                      onClick={() => this.clearLineup(sport, site, slate)}>Clear Lineup</button>}
-                    {(sport === 'nfl' && slate && site) && <button style={{marginTop: '10px'}}
-                                      onClick={() =>
-                                          this.fetchReportingData(sport, slate, site, weekArray)}>Generate Report</button>}
+                        {sport && slate && site && <button style={{marginTop: '10px'}}
+                                          onClick={() => this.clearLineup(sport, site, slate)}>Clear Lineup</button>}
+                        {(sport === 'nfl' && slate && site) && <button style={{marginTop: '10px'}}
+                                          onClick={() =>
+                                              this.fetchReportingData(sport, slate, site, weekArray)}>Generate Report</button>}
+                    </div>
                 </div>
                 {sport && slate && site && gridSection}
             </Container>

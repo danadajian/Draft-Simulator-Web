@@ -336,10 +336,6 @@ a:active {
   padding: 0 16px 0 16px;
 }
 
-.Dfs-grid tr:nth-child(even) {
-  background-color: lightgray;
-}
-
 .Dfs-grid tr:hover {
   background-color: indianred;
 }

@@ -268,49 +268,23 @@ def clear_lineup(sport, site, slate):
     master_list = aggregate_player_info(sport, site, dfs_data.get('projections'), dfs_data.get('info').get(site)).get('master_dict')
     white_list, black_list = [], []
     session['white_list'], session['black_list'] = white_list, black_list
-    empty_lineup = get_empty_lineup(sport, site, slate)
-    data_dict = {'playerPool': master_list, 'lineup': empty_lineup}
+    configs = get_dfs_configs(sport, site, slate)
+    data_dict = {'playerPool': master_list, 'lineup': configs.get('empty_lineup'), 'cap': configs.get('salary_cap')}
     return jsonify(data_dict)
 
 
-@app.route("/optimize/generate/<sport>/<site>/<slate>")
+@app.route("/optimize/generate/<sport>/<site>/<slate>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def generate_lineup(sport, site, slate):
     dfs_data = cached_dfs_data(sport, slate)
     projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info').get(site)
-    white_list, black_list = [], []
+    data = request.get_data()
+    data_tuple = tuple(str(data)[2:-1].split('|'))
+    white_list, black_list = data_tuple[0].split(',') if data_tuple[0] else [], data_tuple[1].split(',') if data_tuple[1] else []
+    print(white_list, black_list)
     session['white_list'], session['black_list'] = white_list, black_list
     dfs_lineup = get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_list,
                                 db if is_production or postgres_configured else None)
-    return jsonify(dfs_lineup)
-
-
-@app.route("/optimize/blacklist/<sport>/<site>/<slate>", methods=['POST'])
-@might_need_to_login(login_required, is_production or postgres_configured)
-def update_blacklist(sport, site, slate):
-    dfs_data = cached_dfs_data(sport, slate)
-    projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info').get(site)
-    data = request.get_data()
-    removed_player = str(data)[2:-1]
-    black_list = session.get('black_list')
-    if removed_player not in black_list:
-        black_list.append(removed_player)
-    session['black_list'] = black_list
-    dfs_lineup = get_dfs_lineup(sport, site, slate, projections, dfs_info, session.get('white_list'),
-                                black_list, db if is_production or postgres_configured else None)
-    return jsonify(dfs_lineup)
-
-
-@app.route("/optimize/whitelist/<sport>/<site>/<slate>", methods=['POST'])
-@might_need_to_login(login_required, is_production or postgres_configured)
-def update_whitelist(sport, site, slate):
-    dfs_data = cached_dfs_data(sport, slate)
-    projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info').get(site)
-    data = request.get_data()
-    white_list = str(data)[2:-1].split(',')
-    session['white_list'] = white_list
-    dfs_lineup = get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list,
-                                session.get('black_list'), db if is_production or postgres_configured else None)
     return jsonify(dfs_lineup)
 
 
