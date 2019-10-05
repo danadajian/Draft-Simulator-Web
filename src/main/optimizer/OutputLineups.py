@@ -37,6 +37,10 @@ def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list,
 def aggregate_player_info(sport, site, projections, dfs_info):
     site_id = 1 if site == 'dk' else 2
     if sport == 'nfl':
+        id_dict = {player_dict.get('name'): player_dict.get('id')
+                   for player_dict in projections
+                   for site_projection in player_dict.get('projection')
+                   if site_projection.get('siteId') == site_id and dfs_info.get(player_dict.get('id'))}
         pos_dict = {player_dict.get('name'): dfs_info.get(player_dict.get('id')).get('position')
                     for player_dict in projections
                     for site_projection in player_dict.get('projection')
@@ -46,6 +50,7 @@ def aggregate_player_info(sport, site, projections, dfs_info):
                        for site_projection in player_dict.get('projection')
                        if site_projection.get('siteId') == site_id and dfs_info.get(player_dict.get('id'))}
     else:
+        id_dict = {}
         pos_dict = {player_dict.get('name'): site_projection.get('position')
                     for player_dict in projections
                     for site_projection in player_dict.get('projection')
@@ -81,6 +86,7 @@ def aggregate_player_info(sport, site, projections, dfs_info):
                       {'Position': pos_dict.get(player) if pos_dict.get(player) not in ('D', 'DST') else 'D/ST',
                        'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
                        'Name': player,
+                       'Id': id_dict.get(player),
                        'Status': injury_dict.get(player) or '',
                        'Projected': round(proj_points_dict.get(player), 1),
                        'Price': salary_dict.get(player),
@@ -120,6 +126,7 @@ def get_dfs_configs(sport, site, slate):
             {'Position': position,
              'Team': '',
              'Name': '',
+             'Id': '',
              'Status': '',
              'Projected': '',
              'Price': '',

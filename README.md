@@ -4,8 +4,9 @@ https://www.draftsimulator.app/
 
 Languages/services used:
 * Backend: Python
+* Backend testing: unittest
 * Frontend: Javascript, Typescript, React
-* Frontend testing: Cypress
+* Frontend testing: Jest, Cypress
 * Database: PostgreSQL
 * Web hosting: Heroku
 * Deployment pipeline: Concourse, Docker

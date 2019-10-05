@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap'
+import { getAddToLineupState } from './getAddToLineupState'
+import { getRemoveFromLineupState } from './getRemoveFromLineupState'
+import { getToggleBlackListState } from './getToggleBlackListState'
+import { getFilterPlayersState } from "./getfilterPlayersState"
+import { sumAttribute } from './sumAttribute'
 import { DfsGrid } from './DfsGrid.tsx';
 import { DfsReport } from './DfsReport.tsx';
 import { DfsPlayerBox } from './DfsPlayerListBox.tsx'
@@ -91,142 +96,6 @@ export class Optimizer extends Component {
         }
     };
 
-    filterPlayersByText = (event) => {
-        let text = event.target.value.toLowerCase();
-        let playerPool = this.state.playerPool;
-        let filteredPool = playerPool.filter(
-            (player) => player.Name.toLowerCase().includes(text.toLowerCase())
-        );
-        this.setState({
-            searchText: text,
-            filteredPool: filteredPool
-        });
-    };
-
-    filterPlayersByPosition = (position) => {
-        let playerPool = this.state.playerPool;
-        if (position === 'All') {
-            this.setState({
-            searchText: '',
-            filteredPool: playerPool
-        });
-        } else {
-            let filteredPool = playerPool.filter(
-                (player) => player.Position === position
-            );
-            this.setState({
-                searchText: '',
-                filteredPool: filteredPool
-            });
-        }
-    };
-
-    filterPlayersByTeam = (team) => {
-        let playerPool = this.state.playerPool;
-        if (team === 'All') {
-            this.setState({
-            searchText: '',
-            filteredPool: playerPool,
-        });
-        } else {
-            let filteredPool = playerPool.filter(
-                (player) => player.Team === team
-            );
-            this.setState({
-                searchText: '',
-                filteredPool: filteredPool
-            });
-        }
-    };
-
-    handleTeamChange = (event) => {
-        this.filterPlayersByTeam(event.target.value);
-    };
-
-    addToLineup = (playerIndex) => {
-        let {playerPool, lineup, whiteList, blackList} = this.state;
-        let playerToAdd = playerPool[playerIndex];
-        if (lineup.includes(playerToAdd)) {
-            alert('Player already added to lineup.');
-            return
-        }
-        let spotToReplace;
-        let spotsToReplace = lineup.filter(
-            (player) =>
-                (playerToAdd.Position === player.Position && !player.Name)
-                || (['RB', 'WR', 'TE'].includes(playerToAdd.Position) && player.Position === 'FLEX' && !player.Name)
-        );
-        if (spotsToReplace.length === 0) {
-            alert('Not enough positions available to add player.');
-        } else {
-            whiteList.push(playerToAdd);
-            if (blackList.includes(playerToAdd)) {
-                blackList.splice(blackList.indexOf(playerToAdd), 1)
-            }
-            spotToReplace = spotsToReplace[0];
-            let lineupIndex = lineup.indexOf(spotToReplace);
-            lineup[lineupIndex] = playerToAdd;
-            this.setState({
-                lineup: lineup,
-                whiteList: whiteList,
-                blackList: blackList,
-                filteredPool: null,
-                searchText: ''
-            });
-        }
-    };
-
-    removeFromLineup = (playerIndex) => {
-        let {playerPool, lineup, whiteList} = this.state;
-        let playerToRemove = lineup[playerIndex];
-        if (whiteList.includes(playerToRemove)) {
-            whiteList.splice(whiteList.indexOf(playerToRemove), 1)
-        }
-        lineup[playerIndex] = {
-            Position: playerToRemove.Position,
-            Team: '',
-            Name: '',
-            Status: '',
-            Projected: '',
-            Price: '',
-            Opp: '',
-            Weather: ''
-        };
-        this.setState({
-            playerPool: playerPool,
-            lineup: lineup,
-            whiteList: whiteList
-        });
-    };
-
-    toggleBlackList = (playerIndex) => {
-        let {playerPool, lineup, whiteList, blackList} = this.state;
-        let blackListedPlayer = playerPool[playerIndex];
-        if (lineup.includes(blackListedPlayer)) {
-            this.removeFromLineup(lineup.indexOf(blackListedPlayer));
-        }
-        if (blackList.includes(blackListedPlayer)) {
-            blackList.splice(blackList.indexOf(blackListedPlayer), 1)
-        } else {
-            blackList.push(blackListedPlayer);
-        }
-        this.setState({
-            playerPool: playerPool,
-            whiteList: whiteList,
-            blackList: blackList,
-            filteredPool: null,
-            searchText: ''
-        });
-    };
-
-    sumPoints = (lineup) => {
-         return lineup.map((player) => ((player.Projected) ? parseFloat(player.Projected) : 0)).reduce((a,b) => a + b, 0);
-    };
-
-    sumSalary = (lineup) => {
-        return lineup.map((player) => ((player.Price) ? parseInt(player.Price) : 0)).reduce((a, b) => a + b, 0);
-    };
-
     fetchReportingData = (sport, slate, site, weeks) => {
         sport = 'nfl';
         if (!sport) {
@@ -249,6 +118,30 @@ export class Optimizer extends Component {
                     }
                 });
         }
+    };
+
+    filterPlayers = (attribute, value) => {
+        let newState = getFilterPlayersState(attribute, value, this.state);
+        this.setState(newState);
+    };
+
+    addToLineup = (playerIndex) => {
+        let newState = getAddToLineupState(playerIndex, this.state);
+        if (typeof newState === 'string') {
+            alert(newState);
+        } else {
+            this.setState(newState);
+        }
+    };
+
+    removeFromLineup = (playerIndex) => {
+        let newState = getRemoveFromLineupState(playerIndex, this.state);
+        this.setState(newState);
+    };
+
+    toggleBlackList = (playerIndex) => {
+        let newState = getToggleBlackListState(playerIndex, this.state);
+        this.setState(newState);
     };
 
     toggleWeek = (selectedWeek) => {
@@ -319,18 +212,18 @@ export class Optimizer extends Component {
                                      alt="search"/>}
                             <input type="text" style={{height: '25px', width: '90%'}}
                                    value={searchText}
-                                   onClick={this.filterPlayersByText}
-                                   onChange={this.filterPlayersByText}>{null}</input>
+                                   onChange={(event) => this.filterPlayers('Name', event.target.value)}
+                                   onClick={this.filterPlayers('Name', 'All')}>{null}</input>
                         </div>
                         <div style={{display: 'flex'}}>
-                            <button onClick={() => this.filterPlayersByPosition('All')}>All</button>
+                            <button onClick={() => this.filterPlayers('Position', 'All')}>All</button>
                             {
                                 ['QB', 'RB', 'WR', 'TE', 'D/ST']
                                     .map((position) =>
-                                        <button onClick={() => this.filterPlayersByPosition(position)}>{position}</button>
+                                        <button onClick={() => this.filterPlayers('Position', position)}>{position}</button>
                                     )
                             }
-                            <select onChange={(event) => this.handleTeamChange(event)}>
+                            <select onChange={(event) => this.filterPlayers('Team', event.target.value)}>
                                 <option selected={"selected"} value={'All'}>All</option>
                                 {[... new Set(playerPool.map((player) => player.Team))].sort().map((team) =>
                                     <option value={team}>{team}</option>
@@ -340,15 +233,15 @@ export class Optimizer extends Component {
                         <div className={"Player-list-box"}>
                             <DfsPlayerBox playerList={playerPool} filterList={filteredPool}
                                           whiteListFunction={this.addToLineup} blackListFunction={this.toggleBlackList}
-                                          whiteList={whiteList} blackList={blackList} salarySum={this.sumSalary(lineup)}
+                                          whiteList={whiteList} blackList={blackList} salarySum={sumAttribute(lineup, 'Price')}
                                           cap={cap}/>
                         </div>
                     </div>
                     <div>
                         <h2 className={"Dfs-header"}>Lineup</h2>
                         <DfsGrid dfsLineup={lineup} removePlayer={this.removeFromLineup} site={site}
-                                 whiteList={whiteList} pointSum={this.sumPoints(lineup)}
-                                 salarySum={this.sumSalary(lineup)} cap={cap}/>
+                                 whiteList={whiteList} pointSum={sumAttribute(lineup, 'Projected')}
+                                 salarySum={sumAttribute(lineup, 'Price')} cap={cap}/>
                     </div>
                 </div>;
         }
