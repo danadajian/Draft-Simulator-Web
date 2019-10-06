@@ -7,8 +7,11 @@ function getAddToLineupState(playerIndex, state) {
     }
     let spotsToReplace = lineup.filter(
         (player) =>
-            (playerToAdd.Position === player.Position && !player.Name)
-            || (['RB', 'WR', 'TE'].includes(playerToAdd.Position) && player.Position === 'FLEX' && !player.Name)
+            !player.Name && (
+                playerToAdd.Position === player.Position
+                || player.Position.split('/').includes(playerToAdd.Position)
+                || (!['QB', 'D/ST', 'P'].includes(playerToAdd.Position) && ['FLEX', 'Util'].includes(player.Position))
+            )
     );
     if (spotsToReplace.length === 0) {
         return 'Not enough positions available to add player.'

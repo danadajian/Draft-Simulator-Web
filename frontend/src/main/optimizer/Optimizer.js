@@ -212,13 +212,13 @@ export class Optimizer extends Component {
                                      alt="search"/>}
                             <input type="text" style={{height: '25px', width: '90%'}}
                                    value={searchText}
-                                   onChange={(event) => this.filterPlayers('Name', event.target.value)}
-                                   onClick={this.filterPlayers('Name', 'All')}>{null}</input>
+                                   onChange={(event) =>
+                                       this.filterPlayers('Name', event.target.value)}>{null}</input>
                         </div>
                         <div style={{display: 'flex'}}>
                             <button onClick={() => this.filterPlayers('Position', 'All')}>All</button>
                             {
-                                ['QB', 'RB', 'WR', 'TE', 'D/ST']
+                                [... new Set(playerPool.map((player) => player.Position))]
                                     .map((position) =>
                                         <button onClick={() => this.filterPlayers('Position', position)}>{position}</button>
                                     )
@@ -266,8 +266,8 @@ export class Optimizer extends Component {
                         <button style={{backgroundColor: (sport === 'nba') ? 'dodgerblue' : 'white'}}
                                 onClick={() => this.clearLineup('nba', site, 'main')}>NBA</button>
                     </div>
-                    {sport && <h3>Choose a game slate:</h3>}
-                    {sport &&
+                    {sport === 'nfl' && <h3>Choose a game slate:</h3>}
+                    {sport === 'nfl' &&
                         <div style={{display: 'flex'}}>
                             <button style={{backgroundColor: (slate === 'thurs') ? 'dodgerblue' : 'white'}}
                                     onClick={() => this.clearLineup(sport, site, 'thurs')}>Thurs only</button>

@@ -50,7 +50,10 @@ def aggregate_player_info(sport, site, projections, dfs_info):
                        for site_projection in player_dict.get('projection')
                        if site_projection.get('siteId') == site_id and dfs_info.get(player_dict.get('id'))}
     else:
-        id_dict = {}
+        id_dict = {player_dict.get('name'): player_dict.get('id')
+                   for player_dict in projections
+                   for site_projection in player_dict.get('projection')
+                   if site_projection.get('siteId') == site_id}
         pos_dict = {player_dict.get('name'): site_projection.get('position')
                     for player_dict in projections
                     for site_projection in player_dict.get('projection')
@@ -98,6 +101,8 @@ def aggregate_player_info(sport, site, projections, dfs_info):
 
 
 def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_list, db):
+    if sport == 'nba':
+        return ['Warning: \nThis sport is currently unavailable.']
     if projections == 'offseason':
         return ['Warning: \nThis league is currently in the offseason.']
     if projections == 'Not enough data is available.':
