@@ -4,17 +4,28 @@ https://www.draftsimulator.app/
 
 Languages/services used:
 * Backend: Python
-* Backend testing: unittest
+* Backend testing: unittest, nose
 * Frontend: Javascript, Typescript, React
 * Frontend testing: Jest, Cypress
 * Database: PostgreSQL
 * Web hosting: Heroku
 * Deployment pipeline: Concourse, Docker
 
+Running app locally:
+* Run server.py
+
+Running backend tests:
+* Install nose package
+* Run RunAllTests.py
+
 Building frontend:
 * `cd frontend`
 * `npm install chalk`
 * `npm run build`
+
+Running Jest:
+* `npm install --save-dev jest`
+* `npm test`
 
 Running Cypress:
 * `cd frontend`
