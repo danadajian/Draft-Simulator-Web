@@ -134,14 +134,14 @@ def get_projected_lineup(sport, slate, site, week, db):
                                      ' FROM ' + sport + '_mvp_lineups' +
                                      ' WHERE slate = ' + "'" + slate + "'" +
                                      ' AND week = ' + str(week) +
-                                     ' AND site = ' + "'" + site + "'")][0]
+                                     ' AND site = ' + "'" + site + "'")][0][0]
     else:
         lineup = [row for row in
                   db.session.execute('SELECT projected_lineup' +
                                      ' FROM ' + sport + '_lineups' +
                                      ' WHERE slate = ' + "'" + slate + "'" +
                                      ' AND week = ' + str(week) +
-                                     ' AND site = ' + "'" + site + "'")][0]
+                                     ' AND site = ' + "'" + site + "'")][0][0]
     return lineup.split(',')
 
 
