@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 import { Homepage } from "./Homepage";
-import { Optimizer } from './Optimizer'
-import { Simulator } from "./Simulator";
+import { Optimizer } from './optimizer/Optimizer'
+import { Simulator } from "./simulator/Simulator";
 
 class App extends Component {
 

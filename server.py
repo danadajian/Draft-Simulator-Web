@@ -120,6 +120,7 @@ def might_need_to_login(login_decorator, boolean):
         if not boolean:
             return func
         return login_decorator(func)
+
     return decorator
 
 
@@ -251,36 +252,39 @@ def cached_dfs_data(sport, slate):
         return 'Invalid sport.'
 
 
-@app.route("/optimize/reporting/<sport>/<slate>", methods=['POST'])
+@app.route("/optimize/reporting/<sport>/<site>/<slate>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
-def save_lineups(sport, slate):
+def save_lineups(sport, site, slate):
     data = request.get_data()
-    data_tuple = tuple(str(data)[2:-1].split('|'))
-    site, weeks = data_tuple
+    weeks = str(data)[2:-1]
     query_results = get_query_results(sport, slate, site, weeks, db)
     return jsonify(aggregate_reporting_data(query_results, slate))
 
 
-@app.route("/optimized-lineup/<sport>/<slate>", methods=['GET', 'POST'])
+@app.route("/optimize/clear/<sport>/<site>/<slate>")
 @might_need_to_login(login_required, is_production or postgres_configured)
-def optimized_team(sport, slate):
+def clear_lineup(sport, site, slate):
     dfs_data = cached_dfs_data(sport, slate)
-    projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info')
-    if request.method == 'POST':
-        data = request.get_data()
-        data_tuple = tuple(str(data)[2:-1].split('|'))
-        removed_player, site = data_tuple
-        fd_black_list, dk_black_list = session.get('fd_black_list'), session.get('dk_black_list')
-        if site == 'fd' and removed_player not in fd_black_list:
-            fd_black_list.append(removed_player)
-        elif site == 'dk' and removed_player not in dk_black_list:
-            dk_black_list.append(removed_player)
-    else:
-        fd_black_list, dk_black_list = [], []
-    session['fd_black_list'], session['dk_black_list'] = fd_black_list, dk_black_list
-    dfs_lineups = get_dfs_lineups(sport, projections, slate, dfs_info, fd_black_list, dk_black_list,
-                                  db if is_production or postgres_configured else None)
-    return jsonify(dfs_lineups)
+    master_list = aggregate_player_info(sport, site, dfs_data.get('projections'), dfs_data.get('info').get(site)).get('master_dict')
+    white_list, black_list = [], []
+    session['white_list'], session['black_list'] = white_list, black_list
+    configs = get_dfs_configs(sport, site, slate)
+    data_dict = {'playerPool': master_list, 'lineup': configs.get('empty_lineup'), 'cap': configs.get('salary_cap')}
+    return jsonify(data_dict)
+
+
+@app.route("/optimize/generate/<sport>/<site>/<slate>", methods=['POST'])
+@might_need_to_login(login_required, is_production or postgres_configured)
+def generate_lineup(sport, site, slate):
+    dfs_data = cached_dfs_data(sport, slate)
+    projections, dfs_info = dfs_data.get('projections'), dfs_data.get('info').get(site)
+    data = request.get_data()
+    data_tuple = tuple(str(data)[2:-1].split('|'))
+    white_list, black_list = data_tuple[0].split(',') if data_tuple[0] else [], data_tuple[1].split(',') if data_tuple[1] else []
+    session['white_list'], session['black_list'] = white_list, black_list
+    dfs_lineup = get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_list,
+                                db if is_production or postgres_configured else None)
+    return jsonify(dfs_lineup)
 
 
 if __name__ == "__main__":

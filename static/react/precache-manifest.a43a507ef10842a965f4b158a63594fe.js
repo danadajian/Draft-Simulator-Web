@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "dda0cf390d26e427a9dd145a90c46b07",
-    "url": "/static/react/media/rainy.dda0cf39.ico"
+    "revision": "340c3269b123f8a86dc7548b0db84f97",
+    "url": "/static/react/media/cloudy.340c3269.ico"
   },
   {
-    "revision": "bed45e721499bb09ca99",
-    "url": "/static/react/css/main.7e024108.chunk.css"
+    "revision": "44f717140a3344018490",
+    "url": "/static/react/css/main.aa732ec5.chunk.css"
   },
   {
     "revision": "dacd178ce7b78af49829",
@@ -16,32 +16,40 @@ self.__precacheManifest = [
     "url": "/static/react/media/down.61889039.ico"
   },
   {
-    "revision": "87351e03d81981c435fa",
-    "url": "/static/react/js/2.1f9b5dd5.chunk.js"
+    "revision": "e6b2ff2e040576555f4e",
+    "url": "/static/react/js/2.dae50610.chunk.js"
   },
   {
     "revision": "c5005feba5d92371ab2c34bb97965345",
     "url": "/static/react/media/football.c5005feb.ico"
   },
   {
-    "revision": "fac026150f2238451561518806c0d56d",
-    "url": "/static/react/media/football2.fac02615.svg"
-  },
-  {
     "revision": "04c89f3b398312edea35fd2f5b3a1152",
     "url": "/static/react/media/search.04c89f3b.ico"
   },
   {
-    "revision": "340c3269b123f8a86dc7548b0db84f97",
-    "url": "/static/react/media/cloudy.340c3269.ico"
+    "revision": "220c44df06de135a3076fb8e80ca6b5a",
+    "url": "/static/react/media/plus.220c44df.ico"
+  },
+  {
+    "revision": "5edbe4732aabe991683b2c52974ee432",
+    "url": "/static/react/media/minus.5edbe473.ico"
+  },
+  {
+    "revision": "fac026150f2238451561518806c0d56d",
+    "url": "/static/react/media/football2.fac02615.svg"
+  },
+  {
+    "revision": "44f717140a3344018490",
+    "url": "/static/react/js/main.6945715f.chunk.js"
   },
   {
     "revision": "a5e528949ccfcd9317e772977b2dd07f",
     "url": "/static/react/media/partlycloudy.a5e52894.ico"
   },
   {
-    "revision": "bed45e721499bb09ca99",
-    "url": "/static/react/js/main.09048e6a.chunk.js"
+    "revision": "dda0cf390d26e427a9dd145a90c46b07",
+    "url": "/static/react/media/rainy.dda0cf39.ico"
   },
   {
     "revision": "203024abc663f0adbb4437be12113bbc",
@@ -64,23 +72,15 @@ self.__precacheManifest = [
     "url": "/static/react/media/map-saturation-overlay.b01e6120.png"
   },
   {
-    "revision": "220c44df06de135a3076fb8e80ca6b5a",
-    "url": "/static/react/media/plus.220c44df.ico"
-  },
-  {
-    "revision": "5edbe4732aabe991683b2c52974ee432",
-    "url": "/static/react/media/minus.5edbe473.ico"
-  },
-  {
     "revision": "04732abf24b887b55ad5018370c4c478",
     "url": "/static/react/media/up.04732abf.ico"
   },
   {
-    "revision": "87351e03d81981c435fa",
-    "url": "/static/react/css/2.9796c495.chunk.css"
+    "revision": "e6b2ff2e040576555f4e",
+    "url": "/static/react/css/2.2d432934.chunk.css"
   },
   {
-    "revision": "b542a9e69a3fe8290b089f08a6275810",
+    "revision": "85909ba901ddd93e0eba3ae7de91bfca",
     "url": "/static/react/../../templates/index.html"
   }
 ];

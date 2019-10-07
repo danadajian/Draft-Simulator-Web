@@ -80,6 +80,7 @@ def get_mlb_projections():
         weather_by_event = get_weather(date_string)
         mlb_projections = [{
             'name': player.get('firstName') + ' ' + player.get('lastName'),
+            'id': player.get('playerId') or 'unavailable',
             'projection': playerid_projections.get(player.get('playerId')) or 'unavailable',
             'team': player.get('team').get('abbreviation') or 'unavailable',
             'opponent': team_info.get(player.get('team').get('abbreviation')).get('opponent') or 'unavailable',
