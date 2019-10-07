@@ -86,6 +86,8 @@ def get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, s
 
 
 def get_query_results(sport, slate, site, weeks, db):
+    if not db:
+        return {}
     if slate == 'thurs':
         data_result = [row for row in
                        db.session.execute('SELECT SUM(mvp_expected), SUM(mvp_actual), SUM(mvp_optimal),' +
@@ -121,6 +123,26 @@ def get_query_results(sport, slate, site, weeks, db):
                                               ' AND COALESCE(qb_actual, rb_actual, wr_actual, te_actual,' +
                                               ' flex_actual, dst_actual, NULL) IS NOT NULL')][0][0]
     return {'data': data_result, 'max_week': max_week_result}
+
+
+def get_projected_lineup(sport, slate, site, week, db):
+    if not db:
+        return {}
+    if slate == 'thurs':
+        lineup = [row for row in
+                  db.session.execute('SELECT projected_lineup' +
+                                     ' FROM ' + sport + '_mvp_lineups' +
+                                     ' WHERE slate = ' + "'" + slate + "'" +
+                                     ' AND week = ' + str(week) +
+                                     ' AND site = ' + "'" + site + "'")][0]
+    else:
+        lineup = [row for row in
+                  db.session.execute('SELECT projected_lineup' +
+                                     ' FROM ' + sport + '_lineups' +
+                                     ' WHERE slate = ' + "'" + slate + "'" +
+                                     ' AND week = ' + str(week) +
+                                     ' AND site = ' + "'" + site + "'")][0]
+    return lineup.split(',')
 
 
 def aggregate_reporting_data(query_results, slate):
