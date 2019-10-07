@@ -9,7 +9,8 @@ function getAddToLineupState(playerIndex, state) {
         (player) =>
             !player.Name && (
                 playerToAdd.Position === player.Position
-                || player.Position.split('/').includes(playerToAdd.Position)
+                || player.Position.includes(playerToAdd.Position)
+                || playerToAdd.Position.includes(player.Position)
                 || (!['QB', 'D/ST', 'P'].includes(playerToAdd.Position) && ['FLEX', 'Util'].includes(player.Position))
             )
     );

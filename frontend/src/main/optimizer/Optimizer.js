@@ -65,6 +65,8 @@ export class Optimizer extends Component {
     clearLineup = (sport, site, slate) => {
         if (!sport) {
             alert('Please select a sport.');
+        } else if (sport === 'nba') {
+            alert('Warning: \nThis sport is currently unavailable.');
         } else if (!site || !slate) {
             this.setState({sport: sport, site: site, slate: slate});
         } else {
@@ -109,11 +111,11 @@ export class Optimizer extends Component {
                         alert('Failed to generate report.');
                     } else {
                         response.json()
-                            .then((reportJson) => {
+                            .then((reportingData) => {
                                 this.setState({
                                     isReporting: true,
                                     weeks: weeks,
-                                    reportingData: reportJson});
+                                    reportingData: reportingData});
                             });
                     }
                 });
@@ -218,7 +220,8 @@ export class Optimizer extends Component {
                         <div style={{display: 'flex'}}>
                             <button onClick={() => this.filterPlayers('Position', 'All')}>All</button>
                             {
-                                [... new Set(playerPool.map((player) => player.Position))]
+                                [... new Set(playerPool.map((player) => (player.Position === 'D/ST') ?
+                                    player.Position : player.Position.split('/')[0]))]
                                     .map((position) =>
                                         <button onClick={() => this.filterPlayers('Position', position)}>{position}</button>
                                     )

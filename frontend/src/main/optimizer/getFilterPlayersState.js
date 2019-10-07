@@ -13,7 +13,7 @@ function getFilterPlayersState(attribute, value, state) {
         );
     } else {
         filteredPool = playerPool.filter(
-            (player) => player[attribute] === value
+            (player) => player[attribute].includes(value)
         );
     }
     return {

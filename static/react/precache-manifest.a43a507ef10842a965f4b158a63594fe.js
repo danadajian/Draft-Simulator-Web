@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/static/react/media/cloudy.340c3269.ico"
   },
   {
-    "revision": "c6bea6c2de43f7f5d7f1",
+    "revision": "44f717140a3344018490",
     "url": "/static/react/css/main.aa732ec5.chunk.css"
   },
   {
@@ -40,8 +40,8 @@ self.__precacheManifest = [
     "url": "/static/react/media/football2.fac02615.svg"
   },
   {
-    "revision": "c6bea6c2de43f7f5d7f1",
-    "url": "/static/react/js/main.f1c0eb0d.chunk.js"
+    "revision": "44f717140a3344018490",
+    "url": "/static/react/js/main.6945715f.chunk.js"
   },
   {
     "revision": "a5e528949ccfcd9317e772977b2dd07f",
@@ -80,7 +80,7 @@ self.__precacheManifest = [
     "url": "/static/react/css/2.2d432934.chunk.css"
   },
   {
-    "revision": "bb6f597f72516c984456552998ce52c9",
+    "revision": "85909ba901ddd93e0eba3ae7de91bfca",
     "url": "/static/react/../../templates/index.html"
   }
 ];

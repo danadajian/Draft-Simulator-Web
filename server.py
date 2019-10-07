@@ -281,7 +281,6 @@ def generate_lineup(sport, site, slate):
     data = request.get_data()
     data_tuple = tuple(str(data)[2:-1].split('|'))
     white_list, black_list = data_tuple[0].split(',') if data_tuple[0] else [], data_tuple[1].split(',') if data_tuple[1] else []
-    print(white_list, black_list)
     session['white_list'], session['black_list'] = white_list, black_list
     dfs_lineup = get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_list,
                                 db if is_production or postgres_configured else None)

@@ -12,9 +12,9 @@ def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list,
     if not optimal_dict.get('lineup'):
         return 'Warning: \nUnable to generate lineup with available data.'
     projected_lineup = optimal_dict.get('lineup')
-    total_pts = round(optimal_dict.get('total_pts'), 1)
-    total_salary = round(optimal_dict.get('total_salary'))
-    max_pts = optimal_dict.get('max_pts')
+    # total_pts = round(optimal_dict.get('total_pts'), 1)
+    # total_salary = round(optimal_dict.get('total_salary'))
+    # max_pts = optimal_dict.get('max_pts')
     if sport == 'nfl' and not white_list and not black_list:
         ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict, pos_dict, salary_dict,
                                    cap, projected_lineup, db)
@@ -101,8 +101,6 @@ def aggregate_player_info(sport, site, projections, dfs_info):
 
 
 def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_list, db):
-    if sport == 'nba':
-        return ['Warning: \nThis sport is currently unavailable.']
     if projections == 'offseason':
         return ['Warning: \nThis league is currently in the offseason.']
     if projections == 'Not enough data is available.':
