@@ -15,6 +15,10 @@ def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list,
     # total_pts = round(optimal_dict.get('total_pts'), 1)
     # total_salary = round(optimal_dict.get('total_salary'))
     # max_pts = optimal_dict.get('max_pts')
+    this_week = get_current_week_events()[0].get('week')
+    if db:
+        ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict,
+                                   pos_dict, salary_dict, {}, optimal_dict.get('lineup'), cap, this_week, db)
     lineup_json = [
         {'Position': display_matrix[projected_lineup.index(player)],
          'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',
