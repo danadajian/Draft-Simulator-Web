@@ -252,13 +252,18 @@ def cached_dfs_data(sport, slate):
         return 'Invalid sport.'
 
 
-@app.route("/optimize/reporting/<sport>/<site>/<slate>", methods=['POST'])
+@app.route("/optimize/reporting/<sport>/<site>/<slate>")
+@might_need_to_login(login_required, is_production or postgres_configured)
+def save_lineups(sport, site, slate):
+    aggregate_historical_data(sport, site, slate, db)
+    return 'Historical data generated.'
+
+
+@app.route("/optimize/reporting/filter/<sport>/<site>/<slate>", methods=['POST'])
 @might_need_to_login(login_required, is_production or postgres_configured)
 def save_lineups(sport, site, slate):
     data = request.get_data()
     weeks = str(data)[2:-1]
-    if not weeks:
-        aggregate_historical_data(sport, site, slate, db)
     query_results = get_query_results(sport, slate, site, weeks, db)
     return jsonify(aggregate_reporting_data(query_results, slate))
 

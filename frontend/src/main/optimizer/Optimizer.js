@@ -98,9 +98,28 @@ export class Optimizer extends Component {
         }
     };
 
-    fetchReportingData = (sport, slate, site, weeks) => {
+    generateReportingData = (sport, slate, site) => {
         this.setState({isLoading: true});
-        fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + site + '/' + slate, {
+        fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + site + '/' + slate)
+            .then(response => {
+                if (response.status !== 200) {
+                    alert('Failed to generate report.');
+                } else {
+                    this.filterWeek('');
+                }
+            });
+    };
+
+    filterWeek = (selectedWeek) => {
+        let {sport, slate, site, weeks} = this.state;
+        if (weeks.includes(selectedWeek)) {
+            weeks.splice(weeks.indexOf(selectedWeek), 1);
+        } else {
+            if (selectedWeek) {
+                weeks.push(selectedWeek);
+            }
+        }
+        fetch(window.location.origin + '/optimize/reporting/filter/' + sport + '/' + site + '/' + slate, {
             method: 'POST',
             body: weeks
         }).then(response => {
@@ -143,17 +162,6 @@ export class Optimizer extends Component {
         this.setState(newState);
     };
 
-    toggleWeek = (selectedWeek) => {
-        let {sport, slate, site, weeks} = this.state;
-        if (weeks.includes(selectedWeek)) {
-            weeks.splice(weeks.indexOf(selectedWeek), 1);
-        } else {
-            weeks.push(selectedWeek);
-        }
-        this.fetchReportingData(sport, slate, site, weeks);
-        return weeks
-    };
-
     render() {
         const {isLoading, isOptimizing, isReporting, sport, site, slate, lineup, cap, playerPool, filteredPool,
             searchText, whiteList, blackList, reportingData, weeks} = this.state;
@@ -189,7 +197,7 @@ export class Optimizer extends Component {
                             {weekArray.map(
                                 (weekNumber) => (
                                     <button style={{backgroundColor: (weeks.includes(weekNumber)) ? 'dodgerblue' : 'white'}}
-                                            onClick={() => this.toggleWeek(weekNumber)}>{weekNumber}</button>
+                                            onClick={() => this.filterWeek(weekNumber)}>{weekNumber}</button>
                                 )
                             )}
                             </div>
@@ -293,7 +301,7 @@ export class Optimizer extends Component {
                                           onClick={() => this.clearLineup(sport, site, slate)}>Clear Lineup</button>}
                         {(sport === 'nfl' && slate && site) && <button style={{marginTop: '10px'}}
                                           onClick={() =>
-                                              this.fetchReportingData(sport, slate, site, weekArray)}>Generate Report</button>}
+                                              this.generateReportingData(sport, slate, site)}>Generate Report</button>}
                     </div>
                 </div>
                 {sport && slate && site && gridSection}
