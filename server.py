@@ -257,7 +257,8 @@ def cached_dfs_data(sport, slate):
 def save_lineups(sport, site, slate):
     data = request.get_data()
     weeks = str(data)[2:-1]
-    aggregate_historical_data(sport, site, slate, db)
+    if not weeks:
+        aggregate_historical_data(sport, site, slate, db)
     query_results = get_query_results(sport, slate, site, weeks, db)
     return jsonify(aggregate_reporting_data(query_results, slate))
 

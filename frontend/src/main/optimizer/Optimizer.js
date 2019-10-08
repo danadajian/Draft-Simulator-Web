@@ -99,7 +99,6 @@ export class Optimizer extends Component {
     };
 
     fetchReportingData = (sport, slate, site, weeks) => {
-        sport = 'nfl';
         this.setState({isLoading: true});
         fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + site + '/' + slate, {
             method: 'POST',
