@@ -100,26 +100,24 @@ export class Optimizer extends Component {
 
     fetchReportingData = (sport, slate, site, weeks) => {
         sport = 'nfl';
-        if (!sport) {
-            alert('Please select a sport.');
-        } else {
-            fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + site + '/' + slate, {
-                method: 'POST',
-                body: weeks
-            }).then(response => {
-                    if (response.status !== 200) {
-                        alert('Failed to generate report.');
-                    } else {
-                        response.json()
-                            .then((reportingData) => {
-                                this.setState({
-                                    isReporting: true,
-                                    weeks: weeks,
-                                    reportingData: reportingData});
-                            });
-                    }
-                });
-        }
+        this.setState({isLoading: true});
+        fetch(window.location.origin + '/optimize/reporting/' + sport + '/' + site + '/' + slate, {
+            method: 'POST',
+            body: weeks
+        }).then(response => {
+                if (response.status !== 200) {
+                    alert('Failed to generate report.');
+                } else {
+                    response.json()
+                        .then((reportingData) => {
+                            this.setState({
+                                isLoading: false,
+                                isReporting: true,
+                                weeks: weeks,
+                                reportingData: reportingData});
+                        });
+                }
+            });
     };
 
     filterPlayers = (attribute, value) => {

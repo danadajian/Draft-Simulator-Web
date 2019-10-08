@@ -1,9 +1,10 @@
 from .Optimizer import *
 from .MVPOptimizer import *
 from src.main.optimizer.GetDFSReportingData import *
+from src.main.optimizer.DfsConfigs import *
 
 
-def save_new_lineups(sport, week, site, slate, row, db):
+def save_to_database(sport, week, site, slate, row, db):
     if slate == 'thurs':
         table = sport + '_mvp_lineups'
         columns = ['week', 'site', 'slate', 'projected_lineup', 'optimal_lineup', 'mvp_expected', 'mvp_actual',
@@ -35,16 +36,47 @@ def save_new_lineups(sport, week, site, slate, row, db):
 
 
 def ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict,
-                               pos_dict, salary_dict, scores_dict, cap, projected_lineup, week, db):
+                               pos_dict, salary_dict, scores_dict, proj_lineup, cap, week, db):
     if slate == 'thurs':
-        optimal_lineup = optimize_mvp(site, [], scores_dict, salary_dict, len(display_matrix),
-                                      cap).get('lineup')
+        projected_lineup = proj_lineup if proj_lineup else optimize_mvp(site, [], proj_dict, salary_dict, len(display_matrix), cap).get('lineup')
+        optimal_lineup = optimize_mvp(site, [], scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
     else:
-        optimal_lineup = optimize(lineup_matrix, [], [], scores_dict, pos_dict, salary_dict,
-                                  cap).get('lineup')
+        projected_lineup = proj_lineup if proj_lineup else optimize(lineup_matrix, [], [], proj_dict, pos_dict, salary_dict, cap).get('lineup')
+        optimal_lineup = optimize(lineup_matrix, [], [], scores_dict, pos_dict, salary_dict, cap).get('lineup')
+    print(projected_lineup)
+    print(optimal_lineup)
     new_row = get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, site, slate, proj_dict,
                                  scores_dict)
     if db:
-        save_new_lineups(sport, week, site, slate, new_row, db)
+        save_to_database(sport, week, site, slate, new_row, db)
     else:
         print(new_row)
+
+
+def aggregate_historical_data(sport, site, slate, db):
+    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    lineup_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('lineup_matrix')
+    display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
+    cap = dfs_configs.get(site).get(sport).get(lineup_type).get('salary_cap')
+    this_week = get_current_week_events()[0].get('week')
+    prev_week = this_week - 1
+    historical_dict = get_historical_dfs_info(prev_week, site)
+    prev_projections = get_hist_nfl_projections(slate, prev_week)
+    prev_pos_dict = {player_dict.get('name'): site_projection.get('position')
+                     for player_dict in prev_projections
+                     for site_projection in player_dict.get('projection')
+                     if site_projection.get('position')
+                     if site_projection.get('siteId') == (1 if site == 'dk' else 2)}
+    prev_proj_dict = {player_dict.get('name'): float(site_projection.get('points'))
+                      for player_dict in prev_projections
+                      for site_projection in player_dict.get('projection')
+                      if site_projection.get('siteId') == (1 if site == 'dk' else 2)}
+    prev_scores_dict = {player: item.get('points')
+                        for player, item in historical_dict.items()}
+    prev_salary_dict = {player: item.get('salary')
+                        for player, item in historical_dict.items()}
+    if db:
+        for week in get_reporting_weeks(sport, slate, site, db):
+            proj_lineup = get_projected_lineup(sport, slate, site, week, db)
+            ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, prev_proj_dict, prev_pos_dict,
+                                       prev_salary_dict, prev_scores_dict, proj_lineup, cap, prev_week, db)

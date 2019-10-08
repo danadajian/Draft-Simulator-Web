@@ -236,7 +236,7 @@ def cached_dfs_data(sport, slate):
         return {'projections': get_mlb_projections(), 'info': {'fd': {}, 'dk': {}}}
     elif sport == 'nfl':
         projections = get_nfl_projections(slate)
-        date_string = get_date_string('Thurs')
+        date_string = get_date_string('Thurs', 0)
         if slate == 'thurs':
             contest_player = next(player_dict for player_dict in projections if '@' in player_dict.get('opponent'))
             fd_contest = (contest_player.get('team') + ' ' + contest_player.get('opponent')).upper()
@@ -257,6 +257,7 @@ def cached_dfs_data(sport, slate):
 def save_lineups(sport, site, slate):
     data = request.get_data()
     weeks = str(data)[2:-1]
+    aggregate_historical_data(sport, site, slate, db)
     query_results = get_query_results(sport, slate, site, weeks, db)
     return jsonify(aggregate_reporting_data(query_results, slate))
 

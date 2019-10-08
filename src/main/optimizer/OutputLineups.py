@@ -15,18 +15,6 @@ def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list,
     # total_pts = round(optimal_dict.get('total_pts'), 1)
     # total_salary = round(optimal_dict.get('total_salary'))
     # max_pts = optimal_dict.get('max_pts')
-    if sport == 'nfl' and not white_list and not black_list:
-        this_week = get_all_events()[0].get('week')
-        prev_week = this_week - 1
-        prev_scores_dict = {player: item.get('points')
-                            for player, item in get_historical_dfs_info(prev_week, site).items()}
-        prev_salary_dict = {player: item.get('salary')
-                            for player, item in get_historical_dfs_info(prev_week, site).items()}
-        ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict, pos_dict, salary_dict,
-                                   {}, cap, projected_lineup, this_week, db)
-        prev_week_lineup = get_projected_lineup(sport, slate, site, prev_week, db)
-        ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict, pos_dict,
-                                   prev_salary_dict, prev_scores_dict, cap, prev_week_lineup, prev_week, db)
     lineup_json = [
         {'Position': display_matrix[projected_lineup.index(player)],
          'Team': team_and_weather_dict.get(player).get('team') or 'unavailable',

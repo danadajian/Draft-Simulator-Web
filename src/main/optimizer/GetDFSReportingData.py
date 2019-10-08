@@ -125,9 +125,30 @@ def get_query_results(sport, slate, site, weeks, db):
     return {'data': data_result, 'max_week': max_week_result}
 
 
+def get_reporting_weeks(sport, slate, site, db):
+    if slate == 'thurs':
+        weeks = [row for row in
+                 db.session.execute('SELECT DISTINCT week' +
+                                    ' FROM ' + sport + '_mvp_lineups' +
+                                    ' WHERE slate = ' + "'" + slate + "'" +
+                                    ' AND site = ' + "'" + site + "'" +
+                                    ' AND mvp_actual IS NULL OR flex_actual IS NULL' +
+                                    ' ORDER BY week')][0]
+    else:
+        weeks = [row for row in
+                 db.session.execute('SELECT DISTINCT week' +
+                                    ' FROM ' + sport + '_lineups' +
+                                    ' WHERE slate = ' + "'" + slate + "'" +
+                                    ' AND site = ' + "'" + site + "'" +
+                                    ' AND qb_actual IS NULL OR rb_actual IS NULL OR wr_actual IS NULL' +
+                                    ' OR te_actual IS NULL or flex_actual IS NULL or dst_actual IS NULL' +
+                                    ' ORDER BY week')][0]
+    return weeks
+
+
 def get_projected_lineup(sport, slate, site, week, db):
     if not db:
-        return {}
+        return []
     if slate == 'thurs':
         lineup = [row for row in
                   db.session.execute('SELECT projected_lineup' +

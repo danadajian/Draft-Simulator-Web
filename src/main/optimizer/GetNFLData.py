@@ -2,27 +2,34 @@ from src.main.optimizer.DFSFunctions import *
 import datetime
 
 
-def get_dow_string(dow_number):
+def get_dow_string(dow_number, weeks_ago):
     now = datetime.datetime.now()
     current_day = datetime.datetime.today().weekday()
     days_till = dow_number - current_day
-    dow = now + datetime.timedelta(days=days_till)
+    dow = now + datetime.timedelta(days=days_till, weeks=-weeks_ago)
     month = '0' + str(dow.month) if len(str(dow.month)) == 1 else str(dow.month)
     day = '0' + str(dow.day) if len(str(dow.day)) == 1 else str(dow.day)
     dow_string = str(dow.year) + '-' + month + '-' + day
     return dow_string
 
 
-def get_date_string(day):
+def get_date_string(day, weeks_ago):
     days_of_week = ['Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun', 'Mon']
     current_day = datetime.datetime.today().weekday()
     dow_dict = {day: (num if current_day > 0 else num - 7) for num, day in enumerate(days_of_week, 1)}
-    return get_dow_string(dow_dict.get(day))
+    return get_dow_string(dow_dict.get(day), weeks_ago)
 
 
-def get_all_events():
+def get_current_week_events():
     events_endpoint = 'stats/football/nfl/events/'
     events_call = call_api(events_endpoint, '')
+    events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
+    return events
+
+
+def get_events_from_week(week):
+    events_endpoint = 'stats/football/nfl/events/'
+    events_call = call_api(events_endpoint, '&week=' + str(week))
     events = events_call.get('apiResults')[0].get('league').get('season').get('eventType')[0].get('events')
     return events
 
@@ -122,9 +129,9 @@ def get_nfl_projections(slate):
     try:
         if is_offseason('nfl'):
             return 'offseason'
-        all_events = get_all_events()
+        all_events = get_current_week_events()
         event_dates = get_event_dates(all_events)
-        thurs_string, sun_string, mon_string = get_date_string('Thurs'), get_date_string('Sun'), get_date_string('Mon')
+        thurs_string, sun_string, mon_string = get_date_string('Thurs', 0), get_date_string('Sun', 0), get_date_string('Mon', 0)
         if slate == 'main':
             events = [event for event in all_events if event_dates.get(event.get('eventId')) == sun_string][:-1]
             weather_by_event = get_weather([sun_string])
@@ -151,6 +158,39 @@ def get_nfl_projections(slate):
                          if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable',
             'weather': (weather_by_event.get(team_info.get(projection.get('team')).get('eventId'))
                         if team_info.get(projection.get('team')) else 'unavailable') or 'unavailable'
+        } for player, projection in projections.items() if team_info.get(projection.get('team'))]
+        return nfl_projections
+    except FileNotFoundError:
+        return 'Not enough data is available.'
+    except ConnectionError:
+        return 'Error obtaining projection data.'
+
+
+def get_hist_nfl_projections(slate, week):
+    try:
+        if is_offseason('nfl'):
+            return 'offseason'
+        all_events = get_events_from_week(week)
+        event_dates = get_event_dates(all_events)
+        this_week = get_current_week_events()[0].get('week')
+        weeks_ago = this_week - week
+        thurs_string, sun_string, mon_string = get_date_string('Thurs', weeks_ago), get_date_string('Sun', weeks_ago), get_date_string('Mon', weeks_ago)
+        if slate == 'main':
+            events = [event for event in all_events if event_dates.get(event.get('eventId')) == sun_string][:-1]
+        elif slate == 'thurs':
+            events = [event for event in all_events if event_dates.get(event.get('eventId')) == thurs_string]
+        elif slate == 'thurs-mon':
+            events = all_events
+        elif slate == 'sun-mon':
+            events = [event for event in all_events if
+                      event_dates.get(event.get('eventId')) in (sun_string, mon_string)]
+        else:
+            events = []
+        team_info = get_team_info(events)
+        projections = get_projections_from_week(week, slate)
+        nfl_projections = [{
+            'name': player,
+            'projection': projection.get('projection') or 'unavailable'
         } for player, projection in projections.items() if team_info.get(projection.get('team'))]
         return nfl_projections
     except FileNotFoundError:
