@@ -268,23 +268,23 @@ export class Optimizer extends Component {
                     <h3>Choose a sport:</h3>
                     <div style={{display: 'flex'}}>
                         <button style={{backgroundColor: (sport === 'mlb') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.clearLineup('mlb', site, 'main')}>MLB</button>
+                                onClick={() => this.clearLineup('mlb', site, 'Main')}>MLB</button>
                         <button style={{backgroundColor: (sport === 'nfl') ? 'dodgerblue' : 'white'}}
                                 onClick={() => this.clearLineup('nfl', site, slate)}>NFL</button>
                         <button style={{backgroundColor: (sport === 'nba') ? 'dodgerblue' : 'white'}}
-                                onClick={() => this.clearLineup('nba', site, 'main')}>NBA</button>
+                                onClick={() => this.clearLineup('nba', site, 'Main')}>NBA</button>
                     </div>
                     {sport === 'nfl' && <h3>Choose a game slate:</h3>}
                     {sport === 'nfl' &&
                         <div style={{display: 'flex'}}>
-                            <button style={{backgroundColor: (slate === 'thurs') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.clearLineup(sport, site, 'thurs')}>Thurs only</button>
-                            <button style={{backgroundColor: (slate === 'thurs-mon') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.clearLineup(sport, site, 'thurs-mon')}>Thurs - Mon</button>
-                            <button style={{backgroundColor: (slate === 'main') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.clearLineup(sport, site, 'main')}>Sun (Main)</button>
-                            <button style={{backgroundColor: (slate === 'sun-mon') ? 'dodgerblue' : 'white'}}
-                                    onClick={() => this.clearLineup(sport, site, 'sun-mon')}>Sun - Mon</button>
+                            <button style={{backgroundColor: (slate === 'Thurs') ? 'dodgerblue' : 'white'}}
+                                    onClick={() => this.clearLineup(sport, site, 'Thurs')}>Thurs only</button>
+                            <button style={{backgroundColor: (slate === 'Thu-Mon') ? 'dodgerblue' : 'white'}}
+                                    onClick={() => this.clearLineup(sport, site, 'Thu-Mon')}>Thurs - Mon</button>
+                            <button style={{backgroundColor: (slate === 'Main') ? 'dodgerblue' : 'white'}}
+                                    onClick={() => this.clearLineup(sport, site, 'Main')}>Sun (Main)</button>
+                            <button style={{backgroundColor: (slate === 'Sun-Mon') ? 'dodgerblue' : 'white'}}
+                                    onClick={() => this.clearLineup(sport, site, 'Sun-Mon')}>Sun - Mon</button>
                         </div>}
                     {sport && <h3>Choose a site:</h3>}
                     {sport &&

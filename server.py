@@ -236,14 +236,14 @@ def cached_dfs_data(sport, slate):
         return {'projections': get_mlb_projections(), 'info': {'fd': {}, 'dk': {}}}
     elif sport == 'nfl':
         projections = get_nfl_projections(slate)
-        date_string = get_date_string('Thurs', 0)
-        if slate == 'thurs':
+        date_string = get_date_string('Thurs', 0) if 'Thu' in slate else get_date_string('Sun', 0)
+        if slate == 'Thurs':
             contest_player = next(player_dict for player_dict in projections if '@' in player_dict.get('opponent'))
             fd_contest = (contest_player.get('team') + ' ' + contest_player.get('opponent')).upper()
             dk_contest = fd_contest.replace('@', 'vs').replace('JAX', 'JAC')
             dk_game_type = 'Showdown Captain Mode'
         else:
-            fd_contest, dk_contest, dk_game_type = 'Thu-Mon', 'Thu-Mon', 'Classic'
+            fd_contest, dk_contest, dk_game_type = slate, slate, 'Classic'
         info = {'fd': get_fd_info(fd_contest, date_string), 'dk': get_dk_info(dk_contest, dk_game_type)}
         return {'projections': projections, 'info': info}
     elif sport == 'nba':

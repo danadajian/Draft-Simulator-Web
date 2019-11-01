@@ -5,7 +5,7 @@ from src.main.optimizer.DfsConfigs import *
 
 
 def save_to_database(sport, week, site, slate, row, db):
-    if slate == 'thurs':
+    if slate == 'Thurs':
         table = sport + '_mvp_lineups'
         columns = ['week', 'site', 'slate', 'projected_lineup', 'optimal_lineup', 'mvp_expected', 'mvp_actual',
                    'mvp_optimal', 'flex_expected', 'flex_actual', 'flex_optimal']
@@ -37,7 +37,7 @@ def save_to_database(sport, week, site, slate, row, db):
 
 def ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate, proj_dict,
                                pos_dict, salary_dict, scores_dict, proj_lineup, cap, week, db):
-    if slate == 'thurs':
+    if slate == 'Thurs':
         projected_lineup = proj_lineup if proj_lineup else optimize_mvp(site, [], proj_dict, salary_dict, len(display_matrix), cap).get('lineup')
         optimal_lineup = optimize_mvp(site, [], scores_dict, salary_dict, len(display_matrix), cap).get('lineup')
     else:
@@ -52,7 +52,7 @@ def ingest_actual_optimal_data(lineup_matrix, display_matrix, sport, site, slate
 
 
 def aggregate_historical_data(sport, site, slate, db):
-    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    lineup_type = 'mvp' if slate == 'Thurs' else 'standard'
     lineup_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('lineup_matrix')
     display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
     cap = dfs_configs.get(site).get(sport).get(lineup_type).get('salary_cap')

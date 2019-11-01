@@ -40,7 +40,7 @@ def get_dk_info(contest, game_type):
     contest = next((item for item in contests
                    if item.get('sport') == 'NFL'
                    and item.get('gameType') == game_type
-                   and item.get('suffix') == ' (' + contest + ')'), None)
+                   and (contest == 'Main' or item.get('suffix') == ' (' + contest + ')')), None)
     info_dict = {int(player.get('playerId')): {'position': player.get('position'), 'salary': int(player.get('salary'))}
                  for player in contest.get('draftPool')
                  if game_type != 'Showdown Captain Mode' or player.get('rosterSlots')[0] == 'FLEX'} if contest else {}

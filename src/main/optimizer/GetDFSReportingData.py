@@ -55,7 +55,7 @@ def get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, s
     projected_lineup_projected = find_points_by_position(projected_lineup, display_matrix, proj_dict)
     projected_lineup_actual = find_points_by_position(projected_lineup, display_matrix, scores_dict)
     optimal_lineup_actual = find_points_by_position(optimal_lineup, display_matrix, scores_dict)
-    if slate == 'thurs':
+    if slate == 'Thurs':
         db_row = (
             week, site, slate,
             ','.join(projected_lineup).replace("'", ''),
@@ -88,7 +88,7 @@ def get_reporting_data(projected_lineup, optimal_lineup, display_matrix, week, s
 def get_query_results(sport, slate, site, weeks, db):
     if not db:
         return {}
-    if slate == 'thurs':
+    if slate == 'Thurs':
         data_result = [row for row in
                        db.session.execute('SELECT SUM(mvp_expected), SUM(mvp_actual), SUM(mvp_optimal),' +
                                           ' SUM(flex_expected), SUM(flex_actual), SUM(flex_optimal)' +
@@ -126,7 +126,7 @@ def get_query_results(sport, slate, site, weeks, db):
 
 
 def get_reporting_weeks(sport, slate, site, db):
-    if slate == 'thurs':
+    if slate == 'Thurs':
         weeks = [row for row in
                  db.session.execute('SELECT DISTINCT week' +
                                     ' FROM ' + sport + '_mvp_lineups' +
@@ -149,7 +149,7 @@ def get_reporting_weeks(sport, slate, site, db):
 def get_projected_lineup(sport, slate, site, week, db):
     if not db:
         return []
-    if slate == 'thurs':
+    if slate == 'Thurs':
         lineup = [row for row in
                   db.session.execute('SELECT projected_lineup' +
                                      ' FROM ' + sport + '_mvp_lineups' +
@@ -182,7 +182,7 @@ def aggregate_reporting_data(query_results, slate):
             'expected_v_optimal': 0 if total_optimal == 0 else (total_expected - total_optimal) / total_optimal
         }
     ]
-    positions = ['MVP (1.5x Points)', 'FLEX'] if slate == 'thurs' else ['QB', 'RB', 'WR', 'TE', 'FLEX', 'D/ST']
+    positions = ['MVP (1.5x Points)', 'FLEX'] if slate == 'Thurs' else ['QB', 'RB', 'WR', 'TE', 'FLEX', 'D/ST']
     aggregated_data = {
         'data': [
             {

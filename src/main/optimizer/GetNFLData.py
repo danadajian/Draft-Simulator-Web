@@ -80,7 +80,7 @@ def get_offense_projections(projections, slate):
             'team': player.get('team').get('abbreviation'),
             'projection': player.get('fantasyProjections')
         }
-        for player in offense_list if slate == 'thurs' or player.get('position') != 'K'
+        for player in offense_list if slate == 'Thurs' or player.get('position') != 'K'
     }
     return offense_projections
 
@@ -132,16 +132,16 @@ def get_nfl_projections(slate):
         all_events = get_current_week_events()
         event_dates = get_event_dates(all_events)
         thurs_string, sun_string, mon_string = get_date_string('Thurs', 0), get_date_string('Sun', 0), get_date_string('Mon', 0)
-        if slate == 'main':
+        if slate == 'Main':
             events = [event for event in all_events if event_dates.get(event.get('eventId')) == sun_string][:-1]
             weather_by_event = get_weather([sun_string])
-        elif slate == 'thurs':
+        elif slate == 'Thurs':
             events = [event for event in all_events if event_dates.get(event.get('eventId')) == thurs_string]
             weather_by_event = get_weather([thurs_string])
-        elif slate == 'thurs-mon':
+        elif slate == 'Thu-Mon':
             events = all_events
             weather_by_event = get_weather([thurs_string, sun_string, mon_string])
-        elif slate == 'sun-mon':
+        elif slate == 'Sun-Mon':
             events = [event for event in all_events if event_dates.get(event.get('eventId')) in (sun_string, mon_string)]
             weather_by_event = get_weather([sun_string, mon_string])
         else:
@@ -175,13 +175,13 @@ def get_hist_nfl_projections(slate, week):
         this_week = get_current_week_events()[0].get('week')
         weeks_ago = this_week - week
         thurs_string, sun_string, mon_string = get_date_string('Thurs', weeks_ago), get_date_string('Sun', weeks_ago), get_date_string('Mon', weeks_ago)
-        if slate == 'main':
+        if slate == 'Main':
             events = [event for event in all_events if event_dates.get(event.get('eventId')) == sun_string][:-1]
-        elif slate == 'thurs':
+        elif slate == 'Thurs':
             events = [event for event in all_events if event_dates.get(event.get('eventId')) == thurs_string]
-        elif slate == 'thurs-mon':
+        elif slate == 'Thu-Mon':
             events = all_events
-        elif slate == 'sun-mon':
+        elif slate == 'Sun-Mon':
             events = [event for event in all_events if
                       event_dates.get(event.get('eventId')) in (sun_string, mon_string)]
         else:

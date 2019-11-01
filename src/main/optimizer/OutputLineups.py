@@ -5,7 +5,7 @@ from src.main.optimizer.DfsConfigs import *
 
 def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list, black_list, proj_dict, pos_dict,
                   salary_dict, cap, team_and_weather_dict, injury_dict, db):
-    if slate == 'thurs':
+    if slate == 'Thurs':
         optimal_dict = optimize_mvp(site, black_list, proj_dict, salary_dict, len(display_matrix), cap)
     else:
         optimal_dict = optimize(lineup_matrix, white_list, black_list, proj_dict, pos_dict, salary_dict, cap)
@@ -27,7 +27,7 @@ def output_lineup(lineup_matrix, display_matrix, sport, site, slate, white_list,
          'Projected': round(proj_dict.get(player), 1),
          'Price': round(salary_dict.get(player) *
                         (1.5 if projected_lineup.index(player) == 0 else 1))
-         if slate == 'thurs' and site == 'dk' else salary_dict.get(player),
+         if slate == 'Thurs' and site == 'dk' else salary_dict.get(player),
          'Opp': team_and_weather_dict.get(player).get('opponent') or 'unavailable',
          'Weather': team_and_weather_dict.get(player).get('weather') or 'unavailable'
          } for player in projected_lineup
@@ -110,7 +110,7 @@ def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_
         return ['Warning: \nError obtaining projection data.']
     if sport == 'nfl' and not dfs_info:
         return ['Warning: \nThis contest is no longer available.']
-    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    lineup_type = 'mvp' if slate == 'Thurs' else 'standard'
     lineup_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('lineup_matrix')
     display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
     salary_cap = dfs_configs.get(site).get(sport).get(lineup_type).get('salary_cap')
@@ -122,7 +122,7 @@ def get_dfs_lineup(sport, site, slate, projections, dfs_info, white_list, black_
 
 
 def get_dfs_configs(sport, site, slate):
-    lineup_type = 'mvp' if slate == 'thurs' else 'standard'
+    lineup_type = 'mvp' if slate == 'Thurs' else 'standard'
     display_matrix = dfs_configs.get(site).get(sport).get(lineup_type).get('display_matrix')
     salary_cap = dfs_configs.get(site).get(sport).get(lineup_type).get('salary_cap')
     return {
