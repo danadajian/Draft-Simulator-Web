@@ -7,8 +7,10 @@ def get_fd_info(contest, date_string):
     call = requests.get(url).text
     response = call.splitlines()
     lower_bound = next((i for i in range(len(response))
-                       if '<game>' in response[i] and '<label>' + contest + '</label>' in response[i + 2]), -1)
+                       if '<game>' in response[i] and '<label>' + contest + '</label>' in response[i + 2]
+                       and '<player>' in response[i + 7]), -1)
     upper_bound = next((j for j in range(lower_bound + 1, len(response)) if '<game>' in response[j]), len(response))
+
     info_dict = {}
     if lower_bound + upper_bound == upper_bound - 1:
         return info_dict
