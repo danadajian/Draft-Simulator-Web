@@ -16,7 +16,7 @@
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "chalk": "^2.4.2",
     "css-loader": "1.0.0",
-    "cypress": "^3.4.1",
+    "cypress": "^12.7.0",
     "dotenv": "6.0.0",
     "dotenv-expand": "4.2.0",
     "eslint": "5.12.0",
